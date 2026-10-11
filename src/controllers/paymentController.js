@@ -13,11 +13,22 @@ export async function hub(req, res) {
   res.render('pages/payments/hub', { title: 'Платежи и переводы', ...(await paymentService.overview(req.user.id)), errors: {}, form: {} });
 }
 
+/** Трёхмерная иконка категории по её названию. */
+function iconFor(name) {
+  const n = String(name).toLowerCase();
+  if (n.includes('жиль') || n.includes('коммун')) return 'house';
+  if (n.includes('налог') || n.includes('штраф')) return 'tax';
+  if (n.includes('образ')) return 'edu';
+  if (n.includes('транспорт')) return 'bus';
+  if (n.includes('благотвор')) return 'heart';
+  return 'phone';
+}
+
 export async function catalog(req, res) {
   requireClient(req);
   const q = String(req.query.q ?? '').trim();
   const city = String(req.query.city ?? '');
-  const categories = await paymentService.catalog.categories();
+  const categories = (await paymentService.catalog.categories()).map((c) => ({ ...c, icon: iconFor(c.name) }));
   const found = q ? await paymentService.catalog.providers({ q, city }) : [];
   res.render('pages/payments/catalog', { title: 'Каталог платежей', categories, found, q, city, cities: await paymentService.catalog.cities() });
 }
@@ -28,7 +39,7 @@ export async function category(req, res) {
   if (!category) throw new NotFoundError();
   const city = String(req.query.city ?? '');
   res.render('pages/payments/category', {
-    title: category.name, category, city, cities: await paymentService.catalog.cities(),
+    title: category.name, category: { ...category, icon: iconFor(category.name) }, city, cities: await paymentService.catalog.cities(),
     providers: await paymentService.catalog.providers({ categoryId: category.id, city })
   });
 }

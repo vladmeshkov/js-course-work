@@ -1,21 +1,43 @@
 <%- include('../../partials/header', { title }) %>
 <nav class="crumbs" aria-label="Навигационная цепочка"><a href="/cabinet">Главная</a> &nbsp;›&nbsp; <a href="/payments">Платежи и переводы</a> &nbsp;›&nbsp; Оплата услуг</nav>
-<h1>Оплата услуг</h1>
-<form class="tile search" method="get" action="/payments/catalog" role="search">
-  <input name="q" value="<%= q %>" placeholder="Название услуги или организации" aria-label="Поиск услуги">
-  <select name="city" aria-label="Город"><option value="">Все города</option><% cities.forEach((c) => { %><option<%= c === city ? ' selected' : '' %>><%= c %></option><% }) %></select>
-  <button class="btn" type="submit">Найти</button>
-</form>
+<div class="pay-head">
+  <h1>Оплата услуг</h1>
+  <form class="pay-search" method="get" action="/payments/catalog" role="search">
+    <label for="find">Найти услугу</label>
+    <div class="pay-search__row">
+      <input id="find" name="q" value="<%= q %>" placeholder="Квартплата, МТС, налог" autocomplete="off">
+      <select name="city" aria-label="Город"><option value="">Все города</option><% cities.forEach((c) => { %><option<%= c === city ? ' selected' : '' %>><%= c %></option><% }) %></select>
+      <button class="btn" type="submit">Найти</button>
+    </div>
+  </form>
+</div>
 <% if (q) { %>
-  <section class="tile">
-    <h2 class="mb10">Найдено: <%= found.length %></h2>
-    <% if (!found.length) { %><p class="muted m0">Ничего не нашли. Попробуйте «вода», «телефон» или выберите категорию ниже.</p><% } %>
+  <section class="panel pay-found">
+    <h2>Найдено: <%= found.length %></h2>
+    <% if (!found.length) { %><p class="muted m0">Такой услуги нет в каталоге. Попробуйте другое слово, например «вода» или «телефон».</p><% } %>
     <% found.forEach((p) => { %>
-      <a class="account" href="/payments/pay/<%= p.id %>"><div><div class="account__title"><%= p.name %></div><div class="account__iban"><%= p.category_name %><%= p.city ? ', ' + p.city : '' %></div></div><span class="link">Оплатить &nbsp;→</span></a>
+      <a class="pay-row" href="/payments/pay/<%= p.id %>"><span><b><%= p.name %></b><small><%= p.category_name %><%= p.city ? ', ' + p.city : '' %></small></span><span class="pay-row__go">→</span></a>
     <% }) %>
   </section>
-<% } %>
-<section class="tiles">
-  <% categories.forEach((c) => { %><a class="tile-link" href="/payments/catalog/<%= c.id %>"><h3><%= c.name %></h3><span class="muted"><%= c.hint %></span></a><% }) %>
+<% } else { %>
+<section class="cat-grid">
+  <% categories.forEach((c, i) => { %>
+    <a class="cat-tile cat-tile--<%= i % 3 === 0 ? 'wide' : 'std' %>" href="/payments/catalog/<%= c.id %>">
+      <span class="cat-tile__name"><%= c.name %></span>
+      <span class="cat-tile__hint"><%= c.hint %></span>
+      <img src="/img/3d/<%= c.icon %>.png" alt="" loading="lazy">
+    </a>
+  <% }) %>
 </section>
+<section class="panel">
+  <h2>Популярное</h2>
+  <div class="chips">
+    <a class="chip" href="/payments/catalog?q=квартплата">Квартплата</a>
+    <a class="chip" href="/payments/catalog?q=мобильная">Мобильная связь</a>
+    <a class="chip" href="/payments/catalog?q=интернет">Домашний интернет</a>
+    <a class="chip" href="/payments/catalog?q=налог">Налог на недвижимость</a>
+    <a class="chip" href="/payments">Шаблоны и автоплатежи</a>
+  </div>
+</section>
+<% } %>
 <%- include('../../partials/footer') %>
