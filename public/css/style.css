@@ -649,3 +649,10 @@ textarea{padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;bac
 .user-row__main{flex:1 1 auto;min-width:0}
 .user-row__ini{flex:0 0 44px;height:44px;border-radius:14px;background:var(--soft);color:var(--accentText);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px}
 .panel.search{flex-direction:row;flex-wrap:wrap;align-items:center;gap:12px;padding:20px 24px}
+
+/* Кредит: погашение */
+.loan-hero{gap:10px;padding:34px 40px}
+.upcoming h2{font-size:22px;margin:0 0 6px}
+.upcoming__row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:14px 0;border-top:1px solid var(--line);font-size:18px}
+.upcoming__row small{display:block;font-size:14px;color:var(--muted2);font-weight:400}
+.cur-cell{display:flex;align-items:center;gap:12px}

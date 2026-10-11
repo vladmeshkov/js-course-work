@@ -1,7 +1,7 @@
 <%- include('../../partials/header', { title }) %>
 <div class="between"><h1>Курсы и тарифы</h1>
   <form method="post" action="/admin/rates/refresh"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--ghost" type="submit">Обновить курсы с Нацбанка</button></form></div>
-<form class="tile" method="post" action="/admin/rates/spreads" novalidate>
+<form class="panel" method="post" action="/admin/rates/spreads" novalidate>
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
   <h2 class="mb10">Спред банка к курсу Нацбанка</h2>
   <div class="scroll-x"><table class="table">
@@ -9,7 +9,7 @@
     <tbody>
       <% spreads.forEach((s) => { const unit = s.rate === null ? null : s.rate / s.scale; %>
         <tr>
-          <td><b><%= s.currency %></b><% if (s.scale > 1) { %> <span class="muted2">за <%= s.scale %></span><% } %></td>
+          <td><div class="cur-cell"><%- include('../../partials/flag', { code: s.currency.toLowerCase(), w: 34 }) %><b><%= s.currency %></b><% if (s.scale > 1) { %> <span class="muted2">за <%= s.scale %></span><% } %></div></td>
           <td><%= s.rate === null ? '—' : String(s.rate).replace('.', ',') %></td>
           <td><input class="mini" name="<%= s.currency %>_buy" value="<%= String(s.buy_percent).replace('.', ',') %>" aria-label="Спред покупки <%= s.currency %>"><% if (errors[s.currency + '_buy']) { %><div class="field__error"><%= errors[s.currency + '_buy'] %></div><% } %></td>
           <td><input class="mini" name="<%= s.currency %>_sell" value="<%= String(s.sell_percent).replace('.', ',') %>" aria-label="Спред продажи <%= s.currency %>"><% if (errors[s.currency + '_sell']) { %><div class="field__error"><%= errors[s.currency + '_sell'] %></div><% } %></td>
@@ -21,7 +21,7 @@
   </table></div>
   <div class="mt10"><button class="btn" type="submit">Сохранить спред</button></div>
 </form>
-<form class="tile form" method="post" action="/admin/rates/settings" novalidate>
+<form class="panel form" method="post" action="/admin/rates/settings" novalidate>
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
   <% groups.forEach((g) => { %>
     <h2><%= g.name %></h2>
