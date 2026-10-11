@@ -24,7 +24,8 @@ async function renderNew(req, res, { form = {}, errors = {}, status = 200 } = {}
   const product = await depositModel.findProduct(Number(form.productId ?? req.query.product));
   if (!product) throw new AppError('Вклад не найден', 404);
   const accounts = (await accountService.listForClient(client.id)).filter((a) => a.currency === product.currency && ['current', 'savings'].includes(a.kind));
-  res.status(status).render('pages/deposits/new', { title: `Открыть вклад «${product.name}»`, product, accounts, form, errors });
+  const products = (await depositModel.listProducts()).filter((p) => p.currency === product.currency);
+  res.status(status).render('pages/deposits/new', { title: `Открыть вклад «${product.name}»`, product, products, accounts, form, errors });
 }
 
 export const showNew = (req, res) => renderNew(req, res);

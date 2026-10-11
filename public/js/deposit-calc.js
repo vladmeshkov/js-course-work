@@ -3,6 +3,10 @@
   var input = document.getElementById('amount');
   var income = document.getElementById('calc-income');
   var total = document.getElementById('calc-total');
+  var range = document.getElementById('amount-range');
+  var bar = document.getElementById('dep-bar');
+  var sumEl = document.getElementById('dep-sum');
+  var cap = document.getElementById('dep-income-cap');
   if (!input || !income) return;
   var timer;
 
@@ -20,12 +24,26 @@
       .then(function (data) {
         income.textContent = data.ok ? format(data.income, data.currency) : '—';
         total.textContent = data.ok ? format(data.total, data.currency) : '—';
+        if (data.ok && bar) {
+          bar.style.width = Math.max(60, Math.min(94, Math.round((data.total - data.income) / data.total * 100))) + '%';
+          sumEl.textContent = format(data.total - data.income, data.currency);
+          cap.textContent = 'Доход ' + format(data.income, data.currency);
+        }
       })
       .catch(function () {})
       .then(function () { income.classList.remove('skeleton'); total.classList.remove('skeleton'); });
   }
 
+  if (range) {
+    range.addEventListener('input', function () {
+      input.value = String(range.value).replace('.', ',') + ',00';
+      clearTimeout(timer);
+      timer = setTimeout(update, 120);
+    });
+    range.value = parseFloat(String(input.value).replace(/\s/g, '').replace(',', '.')) || range.min;
+  }
   input.addEventListener('input', function () {
+    if (range) range.value = parseFloat(String(input.value).replace(/\s/g, '').replace(',', '.')) || range.min;
     clearTimeout(timer);
     timer = setTimeout(update, 250);
   });
