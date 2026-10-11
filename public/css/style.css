@@ -114,3 +114,10 @@ h2{font-size:26px;font-weight:700}
 .chip:hover{border-color:var(--accent)}
 a.account{color:inherit}
 a.account:hover .account__title{color:var(--accentText)}
+
+/* Вклады и сведения */
+.rate{font-size:44px;font-weight:700;letter-spacing:-1px;line-height:1}
+.rate small{font-size:17px;font-weight:400;color:var(--muted);letter-spacing:0}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px 30px;margin:20px 0 24px}
+.facts dt{font-size:14px;color:var(--muted2)}
+.facts dd{margin:2px 0 0;font-size:19px;font-weight:600}

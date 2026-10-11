@@ -18,5 +18,6 @@ const STAFF = [{ label: 'Рабочее место', href: '/workplace' }];
 
 export function navFor(user) {
   if (!user) return GUEST;
-  return user.role_code === 'client' ? CLIENT : STAFF;
+  if (user.role_code === 'client') return CLIENT;
+  return user.permissions.includes('eod.run') ? [...STAFF, { label: 'Операционный день', href: '/admin/eod' }] : STAFF;
 }

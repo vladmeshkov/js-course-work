@@ -1,0 +1,18 @@
+<%- include('../../partials/header', { title }) %>
+<nav class="crumbs" aria-label="Навигационная цепочка"><a href="/">Главная</a> &nbsp;›&nbsp; <a href="/deposits">Вклады</a> &nbsp;›&nbsp; Вклад «<%= deposit.product_name %>»</nav>
+<section class="tile">
+  <div class="muted2">Вклад «<%= deposit.product_name %>»<%= deposit.status === 'active' ? '' : deposit.status === 'closed' ? ', закрыт по окончании срока' : ', закрыт досрочно' %></div>
+  <div class="balance-big"><%= formatAmount(deposit.status === 'active' ? deposit.balance : deposit.amount) %> <small class="muted" style="font-size:22px;font-weight:400"><%= deposit.currency %></small></div>
+  <dl class="facts">
+    <div><dt>Ставка</dt><dd><%= String(Number(deposit.rate_percent)).replace('.', ',') %>% годовых</dd></div>
+    <div><dt>Открыт</dt><dd><%= String(deposit.opened_date).slice(0, 10) %></dd></div>
+    <div><dt>Окончание</dt><dd><%= String(deposit.maturity_date).slice(0, 10) %></dd></div>
+    <div><dt>Начислено процентов</dt><dd><%= formatAmount(deposit.interest_total) %> <%= deposit.currency %></dd></div>
+    <div><dt>Проценты</dt><dd><%= deposit.capitalization ? 'прибавляются к вкладу' : 'выплачиваются на счёт' %></dd></div>
+  </dl>
+  <% if (deposit.status === 'active') { %>
+    <% if (deposit.revocable) { %><a class="btn btn--ghost" href="/deposits/<%= deposit.id %>/close">Закрыть досрочно</a>
+    <% } else { %><span class="muted2">Вклад безотзывный: досрочное закрытие невозможно.</span><% } %>
+  <% } %>
+</section>
+<%- include('../../partials/footer') %>

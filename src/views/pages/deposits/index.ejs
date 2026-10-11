@@ -1,0 +1,29 @@
+<%- include('../../partials/header', { title }) %>
+<nav class="crumbs" aria-label="Навигационная цепочка"><a href="/">Главная</a> &nbsp;›&nbsp; Вклады</nav>
+<h1>Вклады</h1>
+<section class="tiles">
+  <% products.forEach((p) => { %>
+    <a class="tile-link" href="/deposits/new?product=<%= p.id %>">
+      <h3>«<%= p.name %>»</h3>
+      <div class="rate"><%= String(Number(p.rate_percent)).replace('.', ',') %>%<small> годовых</small></div>
+      <span class="muted"><%= p.term_months %> мес., от <%= formatAmount(p.min_amount) %> <%= p.currency %><br>
+        <%= p.capitalization ? 'Проценты прибавляются к вкладу' : 'Проценты выплачиваются на счёт' %><br>
+        <%= p.revocable ? 'Можно закрыть досрочно' : 'Досрочное закрытие невозможно' %></span>
+    </a>
+  <% }) %>
+</section>
+<% if (mine.length) { %>
+<section class="tile">
+  <h2 style="margin-bottom:10px">Мои вклады</h2>
+  <% mine.forEach((d) => { %>
+    <a class="account" href="/deposits/<%= d.id %>">
+      <div>
+        <div class="account__title">«<%= d.product_name %>»<%= d.status === 'active' ? '' : d.status === 'closed' ? ' (закрыт)' : ' (закрыт досрочно)' %></div>
+        <div class="account__iban">до <%= String(d.maturity_date).slice(0, 10) %>, <%= String(Number(d.rate_percent)).replace('.', ',') %>%</div>
+      </div>
+      <div class="amount"><%= formatAmount(d.status === 'active' ? d.balance : d.amount) %> <small><%= d.currency %></small></div>
+    </a>
+  <% }) %>
+</section>
+<% } %>
+<%- include('../../partials/footer') %>

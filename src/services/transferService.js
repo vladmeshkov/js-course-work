@@ -36,19 +36,19 @@ export async function createTransfer(userId, input) {
   if (!Number.isSafeInteger(input.amount) || input.amount <= 0) throw new ValidationError({ amount: 'Введите сумму больше нуля' });
 
   const from = await accountModel.findById(input.fromAccountId);
-  if (!from || from.owner_client_id !== client.id || from.status !== 'open') {
+  if (!from || from.owner_client_id !== client.id || from.status !== 'open' || !['current', 'savings'].includes(from.kind)) {
     throw new ValidationError({ fromAccountId: 'Выберите счёт списания' });
   }
 
   let to;
   if (input.kind === 'own') {
     to = await accountModel.findById(input.toAccountId);
-    if (!to || to.owner_client_id !== client.id || to.status === 'closed') throw new ValidationError({ toAccountId: 'Выберите счёт зачисления' });
+    if (!to || to.owner_client_id !== client.id || to.status === 'closed' || !['current', 'savings'].includes(to.kind)) throw new ValidationError({ toAccountId: 'Выберите счёт зачисления' });
   } else {
     const iban = String(input.toIban ?? '').replace(/\s/g, '').toUpperCase();
     if (!isValidIban(iban)) throw new ValidationError({ toIban: 'Неверный номер счёта: проверьте символы и контрольные цифры' });
     to = await accountModel.findByIban(iban);
-    if (!to || to.kind === 'internal' || to.status === 'closed') throw new ValidationError({ toIban: 'Счёт получателя не найден в ТалерБанке' });
+    if (!to || !['current', 'savings'].includes(to.kind) || to.status === 'closed') throw new ValidationError({ toIban: 'Счёт получателя не найден в ТалерБанке' });
   }
   if (to.id === from.id) throw new ValidationError({ toAccountId: 'Счета списания и зачисления совпадают' });
 
