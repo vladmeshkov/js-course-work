@@ -60,9 +60,23 @@
   bar.className = 'navbar-progress';
   bar.setAttribute('aria-hidden', 'true');
   document.body.appendChild(bar);
-  function busy() { bar.classList.remove('is-active'); void bar.offsetWidth; bar.classList.add('is-active'); }
+  // Экран загрузки: появляется, только если ответ идёт дольше 350 мс, чтобы быстрые переходы не мигали
+  var loader = document.createElement('div');
+  loader.className = 'loader';
+  loader.setAttribute('role', 'status');
+  loader.setAttribute('aria-live', 'polite');
+  loader.innerHTML = '<div class="loader__ring"><img src="/img/emblem.png" alt="" width="64" height="64"></div><span class="loader__text">Загрузка</span>';
+  document.body.appendChild(loader);
+  var loaderTimer = 0;
+  function busy() {
+    bar.classList.remove('is-active'); void bar.offsetWidth; bar.classList.add('is-active');
+    clearTimeout(loaderTimer);
+    loaderTimer = setTimeout(function () { loader.classList.add('is-on'); }, 350);
+  }
   window.addEventListener('pageshow', function () {
     bar.classList.remove('is-active');
+    clearTimeout(loaderTimer);
+    loader.classList.remove('is-on');
     document.querySelectorAll('form[data-sending]').forEach(function (f) {
       delete f.dataset.sending;
       f.querySelectorAll('.is-loading').forEach(function (b) { b.classList.remove('is-loading'); });

@@ -1,3 +1,4 @@
+import * as clientModel from '../models/clientModel.js';
 import { ValidationError } from '../lib/errors.js';
 import * as authService from '../services/authService.js';
 import * as auditService from '../services/auditService.js';
@@ -15,7 +16,20 @@ async function completeLogin(req, res, user, returnTo) {
   await new Promise((resolve, reject) => req.session.regenerate((e) => (e ? reject(e) : resolve())));
   req.session.userId = user.id;
   await notificationService.notify(user.id, { type: 'security', title: 'Вход в кабинет', body: `Адрес ${req.ip}. Если это были не вы, смените пароль.`, link: '/security' });
+  if (!returnTo && user.role_code === 'client') {
+    req.session.welcome = { previous: user.last_login_at ? new Date(user.last_login_at).toISOString() : null };
+    return res.redirect('/welcome');
+  }
   res.redirect(returnTo || '/');
+}
+
+/** Экран «С возвращением» после входа клиента: время прошлого входа и случайный факт. */
+export async function welcome(req, res) {
+  const w = req.session.welcome;
+  delete req.session.welcome;
+  if (!w) return res.redirect('/');
+  const client = await clientModel.findByUserId(req.user.id);
+  res.render('pages/auth/welcome', { title: 'С возвращением', name: client?.first_name ?? req.user.login, previous: w.previous });
 }
 
 export async function login(req, res) {
@@ -24,7 +38,7 @@ export async function login(req, res) {
     const returnTo = req.session.returnTo;
     if (user.totp_enabled) {
       // пароль верный, нужен второй фактор: пользователь пока не авторизован
-      req.session.pending2fa = { userId: user.id, returnTo, attempts: 0, at: Date.now() };
+      req.session.pending2fa = { userId: user.id, returnTo, previousLogin: user.last_login_at ? new Date(user.last_login_at).toISOString() : null, attempts: 0, at: Date.now() };
       return res.redirect('/login/2fa');
     }
     await completeLogin(req, res, user, returnTo);
@@ -62,7 +76,7 @@ export async function verify2fa(req, res) {
     const user = await userModel.findById(p.userId);
     delete req.session.pending2fa;
     await auditService.log({ userId: user.id, action: 'auth.2fa', ip: req.ip });
-    return completeLogin(req, res, user, p.returnTo);
+    return completeLogin(req, res, { ...user, last_login_at: p.previousLogin }, p.returnTo);
   }
   p.attempts += 1;
   await auditService.log({ userId: p.userId, action: 'auth.2fa', result: 'failure', ip: req.ip });

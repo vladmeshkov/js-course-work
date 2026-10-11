@@ -34,6 +34,7 @@ router.get('/login', auth.showLogin);
 router.post('/login', loginLimiter, auth.login);
 router.post('/logout', auth.logout);
 router.get('/login/2fa', auth.show2fa);
+router.get('/welcome', requireAuth, auth.welcome);
 router.post('/login/2fa', loginLimiter, auth.verify2fa);
 router.get('/security', requireAuth, security.show);
 router.get('/security/2fa/setup', requireAuth, security.showSetup);
