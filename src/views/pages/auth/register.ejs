@@ -1,0 +1,37 @@
+<%- include('../../partials/header', { title }) %>
+<h1>Стать клиентом</h1>
+<p class="muted" style="margin:0;max-width:60ch">Заполните анкету. Сотрудник банка проверит данные, после этого вам откроют первый счёт.</p>
+<form class="tile form" method="post" action="/register" novalidate>
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <%
+    const field = (name, label, opts = {}) => {
+      const err = errors[name];
+      const value = opts.secret ? '' : (form[name] || '');
+      return `<div class="field${err ? ' field--error' : ''}">
+        <label for="${name}">${label}</label>
+        <input id="${name}" name="${name}" type="${opts.type || 'text'}" value="${esc(value)}" ${opts.autocomplete ? `autocomplete="${opts.autocomplete}"` : ''} ${err ? 'aria-invalid="true"' : ''}>
+        ${opts.hint ? `<span class="field__hint">${opts.hint}</span>` : ''}
+        ${err ? `<span class="field__error">${esc(err)}</span>` : ''}
+      </div>`;
+    };
+  %>
+  <h2>Личные данные</h2>
+  <div class="form-grid">
+    <%- field('lastName', 'Фамилия') %>
+    <%- field('firstName', 'Имя') %>
+    <%- field('patronymic', 'Отчество') %>
+    <%- field('birthDate', 'Дата рождения', { type: 'date' }) %>
+    <%- field('idNumber', 'Идентификационный номер', { hint: 'Из паспорта, например 3010590A001PB4' }) %>
+    <%- field('passport', 'Серия и номер паспорта', { hint: 'Например MC1234567' }) %>
+    <%- field('phone', 'Телефон', { type: 'tel', hint: '+375291234567' }) %>
+    <%- field('email', 'Электронная почта', { type: 'email' }) %>
+  </div>
+  <h2 style="margin-top:10px">Доступ в кабинет</h2>
+  <div class="form-grid">
+    <%- field('login', 'Логин', { autocomplete: 'username', hint: 'Латинские буквы, цифры, точка, дефис' }) %>
+    <%- field('password', 'Пароль', { type: 'password', secret: true, autocomplete: 'new-password', hint: 'Не короче 8 символов, буквы и цифры' }) %>
+    <%- field('passwordRepeat', 'Повторите пароль', { type: 'password', secret: true, autocomplete: 'new-password' }) %>
+  </div>
+  <div><button class="btn" type="submit" style="font-size:18px">Отправить заявку</button></div>
+</form>
+<%- include('../../partials/footer') %>

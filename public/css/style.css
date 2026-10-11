@@ -1,0 +1,108 @@
+/* Палитры ТалерБанка. Переключаются классом на корневом элементе экрана. */
+.pal-teal{--bg:#EDF2F3;--bar:#E1E9EB;--ink:#0C1B2A;--muted:#4A5A69;--muted2:#6A7B89;--line:#E3EAEC;--fld:#F6F9F9;--soft:#DDF0EC;--d1:#071B3A;--d2:#0A2A4A;--glow:rgba(32,150,134,0.75);--accent:#0B7A6C;--onAccent:#FFFFFF;--accentText:#0B7A6C;--onEmblem:#FFFFFF;--onDark:#5EE0C8;--v1:#07323A;--v2:#0A6B63;--v3:#6E9B3A;--s1:#0A6B63;--s2:#14893A;--g1:#1E6F74;--c1:#F6F9F9;--c2:#D3E3E3}
+.pal-amber{--bg:#EEEFF0;--bar:#E2E4E6;--ink:#1B1F23;--muted:#50565C;--muted2:#737A80;--line:#E4E5E7;--fld:#F6F6F7;--soft:#FBEFD0;--d1:#15181B;--d2:#2A2F34;--glow:rgba(245,168,0,0.45);--accent:#F5A800;--onAccent:#1B1F23;--accentText:#9A6400;--onEmblem:#1B1F23;--onDark:#F5B82E;--v1:#1B1F23;--v2:#3A3F45;--v3:#F5A800;--s1:#2A2F34;--s2:#C98400;--g1:#3A3F45;--c1:#F4F4F5;--c2:#E2E3E5}
+.pal-cobalt{--bg:#EEF1F7;--bar:#E0E5F0;--ink:#0E1A3D;--muted:#4A5675;--muted2:#6B7694;--line:#E0E5F0;--fld:#F5F7FC;--soft:#FCE4DE;--d1:#0A1650;--d2:#1530A8;--glow:rgba(70,110,255,0.55);--accent:#D9432B;--onAccent:#FFFFFF;--accentText:#C73A22;--onEmblem:#FFFFFF;--onDark:#FF8D75;--v1:#0A1650;--v2:#1D3FC4;--v3:#3D6BFF;--s1:#1D3FC4;--s2:#2A56E8;--g1:#1D3FC4;--c1:#F5F7FC;--c2:#D6DDF0}
+.pal-burgundy{--bg:#F2EFF0;--bar:#E7E2E4;--ink:#26121A;--muted:#5E4A53;--muted2:#806C75;--line:#E8E1E4;--fld:#F8F5F6;--soft:#F7DDE3;--d1:#2B0A17;--d2:#5E1A33;--glow:rgba(200,70,100,0.5);--accent:#A3213F;--onAccent:#FFFFFF;--accentText:#A3213F;--onEmblem:#FFFFFF;--onDark:#F29AB0;--v1:#2B0A17;--v2:#7A1E3C;--v3:#C2556F;--s1:#7A1E3C;--s2:#A3213F;--g1:#7A1E3C;--c1:#F7F3F4;--c2:#E5D8DC}
+.pal-lime{--bg:#EEF0F3;--bar:#E2E5EA;--ink:#0F1420;--muted:#4B5463;--muted2:#6F7886;--line:#E3E6EB;--fld:#F6F7F9;--soft:#EAF8C6;--d1:#0B0F1A;--d2:#1B2336;--glow:rgba(198,242,78,0.32);--accent:#C6F24E;--onAccent:#0F1420;--accentText:#5E7F00;--onEmblem:#0F1420;--onDark:#C6F24E;--v1:#0B0F1A;--v2:#1F2A44;--v3:#8DB51C;--s1:#1B2336;--s2:#55731A;--g1:#28324C;--c1:#F3F5F7;--c2:#E1E5EA}
+.pal-terracotta{--bg:#ECEEF0;--bar:#E0E3E6;--ink:#1C2128;--muted:#4A525C;--muted2:#6C7480;--line:#E2E5E8;--fld:#F5F6F7;--soft:#F7E3DA;--d1:#1A1F26;--d2:#333C48;--glow:rgba(212,106,66,0.5);--accent:#C4532D;--onAccent:#FFFFFF;--accentText:#B04A27;--onEmblem:#FFFFFF;--onDark:#F0A27F;--v1:#1A1F26;--v2:#3A4452;--v3:#D46A42;--s1:#333C48;--s2:#B04A27;--g1:#3A4452;--c1:#F3F4F5;--c2:#E0E3E6}
+.pal-orange{--bg:#EEF0F3;--bar:#E2E5E9;--ink:#151A21;--muted:#4A5260;--muted2:#6D7581;--line:#E3E6EA;--fld:#F6F7F9;--soft:#FDE8DC;--d1:#14181F;--d2:#2A3038;--glow:rgba(255,140,60,0.55);--accent:#DE5B1C;--onAccent:#FFFFFF;--accentText:#C4490F;--onEmblem:#FFFFFF;--onDark:#FF9A5C;--v1:#14181F;--v2:#3A424D;--v3:#E8701F;--s1:#2A3038;--s2:#C4490F;--g1:#3A424D;--c1:#F4F5F7;--c2:#E2E5EA}
+
+/* Базовые стили */
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Fira Sans',system-ui,sans-serif;font-size:17px;line-height:1.45;font-variant-numeric:tabular-nums}
+a{color:inherit;text-decoration:none}
+button,input,select{font-family:inherit;font-size:inherit}
+h1,h2,h3{margin:0;letter-spacing:-0.5px}
+h1{font-size:clamp(30px,3.8vw,48px);font-weight:700;letter-spacing:-1px;line-height:1.1}
+h2{font-size:26px;font-weight:700}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.skip-link{position:absolute;left:-999px;top:8px;background:#fff;padding:10px 16px;border-radius:10px;z-index:100}
+.skip-link:focus{left:8px}
+
+/* Шапка: утилитная полоса и основная часть */
+.util-bar{background:var(--bar);font-size:14px}
+.util-bar__in{max-width:1280px;margin:0 auto;padding:6px 40px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px}
+.util-bar__links{display:flex;flex-wrap:wrap;gap:26px;align-items:center}
+.top-bar{background:#fff}
+.top-bar__in{max-width:1280px;margin:0 auto;padding:16px 40px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:20px}
+.logo{display:flex;align-items:center;gap:10px;font-size:24px;font-weight:700;letter-spacing:-0.5px;color:var(--d1)}
+.logo img{display:block}
+.logo__bank{font-weight:600;color:#7A8088}
+.main-nav{display:flex;flex-wrap:wrap;gap:8px 34px;font-size:17px;font-weight:500}
+.main-nav a{padding:6px 0;border-bottom:2px solid transparent}
+.main-nav a:hover,.main-nav a[aria-current="page"]{color:var(--accentText);border-bottom-color:var(--accentText)}
+.top-bar__actions{display:flex;gap:12px;align-items:center}
+
+/* Кнопки и ссылки-кнопки */
+.btn{display:inline-block;padding:14px 26px;border-radius:10px;border:1.5px solid var(--accent);background:var(--accent);color:var(--onAccent);font-weight:700;cursor:pointer;transition:transform .15s,background .15s}
+.btn:hover{background:var(--accentText);border-color:var(--accentText)}
+.btn:active{transform:translateY(1px) scale(.99)}
+.btn--ghost{background:transparent;color:var(--accentText);border-color:var(--accentText);font-weight:500}
+.btn--ghost:hover{background:var(--soft);color:var(--accentText)}
+.btn--small{padding:10px 20px;font-size:16px}
+.link{color:var(--accentText);font-weight:500;border-bottom:1.5px solid transparent}
+.link:hover{border-bottom-color:currentColor}
+
+/* Страница */
+.page{max-width:1280px;margin:0 auto;padding:28px 40px 72px;display:flex;flex-direction:column;gap:26px}
+.crumbs{font-size:15px;color:var(--muted2)}
+.tile{background:#fff;border-radius:24px;padding:32px 36px}
+.tile--dark{background:linear-gradient(160deg,var(--d1),var(--d2));color:#fff}
+.tile--soft{background:var(--soft)}
+.muted{color:var(--muted)}
+.muted2{color:var(--muted2)}
+.row{display:flex;flex-wrap:wrap;gap:22px;align-items:stretch}
+.grow{flex:1 1 320px;min-width:0}
+
+/* Уведомления */
+.alert{padding:16px 22px;border-radius:14px;font-size:16px}
+.alert--success{background:#E3F4E9;color:#15602F}
+.alert--error{background:#FBE4E7;color:#9B1C32}
+.alert--info{background:var(--soft);color:var(--ink)}
+
+/* Формы */
+.form{display:flex;flex-direction:column;gap:18px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:15px;color:var(--muted)}
+.field input,.field select{padding:15px 18px;border:1.5px solid var(--line);border-radius:12px;background:var(--fld);color:var(--ink);font-size:18px}
+.field--error input{border-color:#B4233C}
+.field__error{font-size:14px;color:#B4233C;min-height:0}
+.field__hint{font-size:14px;color:var(--muted2)}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
+
+/* Вход и регистрация */
+.auth{display:flex;flex-wrap:wrap;gap:0;border-radius:28px;overflow:hidden;background:linear-gradient(115deg,#fff 0%,#F1F2F5 52%,#F8EFE8 100%);min-height:620px}
+.auth__side{flex:1.2 1 520px;padding:44px 48px;display:flex;flex-direction:column;justify-content:space-between;gap:30px}
+.auth__side h1{max-width:11ch;text-wrap:balance}
+.auth__panel{flex:1 1 440px;padding:40px 48px;display:flex;align-items:center;justify-content:center}
+.auth__card{width:100%;max-width:520px;background:rgba(255,255,255,.94);border-radius:24px;padding:40px;box-shadow:0 30px 60px rgba(60,50,40,.12)}
+.auth__card h2{font-size:32px;margin-bottom:8px}
+
+/* Главная для гостя */
+.hero{display:flex;flex-wrap:wrap;gap:30px;align-items:center;justify-content:space-between}
+.hero__text{flex:1 1 420px}
+.hero__text p{font-size:20px;color:var(--muted);max-width:30ch;margin:16px 0 26px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:22px}
+.tile-link{display:flex;flex-direction:column;gap:10px;min-height:200px;border-radius:24px;background:#fff;padding:30px 32px;transition:transform .2s}
+.tile-link:hover{transform:translateY(-3px)}
+.tile-link h3{font-size:24px}
+
+/* Счета */
+.account{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:16px 0;border-top:1px solid var(--line)}
+.account:first-child{border-top:0}
+.account__title{font-weight:600}
+.account__iban{font-size:14px;color:var(--muted2)}
+.amount{font-size:22px;font-weight:600;white-space:nowrap}
+.amount small{font-size:15px;font-weight:400;color:var(--muted)}
+.balance-big{font-size:clamp(36px,5vw,60px);font-weight:700;letter-spacing:-2px;line-height:1.05}
+
+/* Подвал */
+.footer{max-width:1280px;margin:0 auto;padding:0 40px 40px;display:flex;flex-wrap:wrap;gap:12px 28px;font-size:14px;color:var(--muted2)}
+
+@media (max-width:640px){
+  .util-bar__in,.top-bar__in,.page,.footer{padding-left:16px;padding-right:16px}
+  .auth__side,.auth__panel{padding:28px 20px}
+  .tile{padding:24px 20px}
+}
+.hero__login{margin-left:20px}

@@ -1,0 +1,9 @@
+<%- include('../../partials/header', { title }) %>
+<section class="tile" style="max-width:720px">
+  <div class="muted2"><%= status %></div>
+  <h1 style="margin:6px 0 14px"><%= status === 404 ? 'Такой страницы нет' : 'Что-то пошло не так' %></h1>
+  <p class="muted" style="margin:0 0 22px"><%= message %></p>
+  <a class="btn" href="/">На главную</a>
+  <% if (details) { %><pre style="overflow:auto;font-size:13px;margin-top:24px"><%= details %></pre><% } %>
+</section>
+<%- include('../../partials/footer') %>

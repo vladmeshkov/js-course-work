@@ -1,0 +1,28 @@
+import { withTransaction } from '../db/pool.js';
+import { BusinessError } from '../lib/errors.js';
+import * as clientModel from '../models/clientModel.js';
+import * as accountService from './accountService.js';
+import * as auditService from './auditService.js';
+
+/**
+ * Операционист подтверждает анкету. Клиент становится верифицированным,
+ * и ему автоматически открывается первый текущий счёт в BYN.
+ */
+export function verifyClient(clientId, operatorId) {
+  return withTransaction(async (db) => {
+    const { rows: [client] } = await db.query('SELECT id, kyc_status FROM clients WHERE id = $1 FOR UPDATE', [clientId]);
+    if (!client) throw new BusinessError('Анкета не найдена');
+    if (client.kyc_status === 'verified') throw new BusinessError('Клиент уже верифицирован');
+    await clientModel.setKycStatus(db, clientId, 'verified');
+    const account = await accountService.openClientAccount(db, { clientId, kind: 'current', currency: 'BYN', userId: operatorId });
+    await auditService.log({ userId: operatorId, action: 'kyc.verify', entity: 'client', entityId: clientId }, db);
+    return account;
+  });
+}
+
+export function rejectClient(clientId, operatorId, comment) {
+  return withTransaction(async (db) => {
+    await clientModel.setKycStatus(db, clientId, 'rejected', comment);
+    await auditService.log({ userId: operatorId, action: 'kyc.reject', entity: 'client', entityId: clientId, details: { comment } }, db);
+  });
+}

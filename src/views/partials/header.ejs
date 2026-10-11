@@ -1,0 +1,38 @@
+<%- include('head', { title }) %>
+<header>
+  <div class="util-bar">
+    <div class="util-bar__in">
+      <span><%= user ? user.role_name : 'Интернет-банкинг для физических лиц' %></span>
+      <div class="util-bar__links">
+        <a href="/rates">Курсы валют</a>
+        <a href="tel:147" style="font-size:18px;font-weight:700">147</a>
+      </div>
+    </div>
+  </div>
+  <div class="top-bar">
+    <div class="top-bar__in">
+      <a class="logo" href="/">
+        <img src="/img/emblem.png" alt="Эмблема ТалерБанка: оранжевый круг с монограммой Тр" width="54" height="54">
+        <span>Талер<span class="logo__bank">Банк</span></span>
+      </a>
+      <nav class="main-nav" aria-label="Основное меню">
+        <% nav.forEach((item) => { %>
+          <a href="<%= item.href %>"<%- currentPath === item.href ? ' aria-current="page"' : '' %>><%= item.label %></a>
+        <% }) %>
+      </nav>
+      <div class="top-bar__actions">
+        <% if (user) { %>
+          <form method="post" action="/logout">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button class="btn btn--ghost btn--small" type="submit">Выйти &nbsp;→</button>
+          </form>
+        <% } else { %>
+          <a class="btn btn--ghost btn--small" href="/login">Войти</a>
+          <a class="btn btn--small" href="/register">Стать клиентом</a>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</header>
+<main id="content" class="page">
+<% if (flash) { %><div class="alert alert--<%= flash.type %>" role="status"><%= flash.message %></div><% } %>

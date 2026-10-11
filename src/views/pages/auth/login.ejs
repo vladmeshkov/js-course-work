@@ -1,0 +1,28 @@
+<%- include('../../partials/header', { title }) %>
+<section class="auth">
+  <div class="auth__side">
+    <h1>Ваши финансы под надёжной защитой</h1>
+    <p class="muted">Банк никогда не просит назвать код из SMS по телефону.</p>
+  </div>
+  <div class="auth__panel">
+    <div class="auth__card">
+      <h2>Вход в интернет-банк</h2>
+      <p class="muted" style="margin:0 0 20px">Управляйте своими финансами в любое время и в любом месте</p>
+      <form class="form" method="post" action="/login">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="field">
+          <label for="login">Логин</label>
+          <input id="login" name="login" value="<%= form.login || '' %>" autocomplete="username" required autofocus>
+        </div>
+        <div class="field">
+          <label for="password">Пароль</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" required>
+        </div>
+        <% if (errors.common) { %><div class="alert alert--error" role="alert"><%= errors.common %></div><% } %>
+        <button class="btn" type="submit" style="font-size:18px">Войти &nbsp;→</button>
+        <a class="link" href="/register">Стать клиентом</a>
+      </form>
+    </div>
+  </div>
+</section>
+<%- include('../../partials/footer') %>

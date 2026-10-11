@@ -1,0 +1,27 @@
+<%- include('../../partials/header', { title }) %>
+<h1>Здравствуйте, <%= client ? client.first_name : user.login %></h1>
+<% if (client && client.kyc_status !== 'verified') { %>
+  <div class="alert alert--info" role="status">
+    <% if (client.kyc_status === 'rejected') { %>
+      Заявка отклонена<%= client.kyc_comment ? ': ' + client.kyc_comment : '' %>. Обратитесь в отделение банка.
+    <% } else { %>
+      Ваша заявка на проверке. Счёт откроется после подтверждения анкеты сотрудником банка.
+    <% } %>
+  </div>
+<% } %>
+<section class="tile">
+  <h2 style="margin-bottom:10px">Мои счета</h2>
+  <% if (!accounts.length) { %>
+    <p class="muted">Счетов пока нет.</p>
+  <% } %>
+  <% accounts.forEach((a) => { %>
+    <div class="account">
+      <div>
+        <div class="account__title"><%= a.title %></div>
+        <div class="account__iban"><%= formatIban(a.iban) %></div>
+      </div>
+      <div class="amount"><%= formatAmount(a.balance) %> <small><%= a.currency %></small></div>
+    </div>
+  <% }) %>
+</section>
+<%- include('../../partials/footer') %>

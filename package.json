@@ -1,0 +1,32 @@
+{
+  "name": "talerbank",
+  "version": "0.1.0",
+  "description": "ТалерБанк: система дистанционного банковского обслуживания физических лиц (курсовой проект)",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node --env-file=.env src/server.js",
+    "dev": "node --watch --env-file=.env src/server.js",
+    "db:migrate": "node --env-file=.env src/db/migrate.js",
+    "db:seed": "node --env-file=.env src/db/seed.js",
+    "db:schema": "node scripts/build-schema.js",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "connect-pg-simple": "^10.0.0",
+    "ejs": "^7.0.1",
+    "express": "^5.3.0",
+    "express-rate-limit": "^8.7.1",
+    "express-session": "^1.19.0",
+    "helmet": "^8.3.0",
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "supertest": "^7.3.1",
+    "vitest": "^5.0.3"
+  }
+}
