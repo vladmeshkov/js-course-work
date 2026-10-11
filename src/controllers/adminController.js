@@ -1,5 +1,7 @@
 import { pool } from '../db/pool.js';
 import { AppError, ValidationError } from '../lib/errors.js';
+import * as backupService from '../services/backupService.js';
+import * as reportService from '../services/reportService.js';
 import * as adminService from '../services/adminService.js';
 import * as eodService from '../services/eodService.js';
 import * as ledgerService from '../services/ledgerService.js';
@@ -101,3 +103,45 @@ export async function showAudit(req, res) {
 }
 
 export { AppError };
+
+export async function showBackups(req, res) {
+  res.render('pages/admin/backups', { title: 'Резервные копии', backups: await backupService.listBackups() });
+}
+
+export async function createBackup(req, res) {
+  const b = await backupService.createBackup(req.user.id);
+  req.flash('success', `Копия создана: ${b.name}`);
+  res.redirect('/admin/backups');
+}
+
+export async function restoreBackup(req, res) {
+  if (req.body.confirm !== 'ВОССТАНОВИТЬ') {
+    req.flash('error', 'Для восстановления введите слово ВОССТАНОВИТЬ');
+    return res.redirect('/admin/backups');
+  }
+  await backupService.restoreBackup(req.user.id, req.body.name);
+  req.flash('success', 'База данных восстановлена из копии');
+  res.redirect('/admin/backups');
+}
+
+export async function showReports(req, res) {
+  const { from, to } = req.query;
+  const currency = ['BYN', 'USD', 'EUR', 'RUB'].includes(req.query.currency) ? req.query.currency : 'BYN';
+  let errors = {};
+  let trial;
+  try {
+    trial = await reportService.trialBalance({ from, to, currency });
+  } catch (error) {
+    if (!(error instanceof ValidationError)) throw error;
+    errors = error.fields;
+    trial = await reportService.trialBalance({ currency });
+  }
+  res.status(Object.keys(errors).length ? 422 : 200).render('pages/admin/reports', {
+    title: 'Отчёты', trial, portfolio: await reportService.portfolio(), errors, currency
+  });
+}
+
+export async function trialCsv(req, res) {
+  const report = await reportService.trialBalance({ from: req.query.from, to: req.query.to, currency: req.query.currency });
+  res.type('text/csv; charset=utf-8').set('Content-Disposition', `attachment; filename="osv-${report.to}.csv"`).send(reportService.trialBalanceCsv(report));
+}

@@ -22,9 +22,11 @@ export function navFor(user) {
   const items = [...STAFF];
   if (user.permissions.includes('loan.review')) items.push({ label: 'Заявки на кредит', href: '/staff/loans' });
   if (user.permissions.includes('fraud.review')) items.push({ label: 'Антифрод', href: '/staff/fraud' });
+  if (user.permissions.includes('reports.view')) items.push({ label: 'Отчёты', href: '/admin/reports' });
   if (user.permissions.includes('rates.manage')) items.push({ label: 'Курсы и тарифы', href: '/admin/rates' });
   if (user.permissions.includes('users.manage')) items.push({ label: 'Пользователи', href: '/admin/users' });
   if (user.permissions.includes('audit.view')) items.push({ label: 'Журнал', href: '/admin/audit' });
+  if (user.permissions.includes('backup.manage')) items.push({ label: 'Резервные копии', href: '/admin/backups' });
   if (user.permissions.includes('eod.run')) items.push({ label: 'Операционный день', href: '/admin/eod' });
   return items;
 }

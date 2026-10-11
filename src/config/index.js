@@ -17,6 +17,12 @@ export const config = {
   sessionSecret: required('SESSION_SECRET'),
   dataKey: Buffer.from(required('DATA_KEY'), 'hex'),
   bankCode: env.BANK_CODE || 'TLRB',
+  backup: {
+    dir: env.BACKUP_DIR || 'backups',
+    pgBinDir: env.PG_BIN_DIR || '',
+    intervalHours: Number(env.BACKUP_INTERVAL_HOURS || 24),
+    keep: Number(env.BACKUP_KEEP || 14)
+  },
   login: {
     maxAttempts: Number(env.LOGIN_MAX_ATTEMPTS || 5),
     lockMinutes: Number(env.LOGIN_LOCK_MINUTES || 15)

@@ -98,7 +98,7 @@ describe('пользователи и журнал', () => {
     const agent = request.agent(app);
     const token = /name="_csrf" value="([0-9a-f]+)"/.exec((await agent.get('/login')).text)[1];
     await agent.post('/login').type('form').send({ _csrf: token, login, password: 'Parol2026' });
-    for (const url of ['/admin/rates', '/admin/users', '/admin/audit', '/admin/eod', '/workplace']) expect((await agent.get(url)).status, url).toBe(200);
+    for (const url of ['/admin/rates', '/admin/users', '/admin/audit', '/admin/eod', '/admin/reports', '/admin/reports?from=2026-01-01&to=2026-12-31&currency=USD', '/admin/reports/trial.csv', '/admin/backups', '/workplace']) expect((await agent.get(url)).status, url).toBe(200);
 
     const client = await createClientWithAccount(0, 'BYN', hash);
     const other = request.agent(app);

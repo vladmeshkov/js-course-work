@@ -193,3 +193,5 @@ a.account:hover .account__title{color:var(--accentText)}
 .setting__input{display:flex;align-items:center;gap:10px}
 .setting__input input{width:150px;padding:10px 14px;border:1.5px solid var(--line);border-radius:10px;background:var(--fld);font-size:17px;text-align:right}
 .setting__input span{min-width:48px}
+.table--num td:nth-child(n+3),.table--num th:nth-child(n+3){text-align:right}
+.row--total td{font-weight:700;border-top:2px solid var(--ink)}
