@@ -10,7 +10,9 @@ function requireClient(req) {
 
 export async function index(req, res) {
   requireClient(req);
-  res.render('pages/cards/index', { title: 'Карты', cards: await cardService.listForClient(req.user.id), systems: cardService.SYSTEMS });
+  const cards = await cardService.listForClient(req.user.id);
+  if (cards.length) return res.redirect(`/cards/${cards[0].id}`);
+  res.render('pages/cards/index', { title: 'Карты', cards, systems: cardService.SYSTEMS });
 }
 
 async function renderNew(req, res, { form = {}, errors = {}, status = 200 } = {}) {
@@ -44,7 +46,7 @@ async function renderShow(req, res, extra = {}) {
   const secret = req.session.cardSecret?.id === id ? req.session.cardSecret : null;
   if (secret) delete req.session.cardSecret;
   res.status(extra.status ?? 200).render('pages/cards/show', {
-    title: `Карта *${data.card.last4}`, ...data, systems: cardService.SYSTEMS, secret,
+    title: `Карта *${data.card.last4}`, ...data, systems: cardService.SYSTEMS, secret, cards: await cardService.listForClient(req.user.id),
     errors: extra.errors ?? {}, form: extra.form ?? {}, purchaseError: extra.purchaseError ?? null
   });
 }

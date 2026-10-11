@@ -179,7 +179,7 @@ describe('страницы клиента открываются без ошиб
     const agent = request.agent(app);
     const { token } = await pageWithToken(agent, '/login');
     await agent.post('/login').type('form').send({ _csrf: token, login: c.login, password: 'Parol2026' });
-    const urls = ['/cabinet', '/accounts', `/accounts/${c.accountId}`, '/cards', '/cards/new', `/cards/${card.id}`,
+    const urls = ['/cabinet', '/accounts', `/accounts/${c.accountId}`, '/cards/new', `/cards/${card.id}`,
       '/payments', '/payments/catalog', '/payments/catalog?q=вод', '/payments/catalog/1', '/payments/catalog/1?city=Минск', `/payments/pay/${providerId}`,
       `/payments/${payment.id}/receipt`, '/transfers/new', '/transfers/new?kind=own', '/transfers/interbank', '/deposits', '/deposits/new?product=1',
       '/loans', '/loans/new?product=1', '/loans/calc?product=1&amount=1000&term=12&type=annuity', '/deposits/calc?product=1&amount=1000'];
@@ -187,6 +187,9 @@ describe('страницы клиента открываются без ошиб
       const res = await agent.get(url);
       expect(res.status, url).toBe(200);
     }
+    // список карт ведёт на первую карту, поиск отдаёт индекс
+    expect((await agent.get('/cards')).headers.location).toBe(`/cards/${card.id}`);
+    expect((await agent.get('/search/index')).body.some((i) => i.title === 'Открыть счёт')).toBe(true);
   });
 });
 

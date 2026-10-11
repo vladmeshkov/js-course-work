@@ -766,3 +766,12 @@ html.dark .pay-row__thumb img{mix-blend-mode:screen;filter:invert(1) hue-rotate(
 .xfer__box--cur{flex:0 0 110px}
 .xfer__curlabel{font-size:14px;color:var(--muted2)}
 .xfer__curval{margin-top:4px;font-size:24px;font-weight:600}
+
+/* Карты: выбор карты и заказ новой */
+.card-pick{display:flex;flex-wrap:wrap;gap:22px}
+.card-pick__item{flex:1 1 300px;min-width:0;padding:10px;border-radius:30px;border:3px solid transparent;transition:border-color .2s,transform .2s}
+.card-pick__item:hover{transform:translateY(-2px)}
+.card-pick__item.is-active{border-color:var(--accent)}
+.card-pick__item .bank-card{max-height:210px}
+.new-card{flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:20px 40px;padding:32px 36px}
+.new-card h2{margin:0 0 8px;font-size:26px}

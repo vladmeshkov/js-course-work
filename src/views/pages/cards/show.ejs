@@ -1,13 +1,26 @@
 <%- include('../../partials/header', { title }) %>
-<nav class="crumbs" aria-label="Навигационная цепочка"><a href="/cabinet">Главная</a> &nbsp;›&nbsp; <a href="/cards">Карты</a> &nbsp;›&nbsp; *<%= card.last4 %></nav>
+<nav class="crumbs" aria-label="Навигационная цепочка"><a href="/cabinet">Главная</a> &nbsp;›&nbsp; Карты</nav>
 <% if (secret) { %>
 <div class="alert alert--info" role="status">
   <b>Сохраните данные карты, больше они показаны не будут.</b><br>
   Номер: <b><%= secret.number.replace(/(.{4})/g, '$1 ').trim() %></b>, срок <%= card.expires %>, CVV <b><%= secret.cvv %></b>
 </div>
 <% } %>
+<h1>Мои карты</h1>
+<section class="card-pick" aria-label="Выбор карты">
+  <% cards.forEach((c) => { %>
+    <a class="card-pick__item<%= c.id === card.id ? ' is-active' : '' %>" href="/cards/<%= c.id %>"<%- c.id === card.id ? ' aria-current="true"' : '' %>>
+      <span class="bank-card bank-card--<%= c.system %><%= c.status === 'blocked' ? ' bank-card--blocked' : '' %>">
+        <span class="bank-card__top"><span class="bank-card__bank"><img src="/img/emblem.png" alt="" width="30" height="30">ТалерБанк</span><span class="bank-card__system"><%= systems[c.system] %></span></span>
+        <span class="bank-card__number">•••• •••• •••• <%= c.last4 %></span>
+        <span class="bank-card__bottom"><span><%= c.holder %></span><span><%= c.expires %></span></span>
+        <% if (c.status === 'blocked') { %><span class="bank-card__stamp">Заблокирована</span><% } %>
+      </span>
+    </a>
+  <% }) %>
+</section>
 <section class="row">
-  <div class="grow">
+  <div class="grow" hidden>
     <div class="bank-card bank-card--<%= card.system %><%= card.status === 'blocked' ? ' bank-card--blocked' : '' %>">
       <span class="bank-card__top"><span class="bank-card__bank"><img src="/img/emblem.png" alt="" width="30" height="30">ТалерБанк</span><span class="bank-card__system"><%= systems[card.system] %></span></span>
       <span class="bank-card__number">•••• •••• •••• <%= card.last4 %></span>
@@ -66,5 +79,9 @@
     <div class="account"><div><div class="account__title"><%= o.place || 'Покупка' %></div><div class="account__iban"><%= String(o.bank_date).slice(0, 10) %><%= o.online ? ', интернет' : '' %></div></div>
       <div class="amount">−<%= formatAmount(o.amount) %> <small><%= card.currency %></small></div></div>
   <% }) %>
+</section>
+<section class="panel new-card">
+  <div><h2>Выпустить новую карту</h2><p class="muted m0">Привяжем к вашему текущему счёту. Номер и CVV будут показаны один раз сразу после выпуска.</p></div>
+  <a class="btn btn--lg" href="/cards/new">Заказать карту</a>
 </section>
 <%- include('../../partials/footer') %>
