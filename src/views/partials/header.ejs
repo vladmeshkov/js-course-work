@@ -20,7 +20,7 @@
         <img src="/img/emblem.png" alt="Эмблема ТалерБанка: оранжевый круг с монограммой Тр" width="54" height="54">
         <span>Талер<span class="logo__bank">Банк</span></span>
       </a>
-      <nav class="main-nav" aria-label="Основное меню">
+      <nav class="main-nav<%= nav.length > 5 ? ' main-nav--dense' : '' %>" aria-label="Основное меню">
         <% nav.forEach((item) => { %>
           <a href="<%= item.href %>"<%- currentPath === item.href ? ' aria-current="page"' : '' %>><%= item.label %></a>
         <% }) %>

@@ -30,6 +30,6 @@ export function navFor(user) {
   if (user.permissions.includes('users.manage')) items.push({ label: 'Пользователи', href: '/admin/users' });
   if (user.permissions.includes('audit.view')) items.push({ label: 'Журнал', href: '/admin/audit' });
   if (user.permissions.includes('backup.manage')) items.push({ label: 'Резервные копии', href: '/admin/backups' });
-  if (user.permissions.includes('eod.run')) items.push({ label: 'Операционный день', href: '/admin/eod' });
+  if (user.permissions.includes('eod.run')) items.push({ label: 'Опердень', href: '/admin/eod' });
   return items;
 }

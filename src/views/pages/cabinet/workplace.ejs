@@ -1,10 +1,45 @@
 <%- include('../../partials/header', { title }) %>
-<h1>Рабочее место</h1>
-<section class="tile">
-  <p class="muted mb12">Вы вошли как: <%= user.role_name %></p>
-  <h2 class="mb10">Доступные действия</h2>
-  <ul class="plain-list">
-    <% user.permissions.forEach((p) => { %><li><%= p %></li><% }) %>
-  </ul>
+<div class="between">
+  <div><p class="overview__hello m0"><%= user.role_name %>, <%= user.login %></p><h1>Рабочее место</h1></div>
+  <div class="bankdate"><span class="muted2 small">Банковская дата</span><b><%= bankDate.split('-').reverse().join('.') %></b></div>
+</div>
+<% if (!metrics.length && !queues.length && !admin) { %><div class="alert alert--info">Для вашей роли пока нет доступных разделов.</div><% } %>
+<% if (metrics.length) { %>
+<section class="metrics">
+  <% metrics.forEach((m) => { %>
+    <a class="metric<%= m.hot ? ' metric--hot' : '' %>" href="<%= m.href %>"><span class="metric__value"><%= m.value %></span><span class="metric__label"><%= m.label %></span></a>
+  <% }) %>
 </section>
+<% } %>
+<% if (queues.length) { %>
+<section class="split split--even">
+  <% queues.forEach((q) => { %>
+    <div class="tile">
+      <div class="between"><h2><%= q.title %></h2><a class="link" href="<%= q.href %>">Все</a></div>
+      <% if (!q.items.length) { %><p class="muted m0 mt10"><%= q.empty %></p><% } %>
+      <% q.items.forEach((i) => { %>
+        <a class="op" href="<%= i.href %>"><div><div class="op__title"><%= i.title %></div><div class="op__meta"><%= i.meta %></div></div><span class="link">Открыть</span></a>
+      <% }) %>
+    </div>
+  <% }) %>
+</section>
+<% } %>
+<% if (admin) { %>
+<section class="split split--even">
+  <% if (admin.events.length) { %>
+  <div class="tile">
+    <div class="between"><h2>Последние события</h2><a class="link" href="/admin/audit">Журнал</a></div>
+    <% admin.events.forEach((e) => { %>
+      <div class="op"><div><div class="op__title"><%= e.action %></div><div class="op__meta"><%= e.login || 'система' %>, <%= new Date(e.at).toISOString().slice(0, 16).replace('T', ' ') %></div></div><span class="<%= e.result === 'success' ? 'text-good' : 'text-bad' %>"><%= e.result === 'success' ? 'успех' : 'отказ' %></span></div>
+    <% }) %>
+  </div>
+  <% } %>
+  <div class="tile">
+    <h2 class="mb10">Состояние системы</h2>
+    <% if (admin.showTrial) { %><div class="op"><div class="op__title">Двойная запись</div><b class="<%= admin.balanced ? 'text-good' : 'text-bad' %>"><%= admin.balanced ? 'сходится' : 'есть расхождение' %></b></div><% } %>
+    <% if (admin.showBackup) { %><div class="op"><div class="op__title">Последняя резервная копия</div><b class="<%= admin.lastBackup ? '' : 'text-bad' %>"><%= admin.lastBackup || 'ещё не создавалась' %></b></div><% } %>
+    <div class="actions mt10"><% if (admin.showTrial) { %><a class="btn btn--ghost btn--small" href="/admin/eod">Операционный день</a><% } %><% if (admin.showBackup) { %><a class="btn btn--ghost btn--small" href="/admin/backups">Копии</a><% } %></div>
+  </div>
+</section>
+<% } %>
 <%- include('../../partials/footer') %>

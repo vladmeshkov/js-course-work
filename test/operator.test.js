@@ -76,3 +76,21 @@ describe('операционист', () => {
     expect((await agent.get('/staff/loans')).status).toBe(403);
   });
 });
+
+describe('главная сотрудника', () => {
+  it('показывает только разделы своей роли', async () => {
+    const { forUser } = await import('../src/services/staffDashboardService.js');
+    const op = await userModel.findById(await userModel.create(pool, { login: `dash${Date.now()}`, passwordHash: 'x', roleCode: 'operator' }));
+    const o = await forUser(op);
+    expect(o.metrics.map((m) => m.label)).toEqual(expect.arrayContaining(['Анкеты на проверке', 'Заблокированных счетов']));
+    expect(o.metrics.map((m) => m.label)).not.toContain('Пользователей');
+    expect(o.admin).toBeNull();
+    const admin = await userModel.findById(await userModel.create(pool, { login: `dadm${Date.now()}`, passwordHash: 'x', roleCode: 'admin' }));
+    const a = await forUser(admin);
+    expect(a.metrics.map((m) => m.label)).toEqual(expect.arrayContaining(['Пользователей', 'Неудачных входов за сутки']));
+    expect(a.admin.balanced).toBe(true);
+    expect(a.queues).toHaveLength(0);
+    const credit = await userModel.findById(await userModel.create(pool, { login: `dcr${Date.now()}`, passwordHash: 'x', roleCode: 'credit_officer' }));
+    expect((await forUser(credit)).queues.map((q) => q.title)).toEqual(['Заявки на кредит']);
+  });
+});
