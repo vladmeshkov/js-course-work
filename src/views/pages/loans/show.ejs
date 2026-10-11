@@ -3,6 +3,9 @@
 <section class="tile">
   <div class="muted2">Остаток долга, договор № <%= loan.id %><%= loan.status === 'active' ? '' : ' (погашен)' %></div>
   <div class="balance-big"><%= formatAmount(loan.principal_balance) %> <small class="muted unit">BYN</small></div>
+  <% const paidPct = Math.round(((loan.amount - loan.principal_balance) / loan.amount) * 100); %>
+  <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="<%= paidPct %>" aria-label="Погашено"><span class="progress__fill" data-progress="<%= paidPct %>"></span></div>
+  <p class="muted2 small mt8">Погашено <%= paidPct %>% от <%= formatAmount(loan.amount) %> BYN</p>
   <dl class="facts">
     <div><dt>Выдано</dt><dd><%= formatAmount(loan.amount) %> BYN</dd></div>
     <div><dt>Ставка</dt><dd><%= String(Number(loan.rate_percent)).replace('.', ',') %>% годовых</dd></div>

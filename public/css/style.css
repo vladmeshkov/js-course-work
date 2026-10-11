@@ -288,3 +288,43 @@ html.dark .btn--ghost:hover{background:var(--soft);border-color:var(--accentText
 html.dark .metric{box-shadow:inset 0 0 0 1px rgba(255,255,255,.045)}
 @media (max-width:760px){.split--even{grid-template-columns:1fr}}
 .main-nav--dense{gap:8px 20px;font-size:15px}
+
+/* Прогресс */
+.progress{height:10px;border-radius:999px;background:var(--soft);overflow:hidden;margin-top:18px}
+.progress__fill{display:block;height:100%;width:0;border-radius:999px;background:var(--accent);transition:width 1s cubic-bezier(.16,1,.3,1)}
+
+/* Ожидание ответа: заглушка вместо вращающегося кружка */
+.skeleton{color:transparent !important;border-radius:8px;background:linear-gradient(90deg,var(--line) 25%,var(--fld) 50%,var(--line) 75%);background-size:220% 100%}
+.is-pending{opacity:.45;transition:opacity .15s}
+.navbar-progress{position:fixed;left:0;top:0;height:3px;width:0;background:var(--accent);z-index:90;opacity:0;pointer-events:none}
+.navbar-progress.is-active{opacity:1}
+.btn.is-loading,.link-button.is-loading{pointer-events:none;position:relative;overflow:hidden}
+.btn.is-loading::after{content:"";position:absolute;left:0;bottom:0;height:3px;width:40%;background:rgba(255,255,255,.75)}
+
+/* Движение. Включается, только если в системе не выбрано «уменьшить движение» */
+@media (prefers-reduced-motion:no-preference){
+  @view-transition{navigation:auto}
+  ::view-transition-old(root),::view-transition-new(root){animation-duration:.2s}
+  .site-header{view-transition-name:site-header}
+  :root{--ease:cubic-bezier(.16,1,.3,1)}
+  .js .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s var(--ease),transform .6s var(--ease);transition-delay:var(--d,0s)}
+  .js .reveal.is-in{opacity:1;transform:none}
+  .alert{animation:rise .45s var(--ease) both}
+  .note--new{animation:flash 1.8s ease-out 1}
+  .skeleton{animation:shimmer 1.2s linear infinite}
+  .navbar-progress.is-active{animation:load 8s cubic-bezier(.1,.8,.2,1) forwards}
+  .btn.is-loading::after{animation:slide 1s ease-in-out infinite}
+  .btn{transition:transform .15s var(--ease),background-color .15s,border-color .15s}
+  .quad__coin,.quad__card{transition:transform .5s var(--ease)}
+  .quad__tile:hover .quad__coin{transform:rotate(-2deg) translateY(-10px) scale(1.03)}
+  .quad__tile:hover .quad__card{transform:rotate(-5deg) translateY(-8px)}
+  .bank-card{transition:transform .25s var(--ease),box-shadow .25s}
+  .bell__count{animation:pop .5s var(--ease) both}
+  .tile-link:hover h3,.quad__tile:hover h2{color:var(--accentText)}
+  @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  @keyframes flash{from{background:var(--soft)}to{background:transparent}}
+  @keyframes shimmer{from{background-position:120% 0}to{background-position:-120% 0}}
+  @keyframes load{from{width:0}to{width:86%}}
+  @keyframes slide{from{left:-40%}to{left:100%}}
+  @keyframes pop{0%{transform:scale(.4)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
+}

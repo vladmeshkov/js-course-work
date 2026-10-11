@@ -57,10 +57,13 @@
   }
 
   function update() {
+    table.classList.add('is-pending');
+    summary.classList.add('is-pending');
     var f = form.elements;
     var url = '/loans/calc?product=' + encodeURIComponent(form.dataset.product) + '&amount=' + encodeURIComponent(f.amount.value) +
       '&term=' + encodeURIComponent(f.termMonths.value) + '&type=' + encodeURIComponent(f.scheduleType.value);
-    fetch(url, { headers: { Accept: 'application/json' } }).then(function (r) { return r.json(); }).then(render).catch(function () {});
+    fetch(url, { headers: { Accept: 'application/json' } }).then(function (r) { return r.json(); }).then(render).catch(function () {})
+      .then(function () { table.classList.remove('is-pending'); summary.classList.remove('is-pending'); });
   }
 
   ['amount', 'termMonths', 'scheduleType'].forEach(function (name) {

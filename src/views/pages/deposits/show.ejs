@@ -3,6 +3,8 @@
 <section class="tile">
   <div class="muted2">Вклад «<%= deposit.product_name %>»<%= deposit.status === 'active' ? '' : deposit.status === 'closed' ? ', закрыт по окончании срока' : ', закрыт досрочно' %></div>
   <div class="balance-big"><%= formatAmount(deposit.status === 'active' ? deposit.balance : deposit.amount) %> <small class="muted unit"><%= deposit.currency %></small></div>
+  <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="<%= progress %>" aria-label="Прошло времени срока вклада"><span class="progress__fill" data-progress="<%= progress %>"></span></div>
+  <p class="muted2 small mt8"><%= deposit.status === 'active' ? 'Прошло ' + progress + '% срока, осталось ' + daysLeft + ' дн.' : 'Срок завершён' %></p>
   <dl class="facts">
     <div><dt>Ставка</dt><dd><%= String(Number(deposit.rate_percent)).replace('.', ',') %>% годовых</dd></div>
     <div><dt>Открыт</dt><dd><%= String(deposit.opened_date).slice(0, 10) %></dd></div>

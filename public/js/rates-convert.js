@@ -13,10 +13,11 @@
   }
 
   function update() {
+    result.classList.add('skeleton');
     var url = '/rates/convert?from=' + from.value + '&to=' + to.value + '&amount=' + encodeURIComponent(amount.value);
     fetch(url).then(function (r) { return r.json(); }).then(function (d) {
       result.textContent = d.ok ? money(d.result) + ' ' + to.value : '—';
-    }).catch(function () {});
+    }).catch(function () {}).then(function () { result.classList.remove('skeleton'); });
   }
 
   [amount, from, to].forEach(function (el) {

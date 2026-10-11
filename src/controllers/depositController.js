@@ -1,5 +1,6 @@
 import { AppError, ForbiddenError, ValidationError } from '../lib/errors.js';
 import { parseAmount } from '../lib/money.js';
+import { daysBetween } from '../lib/dates.js';
 import { pool } from '../db/pool.js';
 import * as clientModel from '../models/clientModel.js';
 import * as depositModel from '../models/depositModel.js';
@@ -57,7 +58,11 @@ export async function create(req, res) {
 export async function show(req, res) {
   if (req.user.role_code !== 'client') throw new ForbiddenError();
   const deposit = await depositService.getForClient(req.user.id, Number(req.params.id));
-  res.render('pages/deposits/show', { title: `Вклад «${deposit.product_name}»`, deposit });
+  const today = String(await eodService.currentBankDate(pool)).slice(0, 10);
+  const total = daysBetween(String(deposit.opened_date).slice(0, 10), String(deposit.maturity_date).slice(0, 10));
+  const passed = deposit.status === 'active' ? daysBetween(String(deposit.opened_date).slice(0, 10), today) : total;
+  const progress = Math.max(0, Math.min(100, Math.round((passed / total) * 100)));
+  res.render('pages/deposits/show', { title: `Вклад «${deposit.product_name}»`, deposit, progress, daysLeft: Math.max(0, total - passed) });
 }
 
 export async function showClose(req, res) {

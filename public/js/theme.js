@@ -2,6 +2,8 @@
 // и страница не мигала светлым фоном. Выбор пользователя хранится в localStorage, по умолчанию берётся тема системы.
 (function () {
   var root = document.documentElement;
+  // признак «JavaScript работает»: только тогда прячем блоки до появления на экране
+  root.classList.add('js');
   var saved = null;
   try { saved = localStorage.getItem('theme'); } catch (e) { /* хранилище недоступно: останется тема системы */ }
   var dark = saved ? saved === 'dark' : window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;

@@ -12,6 +12,8 @@
   }
 
   function update() {
+    income.classList.add('skeleton');
+    total.classList.add('skeleton');
     var url = '/deposits/calc?product=' + encodeURIComponent(input.dataset.product) + '&amount=' + encodeURIComponent(input.value);
     fetch(url, { headers: { Accept: 'application/json' } })
       .then(function (r) { return r.json(); })
@@ -19,7 +21,8 @@
         income.textContent = data.ok ? format(data.income, data.currency) : '—';
         total.textContent = data.ok ? format(data.total, data.currency) : '—';
       })
-      .catch(function () {});
+      .catch(function () {})
+      .then(function () { income.classList.remove('skeleton'); total.classList.remove('skeleton'); });
   }
 
   input.addEventListener('input', function () {
