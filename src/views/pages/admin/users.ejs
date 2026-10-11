@@ -1,16 +1,17 @@
 <%- include('../../partials/header', { title }) %>
-<h1>Пользователи</h1>
-<form class="tile search" method="get" action="/admin/users" role="search">
+<div class="q-head"><h1>Пользователи</h1><div class="muted">Найдено: <%= users.length %></div></div>
+<form class="panel search" method="get" action="/admin/users" role="search">
   <input name="q" value="<%= q %>" placeholder="Логин" aria-label="Поиск по логину">
   <select name="role" aria-label="Роль"><option value="">Все роли</option><% roles.forEach((r) => { %><option value="<%= r.code %>"<%= r.code === role ? ' selected' : '' %>><%= r.name %></option><% }) %></select>
   <button class="btn" type="submit">Найти</button>
 </form>
-<section class="tile">
+<section class="panel user-list">
   <% if (!users.length) { %><p class="muted m0">Никого не нашли.</p><% } %>
   <% users.forEach((u) => { %>
-    <div class="account">
-      <div><div class="account__title"><%= u.login %><%= u.last_name ? ' · ' + u.last_name + ' ' + u.first_name : '' %></div>
-        <div class="account__iban"><%= u.role_name %>, <%= u.last_login_at ? 'вход ' + new Date(u.last_login_at).toISOString().slice(0, 16).replace('T', ' ') : 'не входил' %></div></div>
+    <div class="account user-row">
+      <span class="user-row__ini" aria-hidden="true"><%= (u.last_name ? u.last_name[0] + (u.first_name || '')[0] : u.login.slice(0, 2)).toUpperCase() %></span>
+      <div class="user-row__main"><div class="account__title"><%= u.last_name ? u.last_name + ' ' + u.first_name : u.login %></div>
+        <div class="account__iban"><%= u.login %>, <%= u.role_name %>, <%= u.last_login_at ? 'вход ' + new Date(u.last_login_at).toISOString().slice(0, 16).replace('T', ' ') : 'не входил' %></div></div>
       <div class="actions">
         <span class="<%= u.status === 'active' ? 'text-good' : 'text-bad' %>"><%= u.status === 'active' ? 'Активен' : 'Заблокирован' %></span>
         <% if (u.id !== user.id) { %>
@@ -26,7 +27,7 @@
     </div>
   <% }) %>
 </section>
-<form class="tile form w640" method="post" action="/admin/users" novalidate>
+<form class="panel form w640" method="post" action="/admin/users" novalidate>
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
   <h2>Добавить сотрудника</h2>
   <div class="field<%= errors.login ? ' field--error' : '' %>"><label for="login">Логин</label><input id="login" name="login" value="<%= form.login || '' %>" autocomplete="off"><% if (errors.login) { %><span class="field__error"><%= errors.login %></span><% } %></div>

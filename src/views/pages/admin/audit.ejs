@@ -1,13 +1,13 @@
 <%- include('../../partials/header', { title }) %>
-<h1>Журнал аудита</h1>
-<form class="tile search" method="get" action="/admin/audit" role="search">
+<div class="q-head"><div><h1>Журнал аудита</h1><div class="muted">Показано записей: <%= rows.length %></div></div><a class="btn btn--ghost" href="/admin/backups">Резервные копии</a></div>
+<form class="panel search" method="get" action="/admin/audit" role="search">
   <input name="login" value="<%= filters.login %>" placeholder="Пользователь" aria-label="Пользователь">
   <input name="action" value="<%= filters.action %>" placeholder="Событие, например transfer" aria-label="Событие">
   <select name="result" aria-label="Результат"><option value="">Любой результат</option><option value="success"<%= filters.result === 'success' ? ' selected' : '' %>>Успех</option><option value="failure"<%= filters.result === 'failure' ? ' selected' : '' %>>Отказ</option></select>
   <button class="btn" type="submit">Показать</button>
 </form>
-<section class="tile">
-  <div class="scroll-x"><table class="table">
+<section class="paper paper--table">
+  <div class="scroll-x"><table class="table table--ledger">
     <thead><tr><th>№</th><th>Дата и время</th><th>Пользователь</th><th>Событие</th><th>Объект</th><th>Результат</th><th>Адрес</th></tr></thead>
     <tbody>
       <% rows.forEach((r) => { %>

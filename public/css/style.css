@@ -638,3 +638,14 @@ html.dark .stmt__mark--in{background:#17331F}
 .check-row b{white-space:nowrap}
 .btn--danger{border-color:#B4233C;color:#B4233C}
 textarea{padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;background:var(--fld);font-family:inherit;font-size:16px;color:var(--ink);resize:vertical}
+
+/* Журнал аудита и пользователи */
+.paper--table{padding:8px 28px 24px;border-radius:8px}
+.table--ledger th{color:var(--muted2);border-bottom:2px solid var(--ink)}
+.table--ledger td{padding:15px 12px}
+.table--ledger tbody tr:hover td{background:var(--fld)}
+.user-list{gap:0;padding-top:8px;padding-bottom:14px}
+.user-row{align-items:center;gap:16px}
+.user-row__main{flex:1 1 auto;min-width:0}
+.user-row__ini{flex:0 0 44px;height:44px;border-radius:14px;background:var(--soft);color:var(--accentText);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px}
+.panel.search{flex-direction:row;flex-wrap:wrap;align-items:center;gap:12px;padding:20px 24px}
