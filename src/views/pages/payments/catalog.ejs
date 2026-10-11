@@ -1,0 +1,21 @@
+<%- include('../../partials/header', { title }) %>
+<nav class="crumbs" aria-label="Навигационная цепочка"><a href="/cabinet">Главная</a> &nbsp;›&nbsp; <a href="/payments">Платежи и переводы</a> &nbsp;›&nbsp; Оплата услуг</nav>
+<h1>Оплата услуг</h1>
+<form class="tile search" method="get" action="/payments/catalog" role="search">
+  <input name="q" value="<%= q %>" placeholder="Название услуги или организации" aria-label="Поиск услуги">
+  <select name="city" aria-label="Город"><option value="">Все города</option><% cities.forEach((c) => { %><option<%= c === city ? ' selected' : '' %>><%= c %></option><% }) %></select>
+  <button class="btn" type="submit">Найти</button>
+</form>
+<% if (q) { %>
+  <section class="tile">
+    <h2 class="mb10">Найдено: <%= found.length %></h2>
+    <% if (!found.length) { %><p class="muted m0">Ничего не нашли. Попробуйте «вода», «телефон» или выберите категорию ниже.</p><% } %>
+    <% found.forEach((p) => { %>
+      <a class="account" href="/payments/pay/<%= p.id %>"><div><div class="account__title"><%= p.name %></div><div class="account__iban"><%= p.category_name %><%= p.city ? ', ' + p.city : '' %></div></div><span class="link">Оплатить &nbsp;→</span></a>
+    <% }) %>
+  </section>
+<% } %>
+<section class="tiles">
+  <% categories.forEach((c) => { %><a class="tile-link" href="/payments/catalog/<%= c.id %>"><h3><%= c.name %></h3><span class="muted"><%= c.hint %></span></a><% }) %>
+</section>
+<%- include('../../partials/footer') %>

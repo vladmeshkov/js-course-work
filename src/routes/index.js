@@ -12,6 +12,7 @@ import * as admin from '../controllers/adminController.js';
 import * as loans from '../controllers/loanController.js';
 import * as staffLoans from '../controllers/staffLoanController.js';
 import * as cards from '../controllers/cardController.js';
+import * as payments from '../controllers/paymentController.js';
 
 const router = Router();
 
@@ -32,7 +33,15 @@ for (const [path, title] of [['/rates', 'Курсы валют']]) {
   router.get(path, (req, res) => res.render('pages/soon', { title }));
 }
 
-router.get('/payments', requireAuth, (req, res) => res.render('pages/payments/hub', { title: 'Платежи и переводы' }));
+router.get('/payments', requireAuth, payments.hub);
+router.get('/payments/catalog', requireAuth, payments.catalog);
+router.get('/payments/catalog/:id', requireAuth, payments.category);
+router.get('/payments/pay/:providerId', requireAuth, payments.showPay);
+router.post('/payments/pay', requireAuth, payments.pay);
+router.get('/payments/:id/receipt', requireAuth, payments.receipt);
+router.post('/payments/templates/:id/delete', requireAuth, payments.deleteTemplate);
+router.post('/payments/templates/:id/autopay', requireAuth, payments.createAutopay);
+router.post('/payments/autopay/:id/cancel', requireAuth, payments.cancelAutopay);
 router.get('/accounts', requireAuth, accounts.list);
 router.get('/accounts/:id', requireAuth, accounts.show);
 

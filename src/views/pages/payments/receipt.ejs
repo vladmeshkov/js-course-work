@@ -1,0 +1,18 @@
+<%- include('../../partials/header', { title }) %>
+<nav class="crumbs no-print" aria-label="Навигационная цепочка"><a href="/payments">Платежи и переводы</a> &nbsp;›&nbsp; Квитанция</nav>
+<section class="receipt">
+  <div class="receipt__head"><img src="/img/emblem.png" alt="" width="44" height="44"><div><div class="muted2 small">Квитанция об оплате</div><div class="receipt__no">№ <%= r.id %> от <%= String(r.bank_date).slice(0, 10) %></div></div></div>
+  <div class="receipt__cut"></div>
+  <dl class="facts">
+    <div><dt>Получатель</dt><dd><%= r.provider_name %></dd></div>
+    <div><dt>Категория</dt><dd><%= r.category_name %></dd></div>
+    <div><dt>Реквизит</dt><dd><%= r.requisite %></dd></div>
+    <div><dt>Со счёта</dt><dd><%= formatIban(r.iban) %></dd></div>
+    <div><dt>Сумма</dt><dd><%= formatAmount(r.amount) %> BYN</dd></div>
+    <div><dt>Комиссия</dt><dd><%= formatAmount(r.fee) %> BYN</dd></div>
+  </dl>
+  <div class="receipt__total">Списано <b><%= formatAmount(r.amount + r.fee) %> BYN</b></div>
+  <div class="actions no-print"><button class="btn" type="button" data-print>Распечатать</button><a class="btn btn--ghost" href="/payments">Ещё платёж</a></div>
+</section>
+<script src="/js/print.js" defer></script>
+<%- include('../../partials/footer') %>

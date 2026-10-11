@@ -14,7 +14,8 @@ export const BALANCE_CODES = {
   income: '6000',
   expense: '7000',
   correspondent: '1100',
-  conversion: '1210'
+  conversion: '1210',
+  provider: '3300'
 };
 
 const CLIENT_KINDS = {
@@ -49,7 +50,8 @@ export async function openClientAccount(db, { clientId, kind, currency, userId }
 export async function ensureInternalAccount(db, purpose, currency) {
   const existing = await accountModel.findByPurpose(db, purpose, currency);
   if (existing) return existing;
-  const code = BALANCE_CODES[purpose];
+  const code = BALANCE_CODES[purpose] ?? (purpose.startsWith('provider_') ? BALANCE_CODES.provider : undefined);
+  if (!code) throw new Error(`Неизвестное назначение счёта: ${purpose}`);
   const number = await accountModel.nextNumber(db);
   return accountModel.insert(db, {
     iban: buildIban(config.bankCode, code, number),

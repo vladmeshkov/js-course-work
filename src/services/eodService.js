@@ -4,6 +4,7 @@ import { BusinessError } from '../lib/errors.js';
 import * as auditService from './auditService.js';
 import * as depositService from './depositService.js';
 import * as loanService from './loanService.js';
+import * as paymentService from './paymentService.js';
 import * as ledgerService from './ledgerService.js';
 
 /*
@@ -25,12 +26,13 @@ export function closeDay(userId) {
 
     const deposits = await depositService.processDeposits(db, date);
     const loans = await loanService.processLoans(db, date);
+    const autopayments = await paymentService.processAutopayments(db, date);
 
     for (const row of await ledgerService.trialBalance(db)) {
       if (!row.ok) throw new BusinessError(`Нарушена двойная запись в валюте ${row.currency}: день не закрыт`);
     }
-    await auditService.log({ userId, action: 'eod.close_day', details: { date, deposits, loans } }, db);
-    return { date, deposits, loans };
+    await auditService.log({ userId, action: 'eod.close_day', details: { date, deposits, loans, autopayments } }, db);
+    return { date, deposits, loans, autopayments };
   });
 }
 

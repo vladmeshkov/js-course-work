@@ -1,0 +1,23 @@
+<%- include('../../partials/header', { title }) %>
+<nav class="crumbs" aria-label="Навигационная цепочка"><a href="/payments">Платежи и переводы</a> &nbsp;›&nbsp; <a href="/payments/catalog">Оплата услуг</a> &nbsp;›&nbsp; <%= provider.name %></nav>
+<h1><%= provider.name %></h1>
+<form class="tile form w640" method="post" action="/payments/pay" novalidate>
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <input type="hidden" name="providerId" value="<%= provider.id %>">
+  <% if (errors.common) { %><div class="alert alert--error" role="alert"><%= errors.common %></div><% } %>
+  <div class="field<%= errors.requisite ? ' field--error' : '' %>"><label for="requisite"><%= provider.requisite_label %></label>
+    <input id="requisite" name="requisite" value="<%= form.requisite || '' %>" autocomplete="off"><span class="field__hint"><%= provider.requisite_hint %></span>
+    <% if (errors.requisite) { %><span class="field__error"><%= errors.requisite %></span><% } %></div>
+  <div class="field<%= errors.amount ? ' field--error' : '' %>"><label for="amount">Сумма, BYN</label>
+    <input id="amount" name="amount" value="<%= form.amount || '' %>" inputmode="decimal" autocomplete="off">
+    <span class="field__hint">От <%= formatAmount(provider.min_amount) %> до <%= formatAmount(provider.max_amount) %><%= Number(provider.fee_percent) > 0 ? ', комиссия ' + String(Number(provider.fee_percent)).replace('.', ',') + '%' : ', без комиссии' %></span>
+    <% if (errors.amount) { %><span class="field__error"><%= errors.amount %></span><% } %></div>
+  <div class="field<%= errors.fromAccountId ? ' field--error' : '' %>"><label for="fromAccountId">Со счёта</label>
+    <select id="fromAccountId" name="fromAccountId"><% accounts.forEach((a) => { %><option value="<%= a.id %>"<%= String(form.fromAccountId) === String(a.id) ? ' selected' : '' %>><%= a.title %>, <%= formatAmount(a.balance) %> BYN</option><% }) %></select>
+    <% if (errors.fromAccountId) { %><span class="field__error"><%= errors.fromAccountId %></span><% } %></div>
+  <label class="check"><input type="checkbox" name="saveTemplate"<%= form.saveTemplate ? ' checked' : '' %>> Сохранить как шаблон</label>
+  <div class="field"><label for="templateName">Название шаблона</label><input id="templateName" name="templateName" value="<%= form.templateName || '' %>" placeholder="Например, Квартира"></div>
+  <label class="check"><input type="checkbox" name="saveAmount"<%= form.saveAmount ? ' checked' : '' %>> Запомнить сумму в шаблоне</label>
+  <div><button class="btn btn--lg" type="submit">Оплатить</button></div>
+</form>
+<%- include('../../partials/footer') %>

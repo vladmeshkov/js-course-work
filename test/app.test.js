@@ -165,3 +165,27 @@ describe('единая таблица стилей', () => {
     }
   });
 });
+
+describe('страницы клиента открываются без ошибок', () => {
+  it('все основные разделы отдают 200', async () => {
+    const hash = await hashPassword('Parol2026');
+    const c = await createClientWithAccount(500000, 'BYN', hash);
+    const { issueCard } = await import('../src/services/cardService.js');
+    const { pay } = await import('../src/services/paymentService.js');
+    const card = await issueCard(c.userId, { accountId: c.accountId, system: 'visa', pin: '1111' });
+    const providerId = (await pool.query("SELECT id FROM payment_providers WHERE name = 'Энергосбыт'")).rows[0].id;
+    const payment = await pay(c.userId, { providerId, fromAccountId: c.accountId, amount: 1000, requisite: '12345678', templateName: 'Свет' });
+
+    const agent = request.agent(app);
+    const { token } = await pageWithToken(agent, '/login');
+    await agent.post('/login').type('form').send({ _csrf: token, login: c.login, password: 'Parol2026' });
+    const urls = ['/cabinet', '/accounts', `/accounts/${c.accountId}`, '/cards', '/cards/new', `/cards/${card.id}`,
+      '/payments', '/payments/catalog', '/payments/catalog?q=вод', '/payments/catalog/1', '/payments/catalog/1?city=Минск', `/payments/pay/${providerId}`,
+      `/payments/${payment.id}/receipt`, '/transfers/new', '/transfers/new?kind=own', '/deposits', '/deposits/new?product=1',
+      '/loans', '/loans/new?product=1', '/loans/calc?product=1&amount=1000&term=12&type=annuity', '/deposits/calc?product=1&amount=1000'];
+    for (const url of urls) {
+      const res = await agent.get(url);
+      expect(res.status, url).toBe(200);
+    }
+  });
+});

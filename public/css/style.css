@@ -171,3 +171,16 @@ a.account:hover .account__title{color:var(--accentText)}
 .bank-card__stamp{position:absolute;right:18px;top:60px;transform:rotate(-8deg);padding:6px 14px;border:3px solid #B4233C;border-radius:8px;color:#B4233C;background:rgba(255,255,255,.92);font-weight:700;font-size:18px;letter-spacing:1px}
 .check{display:flex;gap:10px;align-items:center;font-size:16px;color:var(--ink)}
 .check input{width:20px;height:20px;accent-color:var(--accent)}
+
+/* Поиск, мини-поля, квитанция */
+.search{display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:20px 24px}
+.search input{flex:2 1 260px;padding:14px 18px;border:1.5px solid var(--line);border-radius:12px;background:var(--fld);font-size:18px}
+.search select{flex:1 1 160px;padding:14px 18px;border:1.5px solid var(--line);border-radius:12px;background:var(--fld);font-size:17px}
+.mini{width:110px;padding:9px 12px;border:1.5px solid var(--line);border-radius:10px;background:var(--fld);font-size:16px}
+.mini--day{width:70px}
+.receipt{position:relative;max-width:640px;background:#fff;border-radius:6px 6px 24px 24px;padding:36px 40px;box-shadow:0 20px 40px rgba(40,34,28,.08)}
+.receipt__head{display:flex;gap:14px;align-items:center}
+.receipt__no{font-size:22px;font-weight:700}
+.receipt__cut{border-top:2px dashed var(--line);margin:22px 0}
+.receipt__total{font-size:20px;margin:6px 0 22px}
+@media print{.util-bar,.top-bar,.footer,.no-print,.skip-link{display:none}body{background:#fff}.receipt{box-shadow:none}}

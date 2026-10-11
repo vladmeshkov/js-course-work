@@ -4,6 +4,37 @@
 <section class="tiles">
   <a class="tile-link" href="/transfers/new?kind=client"><h3>Перевод клиенту банка</h3><span class="muted">По номеру счёта, с подтверждением кодом</span></a>
   <a class="tile-link" href="/transfers/new?kind=own"><h3>Между своими счетами</h3><span class="muted">Мгновенно, с конвертацией валют</span></a>
-  <div class="tile-link is-disabled"><h3>Оплата услуг</h3><span class="muted">Каталог платежей появится позже</span></div>
+  <a class="tile-link" href="/payments/catalog"><h3>Оплата услуг</h3><span class="muted">Коммунальные услуги, связь, интернет, налоги</span></a>
 </section>
+<% if (templates.length) { %>
+<section class="tile">
+  <h2 class="mb10">Шаблоны и автоплатежи</h2>
+  <% templates.forEach((t) => { const auto = autopayments.find((a) => a.template_id === t.id); %>
+    <div class="account">
+      <div><div class="account__title"><%= t.name %></div><div class="account__iban"><%= t.provider_name %>, <%= t.requisite %><% if (auto) { %><br>Автоплатёж <%= formatAmount(auto.amount) %> BYN, каждое <%= auto.day_of_month %>-е число, следующий <%= String(auto.next_date).slice(0, 10) %><%= auto.last_result && auto.last_result !== 'Выполнен' ? ' (' + auto.last_result + ')' : '' %><% } %></div></div>
+      <div class="actions">
+        <a class="btn btn--small" href="/payments/pay/<%= t.provider_id %>?template=<%= t.id %>">Оплатить</a>
+        <% if (auto) { %>
+          <form method="post" action="/payments/autopay/<%= auto.id %>/cancel"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="link-button" type="submit">Отключить автоплатёж</button></form>
+        <% } else { %>
+          <form class="actions" method="post" action="/payments/templates/<%= t.id %>/autopay"><input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <input class="mini" name="amount" inputmode="decimal" placeholder="Сумма" aria-label="Сумма автоплатежа" value="<%= t.amount ? formatAmount(t.amount) : '' %>">
+            <input class="mini mini--day" name="day" type="number" min="1" max="28" placeholder="День" aria-label="День месяца" value="1">
+            <button class="btn btn--ghost btn--small" type="submit">Автоплатёж</button></form>
+        <% } %>
+        <form method="post" action="/payments/templates/<%= t.id %>/delete"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="link-button text-bad" type="submit">Удалить</button></form>
+      </div>
+    </div>
+  <% }) %>
+</section>
+<% } %>
+<% if (recent.length) { %>
+<section class="tile">
+  <h2 class="mb10">Последние платежи</h2>
+  <% recent.forEach((p) => { %>
+    <a class="account" href="/payments/<%= p.id %>/receipt"><div><div class="account__title"><%= p.provider_name %></div><div class="account__iban"><%= String(p.bank_date).slice(0, 10) %>, <%= p.requisite %><%= p.source === 'autopay' ? ', автоплатёж' : '' %></div></div>
+      <div class="amount">−<%= formatAmount(p.amount + p.fee) %> <small>BYN</small></div></a>
+  <% }) %>
+</section>
+<% } %>
 <%- include('../../partials/footer') %>
