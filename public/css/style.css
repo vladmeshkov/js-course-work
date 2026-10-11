@@ -681,3 +681,37 @@ html.dark .cat-tile img,html.dark .pay-banner img{mix-blend-mode:screen;border-r
 .fact__text{margin:8px 0 0;font-size:19px;line-height:1.5;text-wrap:pretty}
 .fact__more{margin-top:12px;border:none;background:none;padding:0;font:inherit;font-size:15px;font-weight:600;color:var(--accentText);border-bottom:1.5px solid var(--accentText);cursor:pointer}
 .welcome__go{text-align:center}
+
+/* Каталог платежей: по макету Payments */
+.pay-search__row{display:none}
+.pay-search{flex:1 1 360px;max-width:560px}
+.pay-search input{padding:16px 18px;border:1px solid var(--line);border-radius:12px;background:var(--surface);font-family:inherit;font-size:18px;color:var(--ink)}
+.cat-tile--1{flex:1.45 1 420px;min-height:390px}
+.cat-tile--2{flex:1 1 300px;min-height:390px}
+.cat-tile--3{flex:.95 1 290px;min-height:390px}
+.cat-tile--4,.cat-tile--5,.cat-tile--6{flex:1 1 300px;min-height:340px}
+.cat-tile--1 img{width:min(350px,70%)}
+.cat-tile--2 img{width:min(270px,62%)}
+.cat-tile--3 img{width:min(262px,62%)}
+.cat-tile--4 img{width:min(290px,66%)}
+.cat-tile--5 img{width:min(320px,70%)}
+.cat-tile--6 img{width:min(280px,64%)}
+.cat-tile__hint{font-size:16px}
+.pay-two{display:flex;flex-wrap:wrap;gap:16px;align-items:stretch}
+.pay-two__pop{flex:1 1 420px;min-width:0}
+.pay-two__tpl{flex:1.4 1 520px;min-width:0}
+.pay-two h2{margin:0 0 4px;font-size:28px;letter-spacing:-.5px}
+.pay-two .chip{font-size:17px;font-weight:600}
+.tpl-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:14px 0;border-bottom:1px solid var(--line);font-size:17px}
+.tpl-row small{display:block;font-size:14px;color:var(--muted2);font-weight:400;margin-top:2px}
+.pay-empty{padding:30px 0;color:var(--muted2);font-size:17px}
+.pay-row--icon{justify-content:flex-start;gap:22px;padding:16px 0}
+.pay-row__thumb{flex:0 0 76px;width:76px;height:64px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.pay-row__thumb img{width:92px;height:auto;mix-blend-mode:multiply}
+html.dark .pay-row__thumb img{mix-blend-mode:screen;filter:invert(1) hue-rotate(180deg) saturate(1.15)}
+.pay-row__txt{flex:1;min-width:0}
+.pay-svc{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
+.pay-svc__form{flex:7 1 480px;min-width:0}
+.pay-svc__hist{flex:4 1 320px;min-width:0}
+.pay-svc__hist h2{margin:0 0 4px;font-size:24px;letter-spacing:-.5px}
+.hist-row{display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line);font-size:17px}

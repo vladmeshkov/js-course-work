@@ -1,10 +1,11 @@
 <%- include('../../partials/header', { title }) %>
-<nav class="crumbs" aria-label="Навигационная цепочка"><a href="/payments">Платежи и переводы</a> &nbsp;›&nbsp; <a href="/payments/catalog">Оплата услуг</a> &nbsp;›&nbsp; <%= provider.name %></nav>
+<nav class="crumbs" aria-label="Навигационная цепочка"><a href="/cabinet">Главная</a> &nbsp;›&nbsp; <a href="/payments/catalog">Платежи</a> &nbsp;›&nbsp; <a href="/payments/catalog/<%= provider.category_id %>"><%= provider.category_name %></a> &nbsp;›&nbsp; <%= provider.name %></nav>
 <section class="pay-banner">
-  <div><h1><%= provider.name %></h1><div class="muted2"><%= provider.requisite_hint || provider.requisite_label %></div></div>
+  <div><h1><%= provider.name %></h1><div class="muted2"><%= provider.category_name %></div></div>
   <img src="/img/3d/<%= icon %>.png" alt="">
 </section>
-<form class="panel form w720" method="post" action="/payments/pay" novalidate>
+<section class="pay-svc">
+<form class="panel form pay-svc__form" method="post" action="/payments/pay" novalidate>
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
   <input type="hidden" name="providerId" value="<%= provider.id %>">
   <% if (errors.common) { %><div class="alert alert--error" role="alert"><%= errors.common %></div><% } %>
@@ -23,4 +24,12 @@
   <label class="check"><input type="checkbox" name="saveAmount"<%= form.saveAmount ? ' checked' : '' %>> Запомнить сумму в шаблоне</label>
   <div><button class="btn btn--lg" type="submit">Оплатить</button></div>
 </form>
+<aside class="panel pay-svc__hist">
+  <h2>Прошлые платежи</h2>
+  <% if (!history.length) { %><p class="muted m0">Платежей этому получателю ещё не было.</p><% } %>
+  <% history.forEach((h) => { %>
+    <a class="hist-row" href="/payments/<%= h.id %>/receipt"><span class="muted"><%= String(h.bank_date).slice(0, 10).split('-').reverse().join('.') %></span><b><%= formatAmount(h.amount + h.fee) %> BYN</b></a>
+  <% }) %>
+</aside>
+</section>
 <%- include('../../partials/footer') %>

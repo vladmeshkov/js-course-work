@@ -29,8 +29,12 @@ export async function catalog(req, res) {
   const q = String(req.query.q ?? '').trim();
   const city = String(req.query.city ?? '');
   const categories = (await paymentService.catalog.categories()).map((c) => ({ ...c, icon: iconFor(c.name) }));
-  const found = q ? await paymentService.catalog.providers({ q, city }) : [];
-  res.render('pages/payments/catalog', { title: 'Каталог платежей', categories, found, q, city, cities: await paymentService.catalog.cities() });
+  const found = q ? (await paymentService.catalog.providers({ q, city })).map((p) => ({ ...p, icon: iconFor(p.category_name) })) : [];
+  const all = await paymentService.catalog.providers({});
+  const POPULAR = ['Энергосбыт', 'Мобильный оператор «Синий»', 'Интернет-провайдер «Сеть»', 'Налоговая инспекция'];
+  const popular = POPULAR.map((name) => all.find((p) => p.name === name)).filter(Boolean);
+  const { templates, autopayments } = await paymentService.overview(req.user.id);
+  res.render('pages/payments/catalog', { title: 'Каталог платежей', categories, found, q, city, popular, templates, autopayments });
 }
 
 export async function category(req, res) {
@@ -50,7 +54,8 @@ async function renderPay(req, res, { form = {}, errors = {}, status = 200 } = {}
   if (!provider) throw new NotFoundError();
   const client = await clientModel.findByUserId(req.user.id);
   const accounts = (await accountService.listForClient(client.id)).filter((a) => a.currency === 'BYN' && ['current', 'savings'].includes(a.kind));
-  res.status(status).render('pages/payments/pay', { title: provider.name, provider, icon: iconFor(provider.category_name), accounts, form, errors });
+  const history = await paymentService.historyFor(req.user.id, provider.id);
+  res.status(status).render('pages/payments/pay', { title: provider.name, provider, icon: iconFor(provider.category_name), accounts, form, errors, history });
 }
 
 export async function showPay(req, res) {

@@ -1,6 +1,8 @@
 import { query } from '../db/pool.js';
 
-export const categories = async () => (await query('SELECT * FROM payment_categories ORDER BY sort, id')).rows;
+export const categories = async () => (await query(
+  `SELECT c.*, (SELECT count(*) FROM payment_providers p WHERE p.category_id = c.id AND p.active)::int AS count
+   FROM payment_categories c ORDER BY c.sort, c.id`)).rows;
 
 export async function category(id) {
   return (await query('SELECT * FROM payment_categories WHERE id = $1', [id])).rows[0];
@@ -17,7 +19,7 @@ export async function providers({ categoryId, city, q }) {
   const where = ['p.active'];
   if (categoryId) { params.push(categoryId); where.push(`p.category_id = $${params.length}`); }
   if (city) { params.push(city); where.push(`(p.city IS NULL OR p.city = $${params.length})`); }
-  if (q) { params.push(`%${q.toLowerCase()}%`); where.push(`lower(p.name) LIKE $${params.length}`); }
+  if (q) { params.push(`%${q.toLowerCase()}%`); where.push(`(lower(p.name) LIKE $${params.length} OR lower(c.name) LIKE $${params.length})`); }
   const { rows } = await query(
     `SELECT p.*, c.name AS category_name FROM payment_providers p JOIN payment_categories c ON c.id = p.category_id
      WHERE ${where.join(' AND ')} ORDER BY p.name`, params);
@@ -43,6 +45,13 @@ export async function recent(clientId, limit = 10) {
   const { rows } = await query(
     `SELECT pay.*, pr.name AS provider_name FROM payments pay JOIN payment_providers pr ON pr.id = pay.provider_id
      WHERE pay.client_id = $1 ORDER BY pay.id DESC LIMIT $2`, [clientId, limit]);
+  return rows;
+}
+
+/** Прошлые платежи клиента одному получателю (для правой колонки формы оплаты). */
+export async function historyFor(clientId, providerId, limit = 3) {
+  const { rows } = await query(
+    'SELECT id, amount, fee, bank_date FROM payments WHERE client_id = $1 AND provider_id = $2 ORDER BY id DESC LIMIT $3', [clientId, providerId, limit]);
   return rows;
 }
 

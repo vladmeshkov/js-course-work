@@ -1,17 +1,17 @@
 <%- include('../../partials/header', { title }) %>
-<nav class="crumbs" aria-label="Навигационная цепочка"><a href="/payments">Платежи и переводы</a> &nbsp;›&nbsp; <a href="/payments/catalog">Оплата услуг</a> &nbsp;›&nbsp; <%= category.name %></nav>
+<nav class="crumbs" aria-label="Навигационная цепочка"><a href="/cabinet">Главная</a> &nbsp;›&nbsp; <a href="/payments/catalog">Платежи</a> &nbsp;›&nbsp; <%= category.name %></nav>
 <section class="pay-banner">
-  <div><h1><%= category.name %></h1><div class="muted2"><%= category.hint %></div></div>
+  <div><h1><%= category.name %></h1><div class="muted2"><%= providers.length %> <%= providers.length % 10 === 1 && providers.length % 100 !== 11 ? 'услуга' : ([2, 3, 4].includes(providers.length % 10) && ![12, 13, 14].includes(providers.length % 100)) ? 'услуги' : 'услуг' %></div></div>
   <img src="/img/3d/<%= category.icon %>.png" alt="">
 </section>
-<form class="chips" method="get" action="/payments/catalog/<%= category.id %>">
-  <a class="chip" aria-selected="<%= !city %>" href="/payments/catalog/<%= category.id %>">Все города</a>
-  <% cities.forEach((c) => { %><a class="chip" aria-selected="<%= c === city %>" href="/payments/catalog/<%= category.id %>?city=<%= encodeURIComponent(c) %>"><%= c %></a><% }) %>
-</form>
 <section class="panel pay-found">
-  <% if (!providers.length) { %><p class="muted m0">В этом городе пока нет организаций.</p><% } %>
+  <% if (!providers.length) { %><div class="pay-empty">В этой категории пока нет организаций.</div><% } %>
   <% providers.forEach((p) => { %>
-    <a class="pay-row" href="/payments/pay/<%= p.id %>"><span><b><%= p.name %></b><small><%= p.city || 'Во всех городах' %><%= Number(p.fee_percent) > 0 ? ', комиссия ' + String(Number(p.fee_percent)).replace('.', ',') + '%' : '' %></small></span><span class="pay-row__go">→</span></a>
+    <a class="pay-row pay-row--icon" href="/payments/pay/<%= p.id %>">
+      <span class="pay-row__thumb"><img src="/img/3d/<%= category.icon %>.png" alt=""></span>
+      <span class="pay-row__txt"><b><%= p.name %></b><small><%= p.requisite_label %><%= p.city ? ', ' + p.city : '' %><%= Number(p.fee_percent) > 0 ? ', комиссия ' + String(Number(p.fee_percent)).replace('.', ',') + '%' : '' %></small></span>
+      <span class="pay-row__go">→</span>
+    </a>
   <% }) %>
 </section>
 <%- include('../../partials/footer') %>

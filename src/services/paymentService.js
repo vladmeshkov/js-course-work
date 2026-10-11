@@ -88,6 +88,11 @@ export async function overview(userId) {
   return { templates: await paymentModel.templates(client.id), autopayments: await paymentModel.autopayments(client.id), recent: await paymentModel.recent(client.id) };
 }
 
+export async function historyFor(userId, providerId) {
+  const client = await clientModel.findByUserId(userId);
+  return client ? paymentModel.historyFor(client.id, providerId) : [];
+}
+
 export async function getReceipt(userId, id) {
   const client = await clientModel.findByUserId(userId);
   const receipt = client ? await paymentModel.receipt(id, client.id) : null;
