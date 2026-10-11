@@ -19,6 +19,7 @@ const staff = [
 ];
 
 import { refreshRates } from '../services/ratesService.js';
+import { ensureModel } from '../services/scoringService.js';
 
 await migrate();
 await withTransaction(async (db) => {
@@ -52,6 +53,8 @@ for (const d of demo) {
     await post({ type: 'cash_in', description: 'Взнос наличных', entries: [{ debit: cash.id, credit: account.id, amount: d.cash, currency: 'BYN' }] }, db);
   });
 }
+const trained = await ensureModel();
+if (trained) console.log(`Скоринг: обучена модель версии ${trained.version}, AUC ${trained.metrics.auc.toFixed(3)}`);
 const source = await refreshRates();
 console.log(`Курсы валют: ${source}`);
 console.log('Готово. Пользователи (пароль Taler2026, только для разработки): admin, operator, credit, monitor, клиенты anna и igor');

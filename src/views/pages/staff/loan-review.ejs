@@ -25,8 +25,14 @@
   <aside class="review__side">
     <div>
       <h2>Проверки</h2>
-      <div class="check-row"><span>Скоринговый балл</span><b><%= a.score %> из 100</b></div>
-      <% a.scoring_notes.forEach((n) => { %><div class="check-row"><span><%= n.factor %><small><%= n.text %></small></span><b><%= n.points %></b></div><% }) %>
+      <% if (a.model_version) { %>
+        <div class="check-row"><span>Вероятность дефолта<small>регрессионная модель версии <%= a.model_version %></small></span><b><%= String(Number(a.pd_percent)).replace('.', ',') %> %</b></div>
+        <% a.scoring_notes.slice(1).forEach((n) => { %><div class="check-row"><span><%= n.factor %><small><%= n.text %></small></span><b class="<%= n.points > 0 ? 'text-bad' : n.points < 0 ? 'text-good' : '' %>"><%= (n.points > 0 ? '+' : '') + String(n.points).replace('.', ',') %> п.п.</b></div><% }) %>
+        <p class="muted2 small m0">Вклад признака: на сколько процентных пунктов он меняет вероятность дефолта относительно среднего заёмщика.</p>
+      <% } else { %>
+        <div class="check-row"><span>Скоринговый балл</span><b><%= a.score %> из 100</b></div>
+        <% a.scoring_notes.forEach((n) => { %><div class="check-row"><span><%= n.factor %><small><%= n.text %></small></span><b><%= n.points %></b></div><% }) %>
+      <% } %>
     </div>
     <% if (a.status === 'manual_review') { %>
     <form class="panel form" method="post" action="/staff/loans/<%= a.id %>">

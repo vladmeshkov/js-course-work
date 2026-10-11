@@ -13,10 +13,10 @@ export async function findProduct(id, db = { query }) {
 export async function insertApplication(db, a) {
   const { rows } = await db.query(
     `INSERT INTO loan_applications (client_id, product_id, target_account_id, amount, term_months, schedule_type, rate_percent,
-       income, obligations, experience_months, dependents, first_payment, dti_percent, score, scoring_notes, status, decision_comment)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17) RETURNING *`,
+       income, obligations, experience_months, dependents, first_payment, dti_percent, score, scoring_notes, status, decision_comment, pd_percent, model_version)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19) RETURNING *`,
     [a.clientId, a.productId, a.targetAccountId, a.amount, a.termMonths, a.scheduleType, a.rate, a.income, a.obligations,
-      a.experienceMonths, a.dependents, a.firstPayment, a.dti, a.score, JSON.stringify(a.notes), a.status, a.comment ?? null]
+      a.experienceMonths, a.dependents, a.firstPayment, a.dti, a.score, JSON.stringify(a.notes), a.status, a.comment ?? null, a.pdPercent ?? null, a.modelVersion ?? null]
   );
   return rows[0];
 }

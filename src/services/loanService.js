@@ -14,6 +14,7 @@ import * as settingsModel from '../models/settingsModel.js';
 import { BALANCE_CODES, ensureInternalAccount } from './accountService.js';
 import * as auditService from './auditService.js';
 import { notify, money } from './notificationService.js';
+import * as scoringService from './scoringService.js';
 import * as ledgerService from './ledgerService.js';
 import * as otpService from './otpService.js';
 
@@ -101,13 +102,17 @@ export async function apply(userId, input) {
   const today = await bankDate();
   const rate = Number(product.rate_percent);
   const first = buildSchedule({ principal: input.amount, annualPercent: rate, type: input.scheduleType, dueDates: dueDatesFrom(today, input.termMonths) })[0];
-  const result = scoreApplication({
+  const scoringInput = {
     age: ageOn(client.birth_date, today), income: input.income, obligations: input.obligations, newPayment: first.total,
     experienceMonths: input.experienceMonths, dependents: input.dependents, amount: input.amount, limits: await limits()
-  });
+  };
+  const card = scoreApplication(scoringInput);
+  // регрессионная модель принимает решение, если она обучена и включена; иначе работает балльная карта
+  const model = (await settingsModel.getNumber('loan.scoring_regression')) === 1 ? await scoringService.activeModel() : null;
+  const result = model ? await scoringService.assess(model, { ...scoringInput, dti: card.dti }, scoringInput.limits) : card;
   const status = { approve: 'approved', manual: 'manual_review', reject: 'rejected' }[result.decision];
   const comment = result.decision === 'reject'
-    ? (result.dti > (await limits()).maxDti ? `Долговая нагрузка ${result.dti} % выше допустимой (Инструкция Нацбанка № 149)` : 'Низкий скоринговый балл')
+    ? (result.dti > (await limits()).maxDti ? `Долговая нагрузка ${result.dti} % выше допустимой (Инструкция Нацбанка № 149)` : (model ? `Высокая вероятность дефолта по модели: ${String(result.pdPercent).replace('.', ',')} %` : 'Низкий скоринговый балл'))
     : null;
 
   return withTransaction(async (db) => {
@@ -115,7 +120,7 @@ export async function apply(userId, input) {
       clientId: client.id, productId: product.id, targetAccountId: target.id, amount: input.amount, termMonths: input.termMonths,
       scheduleType: input.scheduleType, rate, income: input.income, obligations: input.obligations,
       experienceMonths: input.experienceMonths, dependents: input.dependents, firstPayment: first.total,
-      dti: result.dti, score: result.score, notes: result.notes, status, comment
+      dti: result.dti, score: result.score, notes: result.notes, status, comment, pdPercent: result.pdPercent ?? null, modelVersion: result.modelVersion ?? null
     });
     const texts = { approved: ['Кредит одобрен', 'Подпишите договор, чтобы получить деньги.'], manual_review: ['Заявка на рассмотрении', 'Её проверит кредитный специалист.'], rejected: ['Отказ по заявке на кредит', comment ?? ''] }[status];
     await notify(userId, { type: 'loan', title: texts[0], body: `Заявка № ${application.id}, ${money(input.amount)}. ${texts[1]}`, link: `/loans/applications/${application.id}` }, db);
