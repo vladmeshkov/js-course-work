@@ -7,6 +7,35 @@
 .pal-terracotta{--bg:#ECEEF0;--bar:#E0E3E6;--ink:#1C2128;--muted:#4A525C;--muted2:#6C7480;--line:#E2E5E8;--fld:#F5F6F7;--soft:#F7E3DA;--d1:#1A1F26;--d2:#333C48;--glow:rgba(212,106,66,0.5);--accent:#C4532D;--onAccent:#FFFFFF;--accentText:#B04A27;--onEmblem:#FFFFFF;--onDark:#F0A27F;--v1:#1A1F26;--v2:#3A4452;--v3:#D46A42;--s1:#333C48;--s2:#B04A27;--g1:#3A4452;--c1:#F3F4F5;--c2:#E0E3E6}
 .pal-orange{--bg:#EEF0F3;--bar:#E2E5E9;--ink:#151A21;--muted:#4A5260;--muted2:#6D7581;--line:#E3E6EA;--fld:#F6F7F9;--soft:#FDE8DC;--d1:#14181F;--d2:#2A3038;--glow:rgba(255,140,60,0.55);--accent:#DE5B1C;--onAccent:#FFFFFF;--accentText:#C4490F;--onEmblem:#FFFFFF;--onDark:#FF9A5C;--v1:#14181F;--v2:#3A424D;--v3:#E8701F;--s1:#2A3038;--s2:#C4490F;--g1:#3A424D;--c1:#F4F5F7;--c2:#E2E5EA}
 
+/* Нейтральные цвета интерфейса. Светлая тема по умолчанию, тёмная включается классом dark на элементе html */
+:root{color-scheme:light;--surface:#fff;--surface-glass:rgba(255,255,255,.94);--hero-a:#fff;--hero-b:#F1F2F5;--hero-c:#F8EFE8;
+--shadow:rgba(40,34,28,.08);--shadow-strong:rgba(60,50,40,.12);--logo-bank:#7A8088;
+--good:#1E7B45;--good-bg:#E3F4E9;--good-ink:#15602F;--bad:#B4233C;--bad-bg:#FBE4E7;--bad-ink:#9B1C32}
+
+/* Тёмная тема: слои от самого тёмного фона к приподнятым плиткам, акцент тот же оранжевый */
+html.dark{color-scheme:dark}
+html.dark body{--bg:#0D1015;--bar:#12161C;--ink:#EBEEF3;--muted:#A6AFBC;--muted2:#808997;--line:#262D37;--fld:#10141A;--soft:rgba(232,100,31,.15);
+--surface:#171C23;--surface-glass:rgba(23,28,35,.9);--hero-a:#171C23;--hero-b:#13171D;--hero-c:#21170F;
+--shadow:rgba(0,0,0,.4);--shadow-strong:rgba(0,0,0,.55);--logo-bank:#9AA3B0;
+--d1:#262D38;--d2:#323B49;
+--good:#5CCB8E;--good-bg:rgba(92,203,142,.14);--good-ink:#86E2AC;--bad:#FF7886;--bad-bg:rgba(255,120,134,.14);--bad-ink:#FFA3AD}
+html.dark body.pal-orange{--accentText:#FF9764;--onDark:#FFAA7B}
+html.dark .tile,html.dark .tile-link,html.dark .receipt,html.dark .top-bar{box-shadow:inset 0 0 0 1px rgba(255,255,255,.045)}
+html.dark .top-bar{box-shadow:0 1px 0 var(--line)}
+html.dark .tile--dark{background:linear-gradient(160deg,#1F2630,#2C3541);box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+html.dark .bank-card{box-shadow:0 14px 30px rgba(0,0,0,.45)}
+html.dark .auth{box-shadow:inset 0 0 0 1px rgba(255,255,255,.045)}
+html.dark .btn--ghost{border-color:var(--accentText)}
+html.dark .chip[aria-selected="true"]{color:var(--onAccent)}
+html.dark ::selection{background:rgba(222,91,28,.45)}
+html.dark img.photo{filter:brightness(.92)}
+.theme-ready body,.theme-ready .tile,.theme-ready .top-bar,.theme-ready .tile-link,.theme-ready .util-bar{transition:background-color .25s,color .25s,box-shadow .25s}
+
+/* Переключатель темы */
+.theme-toggle{display:inline-flex;align-items:center;gap:8px;padding:2px 4px;border:0;background:none;color:inherit;font-size:14px;cursor:pointer}
+.theme-toggle__icon{width:16px;height:16px;border-radius:50%;border:2px solid currentColor;background:linear-gradient(90deg,currentColor 50%,transparent 50%)}
+.theme-toggle:hover{color:var(--accentText)}
+
 /* Базовые стили */
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -17,18 +46,18 @@ h1,h2,h3{margin:0;letter-spacing:-0.5px}
 h1{font-size:clamp(30px,3.8vw,48px);font-weight:700;letter-spacing:-1px;line-height:1.1}
 h2{font-size:26px;font-weight:700}
 :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
-.skip-link{position:absolute;left:-999px;top:8px;background:#fff;padding:10px 16px;border-radius:10px;z-index:100}
+.skip-link{position:absolute;left:-999px;top:8px;background:var(--surface);color:var(--ink);padding:10px 16px;border-radius:10px;z-index:100}
 .skip-link:focus{left:8px}
 
 /* Шапка: утилитная полоса и основная часть */
 .util-bar{background:var(--bar);font-size:14px}
 .util-bar__in{max-width:1280px;margin:0 auto;padding:6px 40px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px}
 .util-bar__links{display:flex;flex-wrap:wrap;gap:26px;align-items:center}
-.top-bar{background:#fff}
+.top-bar{background:var(--surface)}
 .top-bar__in{max-width:1280px;margin:0 auto;padding:16px 40px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:20px}
-.logo{display:flex;align-items:center;gap:10px;font-size:24px;font-weight:700;letter-spacing:-0.5px;color:var(--d1)}
+.logo{display:flex;align-items:center;gap:10px;font-size:24px;font-weight:700;letter-spacing:-0.5px;color:var(--ink)}
 .logo img{display:block}
-.logo__bank{font-weight:600;color:#7A8088}
+.logo__bank{font-weight:600;color:var(--logo-bank)}
 .main-nav{display:flex;flex-wrap:wrap;gap:8px 34px;font-size:17px;font-weight:500}
 .main-nav a{padding:6px 0;border-bottom:2px solid transparent}
 .main-nav a:hover,.main-nav a[aria-current="page"]{color:var(--accentText);border-bottom-color:var(--accentText)}
@@ -47,7 +76,7 @@ h2{font-size:26px;font-weight:700}
 /* Страница */
 .page{max-width:1280px;margin:0 auto;padding:28px 40px 72px;display:flex;flex-direction:column;gap:26px}
 .crumbs{font-size:15px;color:var(--muted2)}
-.tile{background:#fff;border-radius:24px;padding:32px 36px}
+.tile{background:var(--surface);border-radius:24px;padding:32px 36px}
 .tile--dark{background:linear-gradient(160deg,var(--d1),var(--d2));color:#fff}
 .tile--soft{background:var(--soft)}
 .muted{color:var(--muted)}
@@ -57,8 +86,8 @@ h2{font-size:26px;font-weight:700}
 
 /* Уведомления */
 .alert{padding:16px 22px;border-radius:14px;font-size:16px}
-.alert--success{background:#E3F4E9;color:#15602F}
-.alert--error{background:#FBE4E7;color:#9B1C32}
+.alert--success{background:var(--good-bg);color:var(--good-ink)}
+.alert--error{background:var(--bad-bg);color:var(--bad-ink)}
 .alert--info{background:var(--soft);color:var(--ink)}
 
 /* Формы */
@@ -66,17 +95,17 @@ h2{font-size:26px;font-weight:700}
 .field{display:flex;flex-direction:column;gap:6px}
 .field label{font-size:15px;color:var(--muted)}
 .field input,.field select{padding:15px 18px;border:1.5px solid var(--line);border-radius:12px;background:var(--fld);color:var(--ink);font-size:18px}
-.field--error input{border-color:#B4233C}
-.field__error{font-size:14px;color:#B4233C;min-height:0}
+.field--error input{border-color:var(--bad)}
+.field__error{font-size:14px;color:var(--bad);min-height:0}
 .field__hint{font-size:14px;color:var(--muted2)}
 .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
 
 /* Вход и регистрация */
-.auth{display:flex;flex-wrap:wrap;gap:0;border-radius:28px;overflow:hidden;background:linear-gradient(115deg,#fff 0%,#F1F2F5 52%,#F8EFE8 100%);min-height:620px}
+.auth{display:flex;flex-wrap:wrap;gap:0;border-radius:28px;overflow:hidden;background:linear-gradient(115deg,var(--hero-a) 0%,var(--hero-b) 52%,var(--hero-c) 100%);min-height:620px}
 .auth__side{flex:1.2 1 520px;padding:44px 48px;display:flex;flex-direction:column;justify-content:space-between;gap:30px}
 .auth__side h1{max-width:11ch;text-wrap:balance}
 .auth__panel{flex:1 1 440px;padding:40px 48px;display:flex;align-items:center;justify-content:center}
-.auth__card{width:100%;max-width:520px;background:rgba(255,255,255,.94);border-radius:24px;padding:40px;box-shadow:0 30px 60px rgba(60,50,40,.12)}
+.auth__card{width:100%;max-width:520px;background:var(--surface-glass);border-radius:24px;padding:40px;box-shadow:0 30px 60px var(--shadow-strong)}
 .auth__card h2{font-size:32px;margin-bottom:8px}
 
 /* Главная для гостя */
@@ -84,7 +113,7 @@ h2{font-size:26px;font-weight:700}
 .hero__text{flex:1 1 420px}
 .hero__text p{font-size:20px;color:var(--muted);max-width:30ch;margin:16px 0 26px}
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:22px}
-.tile-link{display:flex;flex-direction:column;gap:10px;min-height:200px;border-radius:24px;background:#fff;padding:30px 32px;transition:transform .2s}
+.tile-link{display:flex;flex-direction:column;gap:10px;min-height:200px;border-radius:24px;background:var(--surface);padding:30px 32px;transition:transform .2s}
 .tile-link:hover{transform:translateY(-3px)}
 .tile-link h3{font-size:24px}
 
@@ -127,7 +156,7 @@ a.account:hover .account__title{color:var(--accentText)}
 .table th{text-align:left;font-size:14px;font-weight:500;color:var(--muted2);padding:8px 12px;border-bottom:1.5px solid var(--line);white-space:nowrap}
 .table td{padding:12px;border-bottom:1px solid var(--line);white-space:nowrap}
 .table tr.row--done td{color:var(--muted2)}
-.table tr.row--bad td{background:#FBE4E7}
+.table tr.row--bad td{background:var(--bad-bg)}
 
 /* Служебные классы (вместо встроенных стилей, которые запрещает CSP) */
 .m0{margin:0}.mb6{margin-bottom:6px}.mb10{margin-bottom:10px}.mb12{margin-bottom:12px}.mb14{margin-bottom:14px}.mb20{margin-bottom:20px}.mb22{margin-bottom:22px}
@@ -149,7 +178,7 @@ a.account:hover .account__title{color:var(--accentText)}
 .grow-3{flex:3 1 480px}.grow-2{flex:2 1 320px}
 .actions{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
 .actions--end{align-items:flex-end;gap:12px}.actions--tight{gap:12px}
-.text-bad{color:#B4233C}.text-good{color:#1E7B45}
+.text-bad{color:var(--bad)}.text-good{color:var(--good)}
 .link-button{background:none;border:0;border-bottom:1.5px solid transparent;cursor:pointer;color:var(--accentText);font-weight:500}
 .link-button:hover{border-bottom-color:currentColor}
 .debug{overflow:auto;font-size:13px;margin-top:24px}
@@ -159,7 +188,7 @@ a.account:hover .account__title{color:var(--accentText)}
 .card-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:22px}
 .bank-card{position:relative;display:flex;flex-direction:column;justify-content:space-between;gap:26px;aspect-ratio:1.586;max-height:230px;padding:24px 26px;border-radius:24px;color:#fff;background:linear-gradient(135deg,var(--d1),var(--d2));overflow:hidden}
 .bank-card--visa{background:linear-gradient(135deg,var(--accent),var(--accentText))}
-.bank-card--mastercard{background:linear-gradient(135deg,#F4F5F7,#D6DADF);color:var(--ink)}
+.bank-card--mastercard{background:linear-gradient(135deg,#F4F5F7,#D6DADF);color:#151A21}
 .bank-card--blocked{filter:grayscale(1) brightness(.9)}
 .bank-card--new{align-items:center;justify-content:center;background:transparent;border:2px dashed var(--line);color:var(--accentText);font-weight:600;font-size:20px}
 .bank-card--new:hover{border-color:var(--accent)}
@@ -178,12 +207,12 @@ a.account:hover .account__title{color:var(--accentText)}
 .search select{flex:1 1 160px;padding:14px 18px;border:1.5px solid var(--line);border-radius:12px;background:var(--fld);font-size:17px}
 .mini{width:110px;padding:9px 12px;border:1.5px solid var(--line);border-radius:10px;background:var(--fld);font-size:16px}
 .mini--day{width:70px}
-.receipt{position:relative;max-width:640px;background:#fff;border-radius:6px 6px 24px 24px;padding:36px 40px;box-shadow:0 20px 40px rgba(40,34,28,.08)}
+.receipt{position:relative;max-width:640px;background:var(--surface);border-radius:6px 6px 24px 24px;padding:36px 40px;box-shadow:0 20px 40px var(--shadow)}
 .receipt__head{display:flex;gap:14px;align-items:center}
 .receipt__no{font-size:22px;font-weight:700}
 .receipt__cut{border-top:2px dashed var(--line);margin:22px 0}
 .receipt__total{font-size:20px;margin:6px 0 22px}
-@media print{.util-bar,.top-bar,.footer,.no-print,.skip-link{display:none}body{background:#fff}.receipt{box-shadow:none}}
+@media print{.util-bar,.top-bar,.footer,.no-print,.skip-link{display:none}html.dark body{--bg:#fff;--surface:#fff;--ink:#151A21;--muted:#4A5260;--muted2:#6D7581;--line:#E3E6EA;--good:#1E7B45}body{background:#fff}.receipt{box-shadow:none}}
 
 /* Администрирование */
 .between{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px}
@@ -204,7 +233,9 @@ a.account:hover .account__title{color:var(--accentText)}
 .note--new{border-left:4px solid var(--accent);padding-left:14px}
 .note__head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px}
 .codes{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;font-size:19px;font-weight:600;letter-spacing:1px}
-.codes span{background:#fff;border-radius:10px;padding:10px 14px}
+.codes span{background:var(--surface);border-radius:10px;padding:10px 14px}
 .qr{width:220px;height:220px;background:#fff;border-radius:12px}
 .qr svg{display:block;width:100%;height:100%}
 .secret{font-size:20px;font-weight:600;letter-spacing:2px;margin:0;overflow-wrap:anywhere}
+html.dark .btn:hover{background:#F0702E;border-color:#F0702E}
+html.dark .btn--ghost:hover{background:var(--soft);border-color:var(--accentText)}

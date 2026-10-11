@@ -5,6 +5,7 @@
       <span><%= user ? user.role_name : 'Интернет-банкинг для физических лиц' %></span>
       <div class="util-bar__links">
         <a href="/rates">Курсы валют</a>
+        <button class="theme-toggle" type="button" data-theme-toggle aria-pressed="false" title="Переключить тему"><span class="theme-toggle__icon" aria-hidden="true"></span><span data-theme-label>Тёмная тема</span></button>
         <% if (user) { %>
           <a href="/security">Безопасность</a>
           <a class="bell" href="/notifications" aria-label="Уведомления<%= unread ? ', непрочитанных: ' + unread : '' %>">Уведомления<% if (unread) { %><span class="bell__count"><%= unread > 99 ? '99+' : unread %></span><% } %></a>
