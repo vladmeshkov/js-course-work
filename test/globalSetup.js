@@ -10,5 +10,8 @@ export default async function setup() {
   const { migrate } = await import('../src/db/migrate.js');
   const { pool: appPool } = await import('../src/db/pool.js');
   await migrate();
+  // фиксированные курсы для тестов: API Нацбанка недоступен
+  const { refreshRates } = await import('../src/services/ratesService.js');
+  await refreshRates(() => Promise.reject(new Error('offline')));
   await appPool.end();
 }

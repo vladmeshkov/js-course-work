@@ -5,7 +5,7 @@ import { pool } from '../src/db/pool.js';
 import { verifyClient } from '../src/services/kycService.js';
 import { hashPassword } from '../src/services/authService.js';
 import * as userModel from '../src/models/userModel.js';
-import { closePool } from './helpers.js';
+import { createClientWithAccount, getAccount, closePool } from './helpers.js';
 
 afterAll(closePool);
 
@@ -112,5 +112,43 @@ describe('заявка клиента, проверка анкеты и вход
     const res = await agent.get('/workplace');
     expect(res.status).toBe(403);
     expect(res.text).toContain('Недостаточно прав');
+  });
+});
+
+describe('перевод через веб-форму', () => {
+  it('крупный перевод: форма, код подтверждения, итог на странице счёта', async () => {
+    const hash = await hashPassword('Parol2026');
+    const a = await createClientWithAccount(300000, 'BYN', hash);
+    const b = await createClientWithAccount(0);
+    const agent = request.agent(app);
+    const { token } = await pageWithToken(agent, '/login');
+    await agent.post('/login').type('form').send({ _csrf: token, login: a.login, password: 'Parol2026' });
+
+    const { res: formPage, token: formToken } = await pageWithToken(agent, '/transfers/new?kind=client');
+    expect(formPage.status).toBe(200);
+    expect(formPage.text).toContain('Номер счёта получателя');
+
+    const iban = (await getAccount(b.accountId)).iban;
+    const bad = await agent.post('/transfers').type('form').send({ _csrf: formToken, kind: 'client', fromAccountId: a.accountId, toIban: iban, amount: 'abc' });
+    expect(bad.status).toBe(422);
+    expect(bad.text).toContain('Введите сумму');
+
+    const created = await agent.post('/transfers').type('form').send({ _csrf: formToken, kind: 'client', fromAccountId: a.accountId, toIban: iban, amount: '250,00', comment: 'За аренду' });
+    expect(created.status).toBe(302);
+    const confirmUrl = created.headers.location;
+    expect(confirmUrl).toMatch(/\/transfers\/[0-9a-f-]+\/confirm/);
+
+    const { res: confirmPage, token: confirmToken } = await pageWithToken(agent, confirmUrl);
+    const code = /<b>(\d{6})<\/b>/.exec(confirmPage.text)[1];
+    const wrong = await agent.post(confirmUrl).type('form').send({ _csrf: confirmToken, code: code === '000000' ? '111111' : '000000' });
+    expect(wrong.status).toBe(400);
+    expect(wrong.text).toContain('Неверный код');
+
+    const ok = await agent.post(confirmUrl).type('form').send({ _csrf: confirmToken, code });
+    expect(ok.status).toBe(302);
+    const page = await agent.get(ok.headers.location);
+    expect(page.text).toContain('Перевод выполнен');
+    expect(page.text).toContain('За аренду');
+    expect((await getAccount(b.accountId)).balance).toBe(25000);
   });
 });

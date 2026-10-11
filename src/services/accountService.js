@@ -13,7 +13,8 @@ export const BALANCE_CODES = {
   cash: '1010',
   income: '6000',
   expense: '7000',
-  correspondent: '1100'
+  correspondent: '1100',
+  conversion: '1210'
 };
 
 const CLIENT_KINDS = {

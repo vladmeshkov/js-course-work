@@ -58,3 +58,21 @@ export async function heldAmount(db, accountId) {
 export async function addToBalance(db, accountId, delta) {
   await db.query('UPDATE accounts SET balance = balance + $2 WHERE id = $1', [accountId, delta]);
 }
+
+export async function findById(id, db = { query }) {
+  const { rows } = await db.query(`SELECT ${COLUMNS} FROM accounts WHERE id = $1`, [id]);
+  return rows[0];
+}
+
+/** Последние операции по счёту: сумма со знаком относительно этого счёта. */
+export async function operations(accountId, limit = 50) {
+  const { rows } = await query(
+    `SELECT p.id, p.currency, d.type, d.description, d.created_at, d.bank_date,
+            CASE WHEN p.credit_account_id = $1 THEN p.amount ELSE -p.amount END AS signed
+     FROM postings p JOIN documents d ON d.id = p.document_id
+     WHERE p.credit_account_id = $1 OR p.debit_account_id = $1
+     ORDER BY p.id DESC LIMIT $2`,
+    [accountId, limit]
+  );
+  return rows;
+}

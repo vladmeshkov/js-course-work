@@ -1,0 +1,16 @@
+<%- include('../../partials/header', { title }) %>
+<nav class="crumbs" aria-label="Навигационная цепочка"><a href="/cabinet">Главная</a> &nbsp;›&nbsp; Счета и карты</nav>
+<h1>Счета и карты</h1>
+<section class="tile">
+  <% if (!accounts.length) { %><p class="muted" style="margin:0">Счетов пока нет.</p><% } %>
+  <% accounts.forEach((a) => { %>
+    <a class="account" href="/accounts/<%= a.id %>">
+      <div>
+        <div class="account__title"><%= a.title %><%= a.status === 'frozen' ? ' (заблокирован)' : '' %></div>
+        <div class="account__iban"><%= formatIban(a.iban) %></div>
+      </div>
+      <div class="amount"><%= formatAmount(a.balance) %> <small><%= a.currency %></small></div>
+    </a>
+  <% }) %>
+</section>
+<%- include('../../partials/footer') %>

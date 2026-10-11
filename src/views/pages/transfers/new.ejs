@@ -1,0 +1,43 @@
+<%- include('../../partials/header', { title }) %>
+<nav class="crumbs" aria-label="Навигационная цепочка"><a href="/cabinet">Главная</a> &nbsp;›&nbsp; <a href="/payments">Платежи и переводы</a> &nbsp;›&nbsp; Перевод</nav>
+<h1>Перевод</h1>
+<div class="chips" role="tablist">
+  <a class="chip" role="tab" aria-selected="<%= kind === 'client' %>" href="/transfers/new?kind=client">Клиенту банка</a>
+  <a class="chip" role="tab" aria-selected="<%= kind === 'own' %>" href="/transfers/new?kind=own">Между своими счетами</a>
+</div>
+<form class="tile form" method="post" action="/transfers" novalidate style="max-width:720px">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <input type="hidden" name="kind" value="<%= kind %>">
+  <% if (errors.common) { %><div class="alert alert--error" role="alert"><%= errors.common %></div><% } %>
+  <% const accountOptions = (selected) => accounts.map((a) => `<option value="${a.id}"${String(selected) === String(a.id) ? ' selected' : ''}>${esc(a.title)}, ${formatAmount(a.balance)} ${a.currency}</option>`).join(''); %>
+  <div class="field<%= errors.fromAccountId ? ' field--error' : '' %>">
+    <label for="fromAccountId">Со счёта</label>
+    <select id="fromAccountId" name="fromAccountId"><%- accountOptions(form.fromAccountId) %></select>
+    <% if (errors.fromAccountId) { %><span class="field__error"><%= errors.fromAccountId %></span><% } %>
+  </div>
+  <% if (kind === 'own') { %>
+    <div class="field<%= errors.toAccountId ? ' field--error' : '' %>">
+      <label for="toAccountId">На счёт</label>
+      <select id="toAccountId" name="toAccountId"><%- accountOptions(form.toAccountId) %></select>
+      <% if (errors.toAccountId) { %><span class="field__error"><%= errors.toAccountId %></span><% } %>
+      <span class="field__hint">Если валюты разные, сумма пересчитается по курсу банка.</span>
+    </div>
+  <% } else { %>
+    <div class="field<%= errors.toIban ? ' field--error' : '' %>">
+      <label for="toIban">Номер счёта получателя (IBAN)</label>
+      <input id="toIban" name="toIban" value="<%= form.toIban || '' %>" autocomplete="off" placeholder="BY00 TLRB 2400 0000 0000 0000 0001">
+      <% if (errors.toIban) { %><span class="field__error"><%= errors.toIban %></span><% } %>
+    </div>
+  <% } %>
+  <div class="field<%= errors.amount ? ' field--error' : '' %>">
+    <label for="amount">Сумма (в валюте счёта списания)</label>
+    <input id="amount" name="amount" value="<%= form.amount || '' %>" inputmode="decimal" autocomplete="off" placeholder="0,00">
+    <% if (errors.amount) { %><span class="field__error"><%= errors.amount %></span><% } %>
+  </div>
+  <div class="field">
+    <label for="comment">Назначение платежа</label>
+    <input id="comment" name="comment" maxlength="140" value="<%= form.comment || '' %>">
+  </div>
+  <div><button class="btn" type="submit" style="font-size:18px">Перевести</button></div>
+</form>
+<%- include('../../partials/footer') %>

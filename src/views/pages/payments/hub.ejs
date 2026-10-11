@@ -1,0 +1,9 @@
+<%- include('../../partials/header', { title }) %>
+<nav class="crumbs" aria-label="Навигационная цепочка"><a href="/cabinet">Главная</a> &nbsp;›&nbsp; Платежи и переводы</nav>
+<h1>Платежи и переводы</h1>
+<section class="tiles">
+  <a class="tile-link" href="/transfers/new?kind=client"><h3>Перевод клиенту банка</h3><span class="muted">По номеру счёта, с подтверждением кодом</span></a>
+  <a class="tile-link" href="/transfers/new?kind=own"><h3>Между своими счетами</h3><span class="muted">Мгновенно, с конвертацией валют</span></a>
+  <div class="tile-link" style="opacity:.6"><h3>Оплата услуг</h3><span class="muted">Каталог платежей появится позже</span></div>
+</section>
+<%- include('../../partials/footer') %>

@@ -1,0 +1,21 @@
+<%- include('../../partials/header', { title }) %>
+<h1>Подтвердите перевод</h1>
+<form class="tile form" method="post" action="/transfers/<%= intent.id %>/confirm" style="max-width:640px">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <div>
+    <div class="muted2">Сумма</div>
+    <div class="balance-big" style="font-size:44px"><%= formatAmount(intent.amount) %> <small class="muted" style="font-size:20px;font-weight:400"><%= from.currency %></small></div>
+  </div>
+  <div class="muted">Со счёта: <%= formatIban(from.iban) %><br>На счёт: <%= formatIban(to.iban) %><% if (intent.fee > 0) { %><br>Комиссия: <%= formatAmount(intent.fee) %> <%= from.currency %><% } %></div>
+  <div class="field">
+    <label for="code">Код из SMS</label>
+    <input id="code" name="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" autofocus style="font-size:30px;letter-spacing:10px;font-weight:600">
+  </div>
+  <% if (demoCode) { %><div class="alert alert--info">Учебная версия: код вместо SMS показан здесь: <b><%= demoCode %></b></div><% } %>
+  <% if (error) { %><div class="alert alert--error" role="alert"><%= error %></div><% } %>
+  <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+    <button class="btn" type="submit" style="font-size:18px">Подтвердить</button>
+    <button class="link" type="submit" formaction="/transfers/<%= intent.id %>/cancel" style="background:none;border:0;border-bottom:1.5px solid transparent;cursor:pointer">Отменить</button>
+  </div>
+</form>
+<%- include('../../partials/footer') %>

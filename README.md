@@ -25,7 +25,7 @@
    npm start
    ```
 
-5. Откройте http://localhost:3000. Служебные пользователи для разработки: `admin`, `operator`, `credit`, `monitor`, пароль `Taler2026`.
+5. Откройте http://localhost:3000. Пользователи для разработки (пароль `Taler2026`): сотрудники `admin`, `operator`, `credit`, `monitor` и клиенты `anna`, `igor` со счётом и деньгами.
 
 ## Команды
 
