@@ -59,12 +59,13 @@ export async function changeRole(adminId, userId, roleCode) {
 }
 
 /** Журнал аудита с фильтрами. */
-export async function auditLog({ login = '', action = '', result = '' } = {}, limit = 200) {
+export async function auditLog({ login = '', action = '', result = '', days = 0 } = {}, limit = 200) {
   const params = [];
   const where = [];
   if (login) { params.push(`%${login.toLowerCase()}%`); where.push(`lower(u.login) LIKE $${params.length}`); }
   if (action) { params.push(`${action}%`); where.push(`a.action LIKE $${params.length}`); }
   if (result) { params.push(result); where.push(`a.result = $${params.length}`); }
+  if (days) { params.push(days); where.push(`a.at >= now() - make_interval(days => $${params.length})`); }
   params.push(limit);
   const { rows } = await query(
     `SELECT a.id, a.at, a.action, a.entity, a.entity_id, a.result, a.ip, a.details, u.login

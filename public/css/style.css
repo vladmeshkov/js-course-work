@@ -759,3 +759,10 @@ html.dark .pay-row__thumb img{mix-blend-mode:screen;filter:invert(1) hue-rotate(
 .repay__amount{max-width:340px;font-size:28px;font-weight:600}
 .repay__effect{margin:0;padding:18px 22px;border-radius:16px;background:var(--soft);font-size:17px;line-height:1.5}
 [hidden]{display:none !important}
+
+.audit-row{cursor:pointer}
+.audit-detail td{background:var(--fld);white-space:normal !important;font-size:15px}
+.audit-json{font-family:inherit;color:var(--muted)}
+.xfer__box--cur{flex:0 0 110px}
+.xfer__curlabel{font-size:14px;color:var(--muted2)}
+.xfer__curval{margin-top:4px;font-size:24px;font-weight:600}

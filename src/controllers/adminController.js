@@ -99,7 +99,7 @@ export async function changeRole(req, res) {
 }
 
 export async function showAudit(req, res) {
-  const filters = { login: String(req.query.login ?? ''), action: String(req.query.action ?? ''), result: String(req.query.result ?? '') };
+  const filters = { login: String(req.query.login ?? ''), action: String(req.query.action ?? ''), result: String(req.query.result ?? ''), days: [1, 3, 7].includes(Number(req.query.days)) ? Number(req.query.days) : 0 };
   res.render('pages/admin/audit', { title: 'Журнал аудита', rows: await adminService.auditLog(filters), filters });
 }
 

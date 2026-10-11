@@ -15,7 +15,7 @@
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
   <input type="hidden" name="kind" value="<%= kind %>">
   <% if (errors.common) { %><div class="alert alert--error" role="alert"><%= errors.common %></div><% } %>
-  <% const accountOptions = (selected) => accounts.map((a) => `<option value="${a.id}"${String(selected) === String(a.id) ? ' selected' : ''}>${esc(a.title)}, ${formatAmount(a.balance)} ${a.currency}</option>`).join(''); %>
+  <% const accountOptions = (selected) => accounts.map((a) => `<option value="${a.id}" data-currency="${a.currency}"${String(selected) === String(a.id) ? ' selected' : ''}>${esc(a.title)}, ${formatAmount(a.balance)} ${a.currency}</option>`).join(''); %>
   <div class="xfer__pair">
     <div class="xfer__side">
       <div><div class="xfer__h">Со счёта</div><div class="muted2">ТалерБанк</div></div>
@@ -49,6 +49,7 @@
       <label for="amount">Сумма (в валюте счёта списания)</label>
       <input id="amount" name="amount" value="<%= form.amount || '' %>" inputmode="decimal" autocomplete="off" placeholder="0,00">
     </div>
+    <div class="xfer__box xfer__box--cur"><div class="xfer__curlabel">Валюта</div><div class="xfer__curval" id="xfer-cur"><%= (accounts.find((a) => String(a.id) === String(form.fromAccountId)) || accounts[0] || {}).currency || 'BYN' %></div></div>
     <div class="xfer__box xfer__box--comment">
       <label for="comment">Назначение платежа</label>
       <input id="comment" name="comment" maxlength="140" value="<%= form.comment || '' %>">
@@ -61,4 +62,5 @@
   </div>
 </form>
 </section>
+<script src="/js/xfer.js" defer></script>
 <%- include('../../partials/footer') %>
