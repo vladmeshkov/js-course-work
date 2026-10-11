@@ -747,3 +747,7 @@ html.dark .pay-row__thumb img{mix-blend-mode:screen;filter:invert(1) hue-rotate(
 .user-confirm[hidden]{display:none}
 .user-confirm__btns{display:flex;gap:10px;align-items:center}
 .user-role{margin:0 0 8px 60px;display:flex;align-items:center;gap:10px;font-size:14px}
+
+/* Курсы и тарифы: панель публикации */
+.rates-bar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.rates-bar__btns{display:flex;align-items:center;gap:18px}

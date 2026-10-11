@@ -4,6 +4,8 @@ import { formatIban } from '../lib/iban.js';
 import { createDocument, fact, table, footer } from '../lib/pdf.js';
 import * as statementService from '../services/statementService.js';
 import * as paymentService from '../services/paymentService.js';
+import * as accountService from '../services/accountService.js';
+import * as clientModel from '../models/clientModel.js';
 
 function requireClient(req) {
   if (req.user?.role_code !== 'client') throw new ForbiddenError();
@@ -17,11 +19,14 @@ export async function statementPage(req, res) {
   const id = Number(req.params.id);
   try {
     const statement = await statementService.getStatement(req.user.id, id, { from: req.query.from, to: req.query.to });
-    res.render('pages/accounts/statement', { title: 'Выписка по счёту', statement, errors: {} });
+    const kind = ['in', 'out'].includes(req.query.kind) ? req.query.kind : '';
+    const client = await clientModel.findByUserId(req.user.id);
+    const accounts = client ? await accountService.listForClient(client.id) : [];
+    res.render('pages/accounts/statement', { title: 'Выписка по счёту', statement, errors: {}, kind, accounts });
   } catch (error) {
     if (error instanceof ValidationError) {
       const statement = await statementService.getStatement(req.user.id, id);
-      return res.status(422).render('pages/accounts/statement', { title: 'Выписка по счёту', statement, errors: error.fields });
+      return res.status(422).render('pages/accounts/statement', { title: 'Выписка по счёту', statement, errors: error.fields, kind: '', accounts: [] });
     }
     throw error;
   }

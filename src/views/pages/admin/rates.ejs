@@ -3,7 +3,9 @@
   <form method="post" action="/admin/rates/refresh"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--ghost" type="submit">Обновить курсы с Нацбанка</button></form></div>
 <form class="panel" method="post" action="/admin/rates/spreads" novalidate>
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-  <h2 class="mb10">Спред банка к курсу Нацбанка</h2>
+  <div class="between"><h2 class="mb10">Спред банка к курсу Нацбанка</h2>
+    <div class="chips" role="group" aria-label="Быстрый выбор спреда"><span class="muted">Одинаковый спред:</span>
+      <% ['1', '1,5', '2,5'].forEach((v) => { %><button class="chip" type="button" data-spread="<%= v %>"><%= v %>%</button><% }) %></div></div>
   <div class="scroll-x"><table class="table">
     <thead><tr><th>Валюта</th><th>Курс НБ РБ</th><th>Банк покупает, %</th><th>Банк продаёт, %</th><th>Курс покупки</th><th>Курс продажи</th></tr></thead>
     <tbody>
@@ -19,7 +21,7 @@
       <% }) %>
     </tbody>
   </table></div>
-  <div class="mt10"><button class="btn" type="submit">Сохранить спред</button></div>
+  <div class="rates-bar"><span class="muted" id="rates-changes" aria-live="polite">Изменений нет</span><span class="rates-bar__btns"><button class="link-btn" type="button" id="rates-reset">Сбросить</button><button class="btn" type="submit">Опубликовать спред</button></span></div>
 </form>
 <form class="panel form" method="post" action="/admin/rates/settings" novalidate>
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
@@ -35,4 +37,5 @@
   <% }) %>
   <div><button class="btn" type="submit">Сохранить тарифы</button></div>
 </form>
+<script src="/js/rates-admin.js" defer></script>
 <%- include('../../partials/footer') %>

@@ -14,14 +14,33 @@
   ];
   const dmy = (v) => String(v).slice(0, 10).split('-').reverse().join('.');
   const groups = [];
-  statement.operations.forEach((o) => { const d = String(o.date).slice(0, 10); let g = groups[groups.length - 1]; if (!g || g.d !== d) { g = { d, rows: [] }; groups.push(g); } g.rows.push(o); });
+  const shownOps = statement.operations.filter((o) => !kind || (kind === 'in' ? o.amount > 0 : o.amount < 0));
+  const q = '&from=' + statement.from + '&to=' + statement.to;
+  shownOps.forEach((o) => { const d = String(o.date).slice(0, 10); let g = groups[groups.length - 1]; if (!g || g.d !== d) { g = { d, rows: [] }; groups.push(g); } g.rows.push(o); });
 %>
 <h1>Выписка по счёту</h1>
 <form class="panel stmt-filter" method="get" action="<%= base %>">
+  <% if (kind) { %><input type="hidden" name="kind" value="<%= kind %>"><% } %>
+  <% if (accounts.length > 1) { %>
+  <div class="stmt-filter__col">
+    <div class="stmt-filter__label">Счёт</div>
+    <div class="chips">
+      <% accounts.forEach((a) => { %><a class="chip" aria-selected="<%= a.id === acc.id %>" href="/accounts/<%= a.id %>/statement?from=<%= statement.from %>&to=<%= statement.to %>"><%= a.title %></a><% }) %>
+    </div>
+  </div>
+  <% } %>
   <div class="stmt-filter__col">
     <div class="stmt-filter__label">Период</div>
     <div class="chips">
-      <% presets.forEach((p) => { %><a class="chip" aria-selected="<%= p[1] === statement.from && p[2] === statement.to %>" href="<%= base %>?from=<%= p[1] %>&to=<%= p[2] %>"><%= p[0] %></a><% }) %>
+      <% presets.forEach((p) => { %><a class="chip" aria-selected="<%= p[1] === statement.from && p[2] === statement.to %>" href="<%= base %>?from=<%= p[1] %>&to=<%= p[2] %><%= kind ? '&kind=' + kind : '' %>"><%= p[0] %></a><% }) %>
+    </div>
+  </div>
+  <div class="stmt-filter__col">
+    <div class="stmt-filter__label">Операции</div>
+    <div class="chips">
+      <a class="chip" aria-selected="<%= !kind %>" href="<%= base %>?<%= q.slice(1) %>">Все</a>
+      <a class="chip" aria-selected="<%= kind === 'in' %>" href="<%= base %>?<%= q.slice(1) %>&kind=in">Поступления</a>
+      <a class="chip" aria-selected="<%= kind === 'out' %>" href="<%= base %>?<%= q.slice(1) %>&kind=out">Списания</a>
     </div>
   </div>
   <div class="stmt-filter__col">
@@ -63,7 +82,7 @@
     <div class="talon-wide__facts">
       <div><small>Поступления</small><b class="text-good"><%= formatAmount(statement.credit) %></b></div>
       <div><small>Списания</small><b><%= formatAmount(statement.debit) %></b></div>
-      <div><small>Операций</small><b><%= statement.operations.length %></b></div>
+      <div><small>Операций</small><b><%= shownOps.length %></b></div>
     </div>
     <a class="btn btn--lg" href="<%= base %>.pdf?from=<%= statement.from %>&to=<%= statement.to %>">Скачать PDF</a>
   </div>
