@@ -12,7 +12,14 @@ const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 // Главные сущности предметной области в порядке создания (родители раньше детей)
 const CORE = ['roles', 'users', 'clients', 'accounts', 'documents', 'postings', 'transfer_intents',
   'deposit_products', 'deposits', 'loan_products', 'loan_applications', 'loans', 'cards', 'payments'];
-const EXTRA_COLUMNS = 4; // сколько обычных полей показывать помимо ключей
+const EXTRA_COLUMNS = 4;
+// Второстепенные связи для диаграммы не нужны: они дублируют главные и превращают схему в клубок.
+// Столбцы из этого списка в файл не попадают (в рабочей базе они остаются).
+const SKIP_COLUMNS = new Set([
+  'documents.initiated_by', 'documents.reverses_id', 'transfer_intents.user_id', 'transfer_intents.to_account_id',
+  'deposits.payout_account_id', 'loans.payout_account_id', 'loans.client_id', 'loan_applications.target_account_id',
+  'loan_applications.decided_by', 'payments.client_id', 'cards.client_id', 'cards.replaced_by', 'postings.currency'
+]); // сколько обычных полей показывать помимо ключей
 
 const { rows: cols } = await pool.query(`
   SELECT table_name, column_name, data_type, character_maximum_length AS len, numeric_precision AS prec, numeric_scale AS scale, is_nullable, column_default
@@ -59,7 +66,7 @@ const out = [
   ''
 ];
 for (const t of CORE) {
-  const all = cols.filter((c) => c.table_name === t);
+  const all = cols.filter((c) => c.table_name === t && !SKIP_COLUMNS.has(`${t}.${c.column_name}`));
   const keys = all.filter((c) => pkSet.has(`${t}.${c.column_name}`) || fkMap.has(`${t}.${c.column_name}`));
   const rest = all.filter((c) => !keys.includes(c) && !/_at$/.test(c.column_name)).slice(0, EXTRA_COLUMNS);
   const shown = all.filter((c) => keys.includes(c) || rest.includes(c));
