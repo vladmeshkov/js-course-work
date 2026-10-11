@@ -656,3 +656,10 @@ textarea{padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;bac
 .upcoming__row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:14px 0;border-top:1px solid var(--line);font-size:18px}
 .upcoming__row small{display:block;font-size:14px;color:var(--muted2);font-weight:400}
 .cur-cell{display:flex;align-items:center;gap:12px}
+@media (max-width:640px){
+  .pay-search__row{flex-wrap:wrap}
+  .pay-search__row input{flex:1 1 100%}
+  .pay-search__row select{flex:1 1 120px}
+  .cat-tile--wide,.cat-tile--std{flex-basis:100%}
+}
+html.dark .cat-tile img,html.dark .pay-banner img{mix-blend-mode:screen;border-radius:0;filter:invert(1) hue-rotate(180deg) saturate(1.15)}
