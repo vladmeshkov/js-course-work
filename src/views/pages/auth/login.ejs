@@ -1,8 +1,21 @@
 <%- include('../../partials/header', { title }) %>
 <section class="auth">
   <div class="auth__side">
-    <h1>Ваши финансы под надёжной защитой</h1>
-    <p class="muted">Банк никогда не просит назвать код из SMS по телефону.</p>
+    <div class="auth__top">
+      <a class="logo logo--lg" href="/">
+        <img src="/img/emblem.png" alt="Эмблема ТалерБанка: оранжевый круг с монограммой Тр" width="60" height="60">
+        <span>Талер<span class="logo__bank">Банк</span></span>
+      </a>
+      <div>
+        <h1>Ваши финансы под надёжной защитой</h1>
+        <p class="auth__lead">Современный банк для ваших целей</p>
+      </div>
+    </div>
+    <img class="auth__coin" src="/img/coin.png" alt="" width="540">
+    <div class="auth__links">
+      <a href="/loans"><span class="auth__ico">Кр</span><span><b>Кредиты</b><small>На любые цели</small></span></a>
+      <a href="/deposits"><span class="auth__ico">%</span><span><b>Вклады</b><small>Стабильный доход</small></span></a>
+    </div>
   </div>
   <div class="auth__panel">
     <div class="auth__card">
@@ -15,14 +28,17 @@
           <input id="login" name="login" value="<%= form.login || '' %>" autocomplete="username" required autofocus>
         </div>
         <div class="field">
-          <label for="password">Пароль</label>
+          <div class="field__row"><label for="password">Пароль</label><button class="link-btn" type="button" id="pw-toggle" aria-controls="password">Показать</button></div>
           <input id="password" name="password" type="password" autocomplete="current-password" required>
         </div>
         <% if (errors.common) { %><div class="alert alert--error" role="alert"><%= errors.common %></div><% } %>
         <button class="btn btn--lg" type="submit">Войти &nbsp;→</button>
-        <a class="link" href="/register">Стать клиентом</a>
+        <div class="auth__row"><a class="link" href="/forgot">Забыли пароль?</a><a class="link" href="/register">Стать клиентом</a></div>
+        <a class="auth__guest" href="/">Продолжить как гость &nbsp;→</a>
       </form>
     </div>
   </div>
 </section>
+<p class="auth__note">Банк никогда не просит назвать код из SMS по телефону.</p>
+<script src="/js/login.js" defer></script>
 <%- include('../../partials/footer') %>

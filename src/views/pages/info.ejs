@@ -1,0 +1,10 @@
+<%- include('../partials/header', { title }) %>
+<nav class="crumbs" aria-label="Навигация"><a href="/">Главная</a><span><%= title %></span></nav>
+<section class="tile info">
+  <h1><%= title %></h1>
+  <% blocks.forEach((b) => { %>
+    <h2><%= b[0] %></h2>
+    <p><%= b[1] %></p>
+  <% }) %>
+</section>
+<%- include('../partials/footer') %>

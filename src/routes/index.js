@@ -26,6 +26,8 @@ const router = Router();
 const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 30, skip: () => config.isTest, standardHeaders: true, legacyHeaders: false });
 
 router.get('/', home.home);
+router.get('/info/:slug', home.info);
+router.get('/forgot', home.info);
 router.get('/health', (req, res) => res.json({ status: 'ok' }));
 
 router.get('/login', auth.showLogin);
