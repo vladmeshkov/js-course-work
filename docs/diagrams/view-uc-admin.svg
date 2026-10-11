@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="584" height="782" viewBox="0 0 584 782" font-family="Times New Roman, serif">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<rect x="170" y="30" width="374" height="712" fill="none" stroke="#666" stroke-dasharray="6 4"/><text x="357" y="52" font-size="16" font-weight="bold" text-anchor="middle">Система ТалерБанк</text>
+<path d="M88,394 L204.8,106" fill="none" stroke="#000"/>
+<path d="M88,394 L204.8,190" fill="none" stroke="#000"/>
+<path d="M88,394 L204.8,274" fill="none" stroke="#000"/>
+<path d="M88,394 L204.8,358" fill="none" stroke="#000"/>
+<path d="M88,394 L204.8,430" fill="none" stroke="#000"/>
+<path d="M88,394 L204.8,514" fill="none" stroke="#000"/>
+<path d="M88,394 L204.8,598" fill="none" stroke="#000"/>
+<path d="M88,394 L204.8,682" fill="none" stroke="#000"/>
+<circle cx="72" cy="368" r="11" fill="#fff" stroke="#000"/><path d="M72,379 V409 M54,389 H90 M72,409 L58,431 M72,409 L86,431" stroke="#000" fill="none"/><text x="72" y="454.44" font-size="16" text-anchor="middle" font-weight="bold">Администратор</text>
+<ellipse cx="360" cy="100" rx="160" ry="30" fill="#fff" stroke="#000"/><text x="360" y="95.94" font-size="16" text-anchor="middle">Управление курсами</text><text x="360" y="114.94" font-size="16" text-anchor="middle">и спредом</text>
+<ellipse cx="360" cy="184" rx="160" ry="30" fill="#fff" stroke="#000"/><text x="360" y="179.94" font-size="16" text-anchor="middle">Настройка тарифов</text><text x="360" y="198.94" font-size="16" text-anchor="middle">и лимитов</text>
+<ellipse cx="360" cy="268" rx="160" ry="30" fill="#fff" stroke="#000"/><text x="360" y="263.94" font-size="16" text-anchor="middle">Управление пользователями</text><text x="360" y="282.94" font-size="16" text-anchor="middle">и ролями</text>
+<ellipse cx="360" cy="352" rx="160" ry="30" fill="#fff" stroke="#000"/><text x="360" y="357.44" font-size="16" text-anchor="middle">Просмотр журнала аудита</text>
+<ellipse cx="360" cy="436" rx="160" ry="30" fill="#fff" stroke="#000"/><text x="360" y="431.94" font-size="16" text-anchor="middle">Резервное копирование</text><text x="360" y="450.94" font-size="16" text-anchor="middle">и восстановление</text>
+<ellipse cx="360" cy="520" rx="160" ry="30" fill="#fff" stroke="#000"/><text x="360" y="515.94" font-size="16" text-anchor="middle">Отчёты и оборотно-</text><text x="360" y="534.94" font-size="16" text-anchor="middle">сальдовая ведомость</text>
+<ellipse cx="360" cy="604" rx="160" ry="30" fill="#fff" stroke="#000"/><text x="360" y="609.44" font-size="16" text-anchor="middle">Закрытие операционного дня</text>
+<ellipse cx="360" cy="688" rx="160" ry="30" fill="#fff" stroke="#000"/><text x="360" y="693.44" font-size="16" text-anchor="middle">Управление клирингом</text>
+</svg>

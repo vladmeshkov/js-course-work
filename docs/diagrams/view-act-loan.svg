@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1180" viewBox="0 0 1000 1180" font-family="Times New Roman, serif">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<rect x="0" y="30" width="320" height="1110" fill="none" stroke="#000"/>
+<rect x="320" y="30" width="320" height="1110" fill="none" stroke="#000"/>
+<rect x="640" y="30" width="320" height="1110" fill="none" stroke="#000"/>
+<path d="M160,120 L160,152" fill="none" stroke="#000"/><polyline points="155,140 160,152 165,140" fill="none" stroke="#000"/>
+<path d="M285,175 L480,175 L480,252" fill="none" stroke="#000"/><polyline points="475,240 480,252 485,240" fill="none" stroke="#000"/>
+<path d="M480,298 L480,339" fill="none" stroke="#000"/><polyline points="475,327 480,339 485,327" fill="none" stroke="#000"/>
+<path d="M380,385 L170,385" fill="none" stroke="#000"/><polyline points="182,380 170,385 182,390" fill="none" stroke="#000"/><rect x="228.56" y="362" width="82.88" height="22" fill="#fff" opacity="0.92"/><text x="270" y="378" font-size="16" text-anchor="middle" font-style="italic">да: отказ</text>
+<path d="M480,431 L480,477" fill="none" stroke="#000"/><polyline points="475,465 480,477 485,465" fill="none" stroke="#000"/><rect x="485" y="440" width="32.96" height="22" fill="#fff" opacity="0.92"/><text x="488" y="456" font-size="16" text-anchor="start" font-style="italic">нет</text>
+<path d="M480,523 L480,575" fill="none" stroke="#000"/><polyline points="475,563 480,575 485,563" fill="none" stroke="#000"/>
+<path d="M375,625 L170,625" fill="none" stroke="#000"/><polyline points="182,620 170,625 182,630" fill="none" stroke="#000"/><rect x="196.94" y="602" width="141.12" height="22" fill="#fff" opacity="0.92"/><text x="267.5" y="618" font-size="16" text-anchor="middle" font-style="italic">выше 30 %: отказ</text>
+<path d="M585,625 L675,625" fill="none" stroke="#000"/><polyline points="663,630 675,625 663,620" fill="none" stroke="#000"/><rect x="596.88" y="602" width="66.24000000000001" height="22" fill="#fff" opacity="0.92"/><text x="630" y="618" font-size="16" text-anchor="middle" font-style="italic">до 30 %</text>
+<path d="M480,675 L480,767" fill="none" stroke="#000"/><polyline points="475,755 480,767 485,755" fill="none" stroke="#000"/><rect x="485" y="684" width="124.48" height="41" fill="#fff" opacity="0.92"/><text x="488" y="700" font-size="16" text-anchor="start" font-style="italic">до 8 %,</text><text x="488" y="719" font-size="16" text-anchor="start" font-style="italic">сумма в лимите</text>
+<path d="M800,648 L800,720" fill="none" stroke="#000"/><polyline points="795,708 800,720 805,708" fill="none" stroke="#000"/>
+<path d="M715,760 L615,760 L615,790 L590,790" fill="none" stroke="#000"/><polyline points="602,785 590,790 602,795" fill="none" stroke="#000"/><rect x="627.72" y="736" width="74.56" height="22" fill="#fff" opacity="0.92"/><text x="665" y="752" font-size="16" text-anchor="middle" font-style="italic">одобрить</text>
+<path d="M800,800 L800,870" fill="none" stroke="#000"/><polyline points="795,858 800,870 805,858" fill="none" stroke="#000"/><rect x="805" y="819" width="74.56" height="22" fill="#fff" opacity="0.92"/><text x="808" y="835" font-size="16" text-anchor="start" font-style="italic">отказать</text>
+<path d="M480,813 L480,905 L280,905" fill="none" stroke="#000"/><polyline points="292,900 280,905 292,910" fill="none" stroke="#000"/>
+<path d="M160,928 L160,985 L345,985" fill="none" stroke="#000"/><polyline points="333,990 345,985 333,980" fill="none" stroke="#000"/>
+<path d="M480,1008 L480,1065" fill="none" stroke="#000"/><polyline points="475,1053 480,1065 485,1053" fill="none" stroke="#000"/>
+<rect x="0" y="30" width="320" height="34" rx="0" fill="#f2f2f2" stroke="#000"/><text x="160" y="52.44" font-size="16" text-anchor="middle" font-weight="bold">Клиент</text>
+<rect x="320" y="30" width="320" height="34" rx="0" fill="#f2f2f2" stroke="#000"/><text x="480" y="52.44" font-size="16" text-anchor="middle" font-weight="bold">Система</text>
+<rect x="640" y="30" width="320" height="34" rx="0" fill="#f2f2f2" stroke="#000"/><text x="800" y="52.44" font-size="16" text-anchor="middle" font-weight="bold">Кредитный специалист</text>
+<circle cx="160" cy="110" r="10" fill="#000"/>
+<rect x="35" y="152" width="250" height="46" rx="20" fill="#fff" stroke="#000"/><text x="160" y="170.94" font-size="16" text-anchor="middle">Заявка: сумма, срок, доход,</text><text x="160" y="189.94" font-size="16" text-anchor="middle">обязательства, счёт</text>
+<rect x="350" y="252" width="260" height="46" rx="20" fill="#fff" stroke="#000"/><text x="480" y="270.94" font-size="16" text-anchor="middle">Расчёт графика платежей</text><text x="480" y="289.94" font-size="16" text-anchor="middle">и долговой нагрузки (ДН)</text>
+<polygon points="480,339 580,385 480,431 380,385" fill="#fff" stroke="#000"/><text x="480" y="380.6" font-size="15" text-anchor="middle">ДН выше</text><text x="480" y="399.6" font-size="15" text-anchor="middle">40 %?</text>
+<circle cx="160" cy="385" r="10" fill="#fff" stroke="#000"/><circle cx="160" cy="385" r="6" fill="#000"/>
+<rect x="360" y="477" width="240" height="46" rx="20" fill="#fff" stroke="#000"/><text x="480" y="495.94" font-size="16" text-anchor="middle">Скоринг: вероятность</text><text x="480" y="514.94" font-size="16" text-anchor="middle">дефолта (PD)</text>
+<polygon points="480,575 585,625 480,675 375,625" fill="#fff" stroke="#000"/><text x="480" y="630.1" font-size="15" text-anchor="middle">Значение PD</text>
+<circle cx="160" cy="625" r="10" fill="#fff" stroke="#000"/><circle cx="160" cy="625" r="6" fill="#000"/>
+<rect x="675" y="602" width="250" height="46" rx="20" fill="#fff" stroke="#000"/><text x="800" y="620.94" font-size="16" text-anchor="middle">Рассмотрение заявки</text><text x="800" y="639.94" font-size="16" text-anchor="middle">кредитным специалистом</text>
+<rect x="370" y="767" width="220" height="46" rx="20" fill="#fff" stroke="#000"/><text x="480" y="795.44" font-size="16" text-anchor="middle">Заявка одобрена</text>
+<polygon points="800,720 885,760 800,800 715,760" fill="#fff" stroke="#000"/><text x="800" y="765.1" font-size="15" text-anchor="middle">Решение</text>
+<circle cx="800" cy="880" r="10" fill="#fff" stroke="#000"/><circle cx="800" cy="880" r="6" fill="#000"/>
+<rect x="40" y="882" width="240" height="46" rx="20" fill="#fff" stroke="#000"/><text x="160" y="900.94" font-size="16" text-anchor="middle">Подписание договора</text><text x="160" y="919.94" font-size="16" text-anchor="middle">кодом из письма</text>
+<rect x="345" y="962" width="270" height="46" rx="20" fill="#fff" stroke="#000"/><text x="480" y="980.94" font-size="16" text-anchor="middle">Выдача кредита: ссудный счёт,</text><text x="480" y="999.94" font-size="16" text-anchor="middle">график платежей, проводка</text>
+<circle cx="480" cy="1075" r="10" fill="#fff" stroke="#000"/><circle cx="480" cy="1075" r="6" fill="#000"/>
+</svg>

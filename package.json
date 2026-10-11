@@ -18,6 +18,7 @@
     "uml:drawio": "node scripts/uml-drawio.js",
     "er:mysql": "node --env-file=.env scripts/er-mysql.js",
     "uml:classes": "node scripts/class-diagrams.js",
+    "uml:views": "node scripts/uml-views.js",
     "db:schema": "node scripts/build-schema.js",
     "test": "vitest run",
     "staff2fa:off": "node --env-file=.env scripts/staff-2fa.js off",

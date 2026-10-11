@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1032" height="1170" viewBox="0 0 1032 1170" font-family="Times New Roman, serif">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<rect x="0" y="30" width="320" height="1100" fill="none" stroke="#000"/>
+<rect x="320" y="30" width="320" height="1100" fill="none" stroke="#000"/>
+<rect x="640" y="30" width="320" height="1100" fill="none" stroke="#000"/>
+<path d="M160,120 L160,152" fill="none" stroke="#000"/><polyline points="155,140 160,152 165,140" fill="none" stroke="#000"/>
+<path d="M275,175 L480,175 L480,252" fill="none" stroke="#000"/><polyline points="475,240 480,252 485,240" fill="none" stroke="#000"/>
+<path d="M480,298 L480,339" fill="none" stroke="#000"/><polyline points="475,327 480,339 485,327" fill="none" stroke="#000"/>
+<path d="M380,385 L275,385" fill="none" stroke="#000"/><polyline points="287,380 275,385 287,390" fill="none" stroke="#000"/><rect x="311.02" y="362" width="32.96" height="22" fill="#fff" opacity="0.92"/><text x="327.5" y="378" font-size="16" text-anchor="middle" font-style="italic">нет</text>
+<path d="M160,362 L160,198" fill="none" stroke="#000"/><polyline points="165,210 160,198 155,210" fill="none" stroke="#000"/>
+<path d="M480,431 L480,477" fill="none" stroke="#000"/><polyline points="475,465 480,477 485,465" fill="none" stroke="#000"/><rect x="485" y="440" width="24.64" height="22" fill="#fff" opacity="0.92"/><text x="488" y="456" font-size="16" text-anchor="start" font-style="italic">да</text>
+<path d="M480,523 L480,575" fill="none" stroke="#000"/><polyline points="475,563 480,575 485,563" fill="none" stroke="#000"/>
+<path d="M375,625 L275,625" fill="none" stroke="#000"/><polyline points="287,620 275,625 287,630" fill="none" stroke="#000"/><rect x="283.56" y="602" width="82.88" height="22" fill="#fff" opacity="0.92"/><text x="325" y="618" font-size="16" text-anchor="middle" font-style="italic">нужен код</text>
+<path d="M585,625 L690,625" fill="none" stroke="#000"/><polyline points="678,630 690,625 678,620" fill="none" stroke="#000"/><rect x="596.06" y="602" width="82.88" height="22" fill="#fff" opacity="0.92"/><text x="637.5" y="618" font-size="16" text-anchor="middle" font-style="italic">задержать</text>
+<path d="M480,675 L480,857" fill="none" stroke="#000"/><polyline points="475,845 480,857 485,845" fill="none" stroke="#000"/><rect x="485" y="714" width="74.56" height="22" fill="#fff" opacity="0.92"/><text x="488" y="730" font-size="16" text-anchor="start" font-style="italic">без кода</text>
+<path d="M160,648 L160,880 L350,880" fill="none" stroke="#000"/><polyline points="338,885 350,880 338,875" fill="none" stroke="#000"/><rect x="165" y="774" width="132.8" height="41" fill="#fff" opacity="0.92"/><text x="168" y="790" font-size="16" text-anchor="start" font-style="italic">код проверяется</text><text x="168" y="809" font-size="16" text-anchor="start" font-style="italic">системой</text>
+<path d="M800,648 L800,720" fill="none" stroke="#000"/><polyline points="795,708 800,720 805,708" fill="none" stroke="#000"/>
+<path d="M715,760 L655,760 L655,880 L610,880" fill="none" stroke="#000"/><polyline points="622,875 610,880 622,885" fill="none" stroke="#000"/><rect x="672.68" y="736" width="24.64" height="22" fill="#fff" opacity="0.92"/><text x="685" y="752" font-size="16" text-anchor="middle" font-style="italic">да</text>
+<path d="M800,800 L800,870" fill="none" stroke="#000"/><polyline points="795,858 800,870 805,858" fill="none" stroke="#000"/><rect x="805" y="810" width="191.04000000000002" height="41" fill="#fff" opacity="0.92"/><text x="808" y="826" font-size="16" text-anchor="start" font-style="italic">нет: резерв снимается,</text><text x="808" y="845" font-size="16" text-anchor="start" font-style="italic">клиент уведомляется</text>
+<path d="M480,903 L480,962" fill="none" stroke="#000"/><polyline points="475,950 480,962 485,950" fill="none" stroke="#000"/>
+<path d="M480,1008 L480,1060" fill="none" stroke="#000"/><polyline points="475,1048 480,1060 485,1048" fill="none" stroke="#000"/>
+<rect x="0" y="30" width="320" height="34" rx="0" fill="#f2f2f2" stroke="#000"/><text x="160" y="52.44" font-size="16" text-anchor="middle" font-weight="bold">Клиент</text>
+<rect x="320" y="30" width="320" height="34" rx="0" fill="#f2f2f2" stroke="#000"/><text x="480" y="52.44" font-size="16" text-anchor="middle" font-weight="bold">Система</text>
+<rect x="640" y="30" width="320" height="34" rx="0" fill="#f2f2f2" stroke="#000"/><text x="800" y="52.44" font-size="16" text-anchor="middle" font-weight="bold">Специалист по мониторингу</text>
+<circle cx="160" cy="110" r="10" fill="#000"/>
+<rect x="45" y="152" width="230" height="46" rx="20" fill="#fff" stroke="#000"/><text x="160" y="170.94" font-size="16" text-anchor="middle">Ввод счёта списания,</text><text x="160" y="189.94" font-size="16" text-anchor="middle">IBAN получателя и суммы</text>
+<rect x="355" y="252" width="250" height="46" rx="20" fill="#fff" stroke="#000"/><text x="480" y="270.94" font-size="16" text-anchor="middle">Проверка счетов, IBAN</text><text x="480" y="289.94" font-size="16" text-anchor="middle">(mod 97), лимита, комиссии</text>
+<polygon points="480,339 580,385 480,431 380,385" fill="#fff" stroke="#000"/><text x="480" y="380.6" font-size="15" text-anchor="middle">Данные</text><text x="480" y="399.6" font-size="15" text-anchor="middle">верны?</text>
+<rect x="45" y="362" width="230" height="46" rx="20" fill="#fff" stroke="#000"/><text x="160" y="380.94" font-size="16" text-anchor="middle">Сообщение об ошибке,</text><text x="160" y="399.94" font-size="16" text-anchor="middle">исправление данных</text>
+<rect x="355" y="477" width="250" height="46" rx="20" fill="#fff" stroke="#000"/><text x="480" y="495.94" font-size="16" text-anchor="middle">Оценка риска перевода</text><text x="480" y="514.94" font-size="16" text-anchor="middle">(антифрод)</text>
+<polygon points="480,575 585,625 480,675 375,625" fill="#fff" stroke="#000"/><text x="480" y="620.6" font-size="15" text-anchor="middle">Решение</text><text x="480" y="639.6" font-size="15" text-anchor="middle">антифрода</text>
+<rect x="45" y="602" width="230" height="46" rx="20" fill="#fff" stroke="#000"/><text x="160" y="620.94" font-size="16" text-anchor="middle">Ввод кода подтверждения</text><text x="160" y="639.94" font-size="16" text-anchor="middle">из письма</text>
+<rect x="690" y="602" width="220" height="46" rx="20" fill="#fff" stroke="#000"/><text x="800" y="620.94" font-size="16" text-anchor="middle">Анализ случая</text><text x="800" y="639.94" font-size="16" text-anchor="middle">и решение</text>
+<rect x="350" y="857" width="260" height="46" rx="20" fill="#fff" stroke="#000"/><text x="480" y="875.94" font-size="16" text-anchor="middle">Проводка двойной записью</text><text x="480" y="894.94" font-size="16" text-anchor="middle">(одна транзакция)</text>
+<polygon points="800,720 885,760 800,800 715,760" fill="#fff" stroke="#000"/><text x="800" y="765.1" font-size="15" text-anchor="middle">Одобрить?</text>
+<circle cx="800" cy="880" r="10" fill="#fff" stroke="#000"/><circle cx="800" cy="880" r="6" fill="#000"/>
+<rect x="365" y="962" width="230" height="46" rx="20" fill="#fff" stroke="#000"/><text x="480" y="980.94" font-size="16" text-anchor="middle">Уведомление клиента,</text><text x="480" y="999.94" font-size="16" text-anchor="middle">квитанция</text>
+<circle cx="480" cy="1070" r="10" fill="#fff" stroke="#000"/><circle cx="480" cy="1070" r="6" fill="#000"/>
+</svg>

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="894" height="782" viewBox="0 0 894 782" font-family="Times New Roman, serif">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<rect x="170" y="30" width="684" height="712" fill="none" stroke="#666" stroke-dasharray="6 4"/><text x="512" y="52" font-size="16" font-weight="bold" text-anchor="middle">Система ТалерБанк</text>
+<path d="M88,394 L204.8,106" fill="none" stroke="#000"/>
+<path d="M88,394 L204.8,190" fill="none" stroke="#000"/>
+<path d="M88,394 L204.8,274" fill="none" stroke="#000"/>
+<path d="M88,394 L204.8,358" fill="none" stroke="#000"/>
+<path d="M88,394 L204.8,430" fill="none" stroke="#000"/>
+<path d="M88,394 L204.8,514" fill="none" stroke="#000"/>
+<path d="M88,394 L204.8,598" fill="none" stroke="#000"/>
+<path d="M88,394 L204.8,682" fill="none" stroke="#000"/>
+<path d="M520,436 L615.5,470" fill="none" stroke="#000" stroke-dasharray="6 4"/><polyline points="602.5180910548988,470.6855947353226 615.5,470 605.8720796881316,461.26483254491865" fill="none" stroke="#000"/><rect x="523.56" y="433" width="82.88" height="22" fill="#fff" opacity="0.92"/><text x="565" y="449" font-size="16" text-anchor="middle" font-style="italic">«include»</text>
+<path d="M520,520 L615.5,486" fill="none" stroke="#000" stroke-dasharray="6 4"/><polyline points="605.8720796881316,494.73516745508135 615.5,486 602.5180910548988,485.3144052646774" fill="none" stroke="#000"/><rect x="523.56" y="475" width="82.88" height="22" fill="#fff" opacity="0.92"/><text x="565" y="491" font-size="16" text-anchor="middle" font-style="italic">«include»</text>
+<circle cx="72" cy="368" r="11" fill="#fff" stroke="#000"/><path d="M72,379 V409 M54,389 H90 M72,409 L58,431 M72,409 L86,431" stroke="#000" fill="none"/><text x="72" y="454.44" font-size="16" text-anchor="middle" font-weight="bold">Клиент</text>
+<ellipse cx="360" cy="100" rx="160" ry="30" fill="#fff" stroke="#000"/><text x="360" y="105.44" font-size="16" text-anchor="middle">Вход в систему</text>
+<ellipse cx="360" cy="184" rx="160" ry="30" fill="#fff" stroke="#000"/><text x="360" y="189.44" font-size="16" text-anchor="middle">Открытие и закрытие счёта</text>
+<ellipse cx="360" cy="268" rx="160" ry="30" fill="#fff" stroke="#000"/><text x="360" y="263.94" font-size="16" text-anchor="middle">Просмотр выписки</text><text x="360" y="282.94" font-size="16" text-anchor="middle">и справки (PDF)</text>
+<ellipse cx="360" cy="352" rx="160" ry="30" fill="#fff" stroke="#000"/><text x="360" y="347.94" font-size="16" text-anchor="middle">Перевод между</text><text x="360" y="366.94" font-size="16" text-anchor="middle">своими счетами</text>
+<ellipse cx="360" cy="436" rx="160" ry="30" fill="#fff" stroke="#000"/><text x="360" y="441.44" font-size="16" text-anchor="middle">Перевод клиенту банка</text>
+<ellipse cx="360" cy="520" rx="160" ry="30" fill="#fff" stroke="#000"/><text x="360" y="525.44" font-size="16" text-anchor="middle">Перевод в другой банк</text>
+<ellipse cx="360" cy="604" rx="160" ry="30" fill="#fff" stroke="#000"/><text x="360" y="609.44" font-size="16" text-anchor="middle">Оплата услуг по каталогу</text>
+<ellipse cx="360" cy="688" rx="160" ry="30" fill="#fff" stroke="#000"/><text x="360" y="683.94" font-size="16" text-anchor="middle">Шаблоны платежей</text><text x="360" y="702.94" font-size="16" text-anchor="middle">и автоплатежи</text>
+<ellipse cx="720" cy="478" rx="110" ry="30" fill="#fff" stroke="#000"/><text x="720" y="473.94" font-size="16" text-anchor="middle">Подтверждение</text><text x="720" y="492.94" font-size="16" text-anchor="middle">кодом</text>
+</svg>
