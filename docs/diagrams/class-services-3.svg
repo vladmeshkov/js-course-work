@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1159" height="589" viewBox="0 0 1159 589" font-family="Times New Roman, serif">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<rect x="36" y="66" width="1033" height="202" fill="#fafafa" stroke="#666" stroke-dasharray="6 4"/>
+<rect x="455" y="40" width="195" height="26" fill="#fafafa" stroke="#666"/>
+<text x="552.5" y="58" font-size="17" font-weight="bold" text-anchor="middle">Счета, карты и учёт</text>
+<rect x="36" y="360" width="1033" height="179" fill="#fafafa" stroke="#666" stroke-dasharray="6 4"/>
+<rect x="455" y="334" width="195" height="26" fill="#fafafa" stroke="#666"/>
+<text x="552.5" y="352" font-size="17" font-weight="bold" text-anchor="middle">Уведомления и аудит</text>
+<path d="M295,450 L435,450" fill="none" stroke="#000" stroke-width="1" stroke-dasharray="6 4"/><polyline points="424,455 435,450 424,445" fill="none" stroke="#000"/><rect x="301.8" y="453" width="126.4" height="22" fill="#fff" opacity="0.92"/><text x="365" y="469" font-size="16" font-style="italic" text-anchor="middle">ставит в очередь</text>
+<rect x="60" y="90" width="235" height="154" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="177.5" y="110" font-size="15" text-anchor="middle">«service»</text>
+<text x="177.5" y="133" font-size="19" font-weight="bold" text-anchor="middle">LedgerService</text>
+<line x1="60" y1="144" x2="295" y2="144" stroke="#000"/>
+<line x1="60" y1="144" x2="295" y2="144" stroke="#000"/>
+<text x="68" y="161" font-size="16">+ post()</text>
+<text x="68" y="184" font-size="16">+ reverse()</text>
+<text x="68" y="207" font-size="16">+ balanceFromPostings()</text>
+<text x="68" y="230" font-size="16">+ trialBalance()</text>
+<rect x="435" y="90" width="235" height="131" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="552.5" y="110" font-size="15" text-anchor="middle">«service»</text>
+<text x="552.5" y="133" font-size="19" font-weight="bold" text-anchor="middle">AccountService</text>
+<line x1="435" y1="144" x2="670" y2="144" stroke="#000"/>
+<line x1="435" y1="144" x2="670" y2="144" stroke="#000"/>
+<text x="443" y="161" font-size="16">+ openForUser()</text>
+<text x="443" y="184" font-size="16">+ closeForUser()</text>
+<text x="443" y="207" font-size="16">+ setFrozen()</text>
+<rect x="810" y="90" width="235" height="154" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="927.5" y="110" font-size="15" text-anchor="middle">«service»</text>
+<text x="927.5" y="133" font-size="19" font-weight="bold" text-anchor="middle">CardService</text>
+<line x1="810" y1="144" x2="1045" y2="144" stroke="#000"/>
+<line x1="810" y1="144" x2="1045" y2="144" stroke="#000"/>
+<text x="818" y="161" font-size="16">+ issueCard()</text>
+<text x="818" y="184" font-size="16">+ setBlocked()</text>
+<text x="818" y="207" font-size="16">+ updateLimits()</text>
+<text x="818" y="230" font-size="16">+ purchase()</text>
+<rect x="60" y="384" width="235" height="108" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="177.5" y="404" font-size="15" text-anchor="middle">«service»</text>
+<text x="177.5" y="427" font-size="19" font-weight="bold" text-anchor="middle">NotificationService</text>
+<line x1="60" y1="438" x2="295" y2="438" stroke="#000"/>
+<line x1="60" y1="438" x2="295" y2="438" stroke="#000"/>
+<text x="68" y="455" font-size="16">+ notify()</text>
+<text x="68" y="478" font-size="16">+ unreadCount()</text>
+<rect x="435" y="384" width="235" height="131" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="552.5" y="404" font-size="15" text-anchor="middle">«service»</text>
+<text x="552.5" y="427" font-size="19" font-weight="bold" text-anchor="middle">MailService</text>
+<line x1="435" y1="438" x2="670" y2="438" stroke="#000"/>
+<line x1="435" y1="438" x2="670" y2="438" stroke="#000"/>
+<text x="443" y="455" font-size="16">+ sendCode()</text>
+<text x="443" y="478" font-size="16">+ enqueue()</text>
+<text x="443" y="501" font-size="16">+ processOutbox()</text>
+<rect x="810" y="384" width="235" height="108" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="927.5" y="404" font-size="15" text-anchor="middle">«service»</text>
+<text x="927.5" y="427" font-size="19" font-weight="bold" text-anchor="middle">AuditService</text>
+<line x1="810" y1="438" x2="1045" y2="438" stroke="#000"/>
+<line x1="810" y1="438" x2="1045" y2="438" stroke="#000"/>
+<text x="818" y="455" font-size="16">+ log()</text>
+<text x="818" y="478" font-size="16">+ latest()</text>
+</svg>

@@ -3,9 +3,9 @@
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const FONT = 'Times New Roman';
-const ROW = 21;
-const CHAR = 7.7;
-const F_NAME = 17, F_MEMBER = 14, F_STEREO = 14, F_MARK = 14, F_PKG = 16;
+const ROW = 23;
+const CHAR = 8.4;
+const F_NAME = 19, F_MEMBER = 16, F_STEREO = 15, F_MARK = 16, F_PKG = 17;
 
 export class ClassDiagram {
   constructor(name, { width = 1600, height = 1200, title = '' } = {}) {
@@ -18,7 +18,7 @@ export class ClassDiagram {
     const lines = [c.name, ...(c.fields ?? []), ...(c.methods ?? [])];
     const noFields = c.fields === null;
     const w = Math.max(c.w ?? 0, Math.ceil(Math.max(...lines.map((l) => l.length)) * CHAR + 24));
-    const head = c.stereotype ? 50 : 34;
+    const head = c.stereotype ? 54 : 36;
     const fh = noFields ? 0 : Math.max((c.fields ?? []).length, 1) * ROW + 8;
     const noMethods = c.methods === null;
     const mh = noMethods ? 0 : Math.max((c.methods ?? []).length, 1) * ROW + 8;
@@ -48,14 +48,14 @@ export class ClassDiagram {
     for (const e of this.edges) out.push(this.edgeSvg(e));
     for (const c of this.classes) {
       out.push(`<rect x="${c.x}" y="${c.y}" width="${c.w}" height="${c.h}" fill="#fff" stroke="#000" stroke-width="1"/>`);
-      let ty = c.y + 23;
-      if (c.stereotype) { out.push(`<text x="${c.x + c.w / 2}" y="${c.y + 19}" font-size="${F_STEREO}" text-anchor="middle">${esc(`«${c.stereotype}»`)}</text>`); ty = c.y + 40; }
+      let ty = c.y + 25;
+      if (c.stereotype) { out.push(`<text x="${c.x + c.w / 2}" y="${c.y + 20}" font-size="${F_STEREO}" text-anchor="middle">${esc(`«${c.stereotype}»`)}</text>`); ty = c.y + 43; }
       out.push(`<text x="${c.x + c.w / 2}" y="${ty}" font-size="${F_NAME}" font-weight="bold" text-anchor="middle"${c.abstract ? ' font-style="italic"' : ''}>${esc(c.name)}</text>`);
       out.push(`<line x1="${c.x}" y1="${c.y + c.head}" x2="${c.x + c.w}" y2="${c.y + c.head}" stroke="#000"/>`);
-      c.fields.forEach((f, i) => out.push(`<text x="${c.x + 8}" y="${c.y + c.head + 16 + i * ROW}" font-size="${F_MEMBER}">${esc(f)}</text>`));
+      c.fields.forEach((f, i) => out.push(`<text x="${c.x + 8}" y="${c.y + c.head + 17 + i * ROW}" font-size="${F_MEMBER}">${esc(f)}</text>`));
       if (c.methods !== null && (c.mh > 0)) {
         out.push(`<line x1="${c.x}" y1="${c.y + c.head + c.fh}" x2="${c.x + c.w}" y2="${c.y + c.head + c.fh}" stroke="#000"/>`);
-        c.methods.forEach((m, i) => out.push(`<text x="${c.x + 8}" y="${c.y + c.head + c.fh + 16 + i * ROW}" font-size="${F_MEMBER}">${esc(m)}</text>`));
+        c.methods.forEach((m, i) => out.push(`<text x="${c.x + 8}" y="${c.y + c.head + c.fh + 17 + i * ROW}" font-size="${F_MEMBER}">${esc(m)}</text>`));
       }
     }
     for (const l of this.labels) out.push(`<text x="${l.x}" y="${l.y}" font-size="${l.size ?? F_MARK}" text-anchor="${l.anchor ?? 'start'}"${l.italic ? ' font-style="italic"' : ''}>${esc(l.text)}</text>`);
@@ -89,21 +89,23 @@ export class ClassDiagram {
 
   /** Положение подписи действия: у самого длинного отрезка связи (или e.labelSeg). */
   verbPos(e) {
+    // подпись: e.labelSide = 'left' для вертикальных отрезков
+
     const pts = e.points; let best = 0, len = -1;
     if (e.labelSeg !== undefined) best = e.labelSeg;
     else pts.slice(1).forEach((p, i) => { const l = Math.hypot(p[0] - pts[i][0], p[1] - pts[i][1]); if (l > len) { len = l; best = i; } });
     const a = pts[best], b = pts[best + 1];
     const vertical = Math.abs(b[1] - a[1]) > Math.abs(b[0] - a[0]);
     const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
-    return vertical ? { x: mx + 8, y: e.labelY ?? my + 5, anchor: 'start' } : { x: mx, y: my + 19, anchor: 'middle' };
+    return vertical ? (e.labelSide === 'left' ? { x: mx - 8, y: e.labelY ?? my + 5, anchor: 'end' } : { x: mx + 8, y: e.labelY ?? my + 5, anchor: 'start' }) : { x: mx, y: my + 19, anchor: 'middle' };
   }
 
   verbSvg(e) {
     if (!e.label) return '';
     const v = this.verbPos(e);
-    const w = e.label.length * 6.6 + 8;
-    const rx = v.anchor === 'middle' ? v.x - w / 2 : v.x - 3;
-    return `<rect x="${rx}" y="${v.y - 14}" width="${w}" height="19" fill="#fff" opacity="0.92"/><text x="${v.x}" y="${v.y}" font-size="${F_MARK}" font-style="italic" text-anchor="${v.anchor}">${esc(e.label)}</text>`;
+    const w = e.label.length * 7.4 + 8;
+    const rx = v.anchor === 'middle' ? v.x - w / 2 : v.anchor === 'end' ? v.x - w + 3 : v.x - 3;
+    return `<rect x="${rx}" y="${v.y - 16}" width="${w}" height="22" fill="#fff" opacity="0.92"/><text x="${v.x}" y="${v.y}" font-size="${F_MARK}" font-style="italic" text-anchor="${v.anchor}">${esc(e.label)}</text>`;
   }
 
   /* ---------- draw.io ---------- */
@@ -142,7 +144,7 @@ export class ClassDiagram {
       ].join('');
       const i = id();
       cells.push(`<mxCell id="${i}" value="" style="${esc(style)}" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="${first[0]}" y="${first[1]}" as="sourcePoint"/><mxPoint x="${last[0]}" y="${last[1]}" as="targetPoint"/>${rest.length ? `<Array as="points">${rest.map((p) => `<mxPoint x="${p[0]}" y="${p[1]}"/>`).join('')}</Array>` : ''}</mxGeometry></mxCell>`);
-      if (e.label) { const v = this.verbPos(e), w = Math.ceil(e.label.length * 6.8 + 10); add(e.label, `text;html=1;strokeColor=none;fillColor=#FFFFFF;align=${v.anchor === 'middle' ? 'center' : 'left'};verticalAlign=middle;fontStyle=2;spacing=0;fontFamily=${FONT};fontSize=${F_MARK};`, v.anchor === 'middle' ? Math.round(v.x - w / 2) : v.x - 3, v.y - 15, w, 20); }
+      if (e.label) { const v = this.verbPos(e), w = Math.ceil(e.label.length * 7.6 + 10); add(e.label, `text;html=1;strokeColor=none;fillColor=#FFFFFF;align=${v.anchor === 'middle' ? 'center' : v.anchor === 'end' ? 'right' : 'left'};verticalAlign=middle;fontStyle=2;spacing=0;fontFamily=${FONT};fontSize=${F_MARK};`, v.anchor === 'middle' ? Math.round(v.x - w / 2) : v.anchor === 'end' ? v.x - w + 3 : v.x - 3, v.y - 15, w, 22); }
       for (const m of e.marks ?? []) add(m.text, `text;html=1;strokeColor=none;fillColor=none;align=${m.anchor === 'middle' ? 'center' : 'left'};verticalAlign=middle;${m.italic ? 'fontStyle=2;' : ''}fontFamily=${FONT};fontSize=${F_MARK};`, m.anchor === 'middle' ? m.x - 40 : m.x - 2, m.y - 15, m.anchor === 'middle' ? 80 : 60, 18);
     }
     for (const l of this.labels) add(l.text, `text;html=1;strokeColor=none;fillColor=none;align=${l.anchor === 'middle' ? 'center' : 'left'};verticalAlign=middle;fontFamily=${FONT};fontSize=${l.size ?? F_MARK};`, l.anchor === 'middle' ? l.x - 150 : l.x, l.y - 15, 300, 20);

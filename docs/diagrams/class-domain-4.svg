@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1096" viewBox="0 0 900 1096" font-family="Times New Roman, serif">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<path d="M660,86 L660,206" fill="none" stroke="#000" stroke-width="1"/><polygon points="660,86 654,96 660,106 666,96" fill="#fff" stroke="#000"/><rect x="665" y="135" width="52.400000000000006" height="22" fill="#fff" opacity="0.92"/><text x="668" y="151" font-size="16" font-style="italic" text-anchor="start">подаёт</text><text x="674" y="128" font-size="16" text-anchor="start">1</text><text x="668" y="198" font-size="16" text-anchor="start">0..*</text>
+<path d="M380,254 L510,254" fill="none" stroke="#000" stroke-width="1"/><rect x="389.2" y="257" width="111.60000000000001" height="22" fill="#fff" opacity="0.92"/><text x="445" y="273" font-size="16" font-style="italic" text-anchor="middle">оформляется по</text><text x="386" y="247" font-size="16" text-anchor="start">1</text><text x="504" y="247" font-size="16" text-anchor="end">0..*</text>
+<path d="M660,511 L660,631" fill="none" stroke="#000" stroke-width="1"/><rect x="665" y="560" width="74.60000000000001" height="22" fill="#fff" opacity="0.92"/><text x="668" y="576" font-size="16" font-style="italic" text-anchor="start">порождает</text><text x="668" y="529" font-size="16" text-anchor="start">1</text><text x="668" y="623" font-size="16" text-anchor="start">0..1</text>
+<path d="M510,681 L370,681" fill="none" stroke="#000" stroke-width="1"/><polyline points="381,676 370,681 381,686" fill="none" stroke="#000"/><rect x="399" y="684" width="82" height="22" fill="#fff" opacity="0.92"/><text x="440" y="700" font-size="16" font-style="italic" text-anchor="middle">использует</text>
+<path d="M660,1010 L660,890" fill="none" stroke="#000" stroke-width="1"/><rect x="665" y="939" width="67.2" height="22" fill="#fff" opacity="0.92"/><text x="668" y="955" font-size="16" font-style="italic" text-anchor="start">погашает</text><text x="668" y="1002" font-size="16" text-anchor="start">1</text><text x="668" y="908" font-size="16" text-anchor="start">0..*</text>
+<rect x="70" y="206" width="310" height="236" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="225" y="231" font-size="19" font-weight="bold" text-anchor="middle">LoanProduct</text>
+<line x1="70" y1="242" x2="380" y2="242" stroke="#000"/>
+<text x="78" y="259" font-size="16">- id: number</text>
+<text x="78" y="282" font-size="16">- name: string</text>
+<text x="78" y="305" font-size="16">- ratePercent: number</text>
+<text x="78" y="328" font-size="16">- minAmount: number</text>
+<text x="78" y="351" font-size="16">- maxAmount: number</text>
+<text x="78" y="374" font-size="16">- minTerm: number</text>
+<text x="78" y="397" font-size="16">- maxTerm: number</text>
+<line x1="70" y1="411" x2="380" y2="411" stroke="#000"/>
+<text x="78" y="428" font-size="16">+ previewSchedule(): Installment[]</text>
+<rect x="510" y="206" width="300" height="305" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="660" y="231" font-size="19" font-weight="bold" text-anchor="middle">LoanApplication</text>
+<line x1="510" y1="242" x2="810" y2="242" stroke="#000"/>
+<text x="518" y="259" font-size="16">- id: number</text>
+<text x="518" y="282" font-size="16">- amount: number</text>
+<text x="518" y="305" font-size="16">- termMonths: number</text>
+<text x="518" y="328" font-size="16">- scheduleType: ScheduleType</text>
+<text x="518" y="351" font-size="16">- dtiPercent: number</text>
+<text x="518" y="374" font-size="16">- score: number</text>
+<text x="518" y="397" font-size="16">- pdPercent: number</text>
+<text x="518" y="420" font-size="16">- status: string</text>
+<line x1="510" y1="434" x2="810" y2="434" stroke="#000"/>
+<text x="518" y="451" font-size="16">+ apply(): void</text>
+<text x="518" y="474" font-size="16">+ decide(approve): void</text>
+<text x="518" y="497" font-size="16">+ sign(code): Loan</text>
+<rect x="160" y="631" width="210" height="108" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="265" y="651" font-size="15" text-anchor="middle">«enumeration»</text>
+<text x="265" y="674" font-size="19" font-weight="bold" text-anchor="middle">ScheduleType</text>
+<line x1="160" y1="685" x2="370" y2="685" stroke="#000"/>
+<text x="168" y="702" font-size="16">annuity</text>
+<text x="168" y="725" font-size="16">differentiated</text>
+<rect x="510" y="631" width="300" height="259" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="660" y="656" font-size="19" font-weight="bold" text-anchor="middle">Loan</text>
+<line x1="510" y1="667" x2="810" y2="667" stroke="#000"/>
+<text x="518" y="684" font-size="16">- id: number</text>
+<text x="518" y="707" font-size="16">- amount: number</text>
+<text x="518" y="730" font-size="16">- ratePercent: number</text>
+<text x="518" y="753" font-size="16">- termMonths: number</text>
+<text x="518" y="776" font-size="16">- principalBalance: number</text>
+<text x="518" y="799" font-size="16">- status: string</text>
+<line x1="510" y1="813" x2="810" y2="813" stroke="#000"/>
+<text x="518" y="830" font-size="16">+ quoteFull(): number</text>
+<text x="518" y="853" font-size="16">+ repayPartial(amount): void</text>
+<text x="518" y="876" font-size="16">+ repayFull(): void</text>
+<rect x="510" y="50" width="300" height="36" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="660" y="75" font-size="19" font-weight="bold" text-anchor="middle">Client</text>
+<line x1="510" y1="86" x2="810" y2="86" stroke="#000"/>
+<rect x="510" y="1010" width="300" height="36" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="660" y="1035" font-size="19" font-weight="bold" text-anchor="middle">Account</text>
+<line x1="510" y1="1046" x2="810" y2="1046" stroke="#000"/>
+</svg>
