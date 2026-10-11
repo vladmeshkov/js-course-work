@@ -68,10 +68,10 @@ function domainPage(name, names, collapsed, rows, opt = {}) {
 }
 
 function domain1() {
-  const { d, B, L } = domainPage('Пользователи, клиенты и счета', ['Role', 'User', 'Client'], ['Account'], [['Role', 'User'], ['Account', 'Client']]);
+  const { d, B, L } = domainPage('Пользователи, клиенты и счета', ['Role', 'User', 'Client', 'Account'], [], [['Role', 'User'], ['Account', 'Client']]);
   L('association', hline(B.Role, B.User), '1', '0..*', { label: 'присвоена' });
   L('association', [bottom(B.User), top(B.Client)], '1', '0..1', { label: 'соответствует' });
-  const y = B.Account.y + 18;
+  const y = B.Client.y + 48;
   L('aggregation', [[B.Client.x, y], [B.Account.x + B.Account.w, y]], '1', '0..*', { label: 'владеет' });
   return d;
 }
@@ -89,7 +89,7 @@ function domain2() {
 }
 
 function domain3() {
-  const { d, B, L } = domainPage('Вклады', ['Deposit', 'DepositProduct'], ['Client', 'Account'], [['Client', 'Account'], ['Deposit', null], ['DepositProduct', null]], { gapY: 150 });
+  const { d, B, L } = domainPage('Вклады', ['Client', 'Account', 'Deposit', 'DepositProduct'], [], [['Client', 'Account'], ['Deposit', null], ['DepositProduct', null]], { gapY: 130 });
   L('aggregation', [bottom(B.Client), top(B.Deposit)], '1', '0..*', { label: 'открывает' });
   { const p = bottom(B.Account), q = right(B.Deposit, 0.3); L('association', [p, [p[0], q[1]], q], '1', '0..*', { label: 'хранит', seg: 1 }); }
   L('association', [bottom(B.Deposit), top(B.DepositProduct)], '0..*', '1', { label: 'открыт по' });
@@ -97,13 +97,16 @@ function domain3() {
 }
 
 function domain4() {
-  const { d, B, L } = domainPage('Кредиты', ['LoanProduct', 'LoanApplication', 'ScheduleType', 'Loan'], ['Client', 'Account'], [[null, 'Client'], ['LoanProduct', 'LoanApplication'], ['ScheduleType', 'Loan'], [null, 'Account']], { gapY: 120 });
-  B.ScheduleType.x = B.LoanProduct.x + DW - B.ScheduleType.w;
-  L('aggregation', [bottom(B.Client), top(B.LoanApplication)], '1', '0..*', { label: 'подаёт' });
-  L('association', hline(B.LoanProduct, B.LoanApplication), '1', '0..*', { label: 'оформляется по' });
-  L('association', [bottom(B.LoanApplication), top(B.Loan)], '1', '0..1', { label: 'порождает' });
-  { const y = B.Loan.y + 50; L('association', [[B.Loan.x, y], [B.ScheduleType.x + B.ScheduleType.w, y]], '', '', { arrow: true, label: 'использует' }); }
-  L('association', [top(B.Account), bottom(B.Loan)], '1', '0..*', { label: 'погашает' });
+  const { d, B, L } = domainPage('Кредиты', ['Client', 'LoanProduct', 'LoanApplication', 'Account', 'Loan', 'ScheduleType'], [], [['Client', 'LoanProduct'], ['LoanApplication', null], ['Account', 'Loan'], [null, 'ScheduleType']], { gapY: 110 });
+  const x0 = B.Client.x, pitch = B.LoanProduct.x - B.Client.x;
+  B.LoanApplication.x = x0 + pitch / 2;
+  B.ScheduleType.x = B.Loan.x + DW - B.ScheduleType.w;
+  const xc = x0 + pitch / 2 + 40, xl = B.LoanProduct.x + 40;       // вертикали в зонах перекрытия по оси x
+  L('aggregation', [[xc, B.Client.y + B.Client.h], [xc, B.LoanApplication.y]], '1', '0..*', { label: 'подаёт' });
+  L('association', [[xl, B.LoanProduct.y + B.LoanProduct.h], [xl, B.LoanApplication.y]].reverse().reverse(), '1', '0..*', { label: 'оформляется по' });
+  L('association', [[xl, B.LoanApplication.y + B.LoanApplication.h], [xl, B.Loan.y]], '1', '0..1', { label: 'порождает' });
+  L('association', [[B.ScheduleType.x + 50, B.Loan.y + B.Loan.h], [B.ScheduleType.x + 50, B.ScheduleType.y]], '', '', { arrow: true, label: 'использует' });
+  { const y = B.Loan.y + 48; L('association', [[B.Account.x + B.Account.w, y], [B.Loan.x, y]], '1', '0..*', { label: 'погашает' }); }
   return d;
 }
 

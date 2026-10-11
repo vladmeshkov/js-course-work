@@ -1,37 +1,56 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="900" height="931" viewBox="0 0 900 931" font-family="Times New Roman, serif">
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1114" viewBox="0 0 900 1114" font-family="Times New Roman, serif">
 <rect width="100%" height="100%" fill="#ffffff"/>
-<path d="M220,86 L220,236" fill="none" stroke="#000" stroke-width="1"/><polygon points="220,86 214,96 220,106 226,96" fill="#fff" stroke="#000"/><rect x="225" y="150" width="74.60000000000001" height="22" fill="#fff" opacity="0.92"/><text x="228" y="166" font-size="16" font-style="italic" text-anchor="start">открывает</text><text x="234" y="128" font-size="16" text-anchor="start">1</text><text x="228" y="228" font-size="16" text-anchor="start">0..*</text>
-<path d="M660,86 L660,314 L370,314" fill="none" stroke="#000" stroke-width="1"/><rect x="488.8" y="317" width="52.400000000000006" height="22" fill="#fff" opacity="0.92"/><text x="515" y="333" font-size="16" font-style="italic" text-anchor="middle">хранит</text><text x="668" y="104" font-size="16" text-anchor="start">1</text><text x="376" y="307" font-size="16" text-anchor="start">0..*</text>
-<path d="M220,495 L220,645" fill="none" stroke="#000" stroke-width="1"/><rect x="225" y="559" width="74.60000000000001" height="22" fill="#fff" opacity="0.92"/><text x="228" y="575" font-size="16" font-style="italic" text-anchor="start">открыт по</text><text x="228" y="513" font-size="16" text-anchor="start">0..*</text><text x="228" y="637" font-size="16" text-anchor="start">1</text>
-<rect x="70" y="236" width="300" height="259" fill="#fff" stroke="#000" stroke-width="1"/>
-<text x="220" y="261" font-size="19" font-weight="bold" text-anchor="middle">Deposit</text>
-<line x1="70" y1="272" x2="370" y2="272" stroke="#000"/>
-<text x="78" y="289" font-size="16">- id: number</text>
-<text x="78" y="312" font-size="16">- amount: number</text>
-<text x="78" y="335" font-size="16">- ratePercent: number</text>
-<text x="78" y="358" font-size="16">- openedDate: Date</text>
-<text x="78" y="381" font-size="16">- maturityDate: Date</text>
-<text x="78" y="404" font-size="16">- interestTotal: number</text>
-<text x="78" y="427" font-size="16">- status: string</text>
-<line x1="70" y1="441" x2="370" y2="441" stroke="#000"/>
-<text x="78" y="458" font-size="16">+ quoteEarlyClose(): number</text>
-<text x="78" y="481" font-size="16">+ closeEarly(): void</text>
-<rect x="70" y="645" width="300" height="236" fill="#fff" stroke="#000" stroke-width="1"/>
-<text x="220" y="670" font-size="19" font-weight="bold" text-anchor="middle">DepositProduct</text>
-<line x1="70" y1="681" x2="370" y2="681" stroke="#000"/>
-<text x="78" y="698" font-size="16">- id: number</text>
-<text x="78" y="721" font-size="16">- name: string</text>
-<text x="78" y="744" font-size="16">- currency: string</text>
-<text x="78" y="767" font-size="16">- termMonths: number</text>
-<text x="78" y="790" font-size="16">- ratePercent: number</text>
-<text x="78" y="813" font-size="16">- capitalization: boolean</text>
-<text x="78" y="836" font-size="16">- revocable: boolean</text>
-<line x1="70" y1="850" x2="370" y2="850" stroke="#000"/>
-<text x="78" y="867" font-size="16">+ projectIncome(amount): number</text>
-<rect x="70" y="50" width="300" height="36" fill="#fff" stroke="#000" stroke-width="1"/>
+<path d="M220,286 L220,439" fill="none" stroke="#000" stroke-width="1"/><polygon points="220,286 214,296 220,306 226,296" fill="#fff" stroke="#000"/><rect x="225" y="351.5" width="74.60000000000001" height="22" fill="#fff" opacity="0.92"/><text x="228" y="367.5" font-size="16" font-style="italic" text-anchor="start">открывает</text><text x="234" y="328" font-size="16" text-anchor="start">1</text><text x="228" y="431" font-size="16" text-anchor="start">0..*</text>
+<path d="M660,309 L660,517 L370,517" fill="none" stroke="#000" stroke-width="1"/><rect x="488.8" y="520" width="52.400000000000006" height="22" fill="#fff" opacity="0.92"/><text x="515" y="536" font-size="16" font-style="italic" text-anchor="middle">хранит</text><text x="668" y="327" font-size="16" text-anchor="start">1</text><text x="376" y="510" font-size="16" text-anchor="start">0..*</text>
+<path d="M220,698 L220,828" fill="none" stroke="#000" stroke-width="1"/><rect x="225" y="752" width="74.60000000000001" height="22" fill="#fff" opacity="0.92"/><text x="228" y="768" font-size="16" font-style="italic" text-anchor="start">открыт по</text><text x="228" y="716" font-size="16" text-anchor="start">0..*</text><text x="228" y="820" font-size="16" text-anchor="start">1</text>
+<rect x="70" y="50" width="300" height="236" fill="#fff" stroke="#000" stroke-width="1"/>
 <text x="220" y="75" font-size="19" font-weight="bold" text-anchor="middle">Client</text>
 <line x1="70" y1="86" x2="370" y2="86" stroke="#000"/>
-<rect x="510" y="50" width="300" height="36" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="78" y="103" font-size="16">- id: number</text>
+<text x="78" y="126" font-size="16">- lastName: string</text>
+<text x="78" y="149" font-size="16">- firstName: string</text>
+<text x="78" y="172" font-size="16">- patronymic: string</text>
+<text x="78" y="195" font-size="16">- birthDate: Date</text>
+<text x="78" y="218" font-size="16">- kycStatus: string</text>
+<line x1="70" y1="232" x2="370" y2="232" stroke="#000"/>
+<text x="78" y="249" font-size="16">+ verifyClient(): void</text>
+<text x="78" y="272" font-size="16">+ rejectClient(comment): void</text>
+<rect x="510" y="50" width="300" height="259" fill="#fff" stroke="#000" stroke-width="1"/>
 <text x="660" y="75" font-size="19" font-weight="bold" text-anchor="middle">Account</text>
 <line x1="510" y1="86" x2="810" y2="86" stroke="#000"/>
+<text x="518" y="103" font-size="16">- id: number</text>
+<text x="518" y="126" font-size="16">- iban: string</text>
+<text x="518" y="149" font-size="16">- kind: string</text>
+<text x="518" y="172" font-size="16">- currency: string</text>
+<text x="518" y="195" font-size="16">- balance: number</text>
+<text x="518" y="218" font-size="16">- status: string</text>
+<line x1="510" y1="232" x2="810" y2="232" stroke="#000"/>
+<text x="518" y="249" font-size="16">+ openForUser(): void</text>
+<text x="518" y="272" font-size="16">+ closeForUser(): void</text>
+<text x="518" y="295" font-size="16">+ setFrozen(frozen): void</text>
+<rect x="70" y="439" width="300" height="259" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="220" y="464" font-size="19" font-weight="bold" text-anchor="middle">Deposit</text>
+<line x1="70" y1="475" x2="370" y2="475" stroke="#000"/>
+<text x="78" y="492" font-size="16">- id: number</text>
+<text x="78" y="515" font-size="16">- amount: number</text>
+<text x="78" y="538" font-size="16">- ratePercent: number</text>
+<text x="78" y="561" font-size="16">- openedDate: Date</text>
+<text x="78" y="584" font-size="16">- maturityDate: Date</text>
+<text x="78" y="607" font-size="16">- interestTotal: number</text>
+<text x="78" y="630" font-size="16">- status: string</text>
+<line x1="70" y1="644" x2="370" y2="644" stroke="#000"/>
+<text x="78" y="661" font-size="16">+ quoteEarlyClose(): number</text>
+<text x="78" y="684" font-size="16">+ closeEarly(): void</text>
+<rect x="70" y="828" width="300" height="236" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="220" y="853" font-size="19" font-weight="bold" text-anchor="middle">DepositProduct</text>
+<line x1="70" y1="864" x2="370" y2="864" stroke="#000"/>
+<text x="78" y="881" font-size="16">- id: number</text>
+<text x="78" y="904" font-size="16">- name: string</text>
+<text x="78" y="927" font-size="16">- currency: string</text>
+<text x="78" y="950" font-size="16">- termMonths: number</text>
+<text x="78" y="973" font-size="16">- ratePercent: number</text>
+<text x="78" y="996" font-size="16">- capitalization: boolean</text>
+<text x="78" y="1019" font-size="16">- revocable: boolean</text>
+<line x1="70" y1="1033" x2="370" y2="1033" stroke="#000"/>
+<text x="78" y="1050" font-size="16">+ projectIncome(amount): number</text>
 </svg>
