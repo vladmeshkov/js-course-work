@@ -751,3 +751,11 @@ html.dark .pay-row__thumb img{mix-blend-mode:screen;filter:invert(1) hue-rotate(
 /* Курсы и тарифы: панель публикации */
 .rates-bar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
 .rates-bar__btns{display:flex;align-items:center;gap:18px}
+
+/* Погашение кредита */
+.repay{display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start}
+.repay__main{flex:3 1 520px;min-width:0;display:flex;flex-direction:column;gap:20px}
+.repay .upcoming{flex:2 1 340px;min-width:0}
+.repay__amount{max-width:340px;font-size:28px;font-weight:600}
+.repay__effect{margin:0;padding:18px 22px;border-radius:16px;background:var(--soft);font-size:17px;line-height:1.5}
+[hidden]{display:none !important}
