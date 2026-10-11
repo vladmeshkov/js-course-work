@@ -585,3 +585,25 @@ dl.talon__rows{margin:0}
 .talon-wide__facts{display:flex;flex-wrap:wrap;gap:20px 34px}
 .talon-wide__facts small{display:block;font-size:14px;color:var(--muted2)}
 .talon-wide__facts b{font-size:18px}
+
+/* Выписка */
+.stmt-filter{flex-direction:row;flex-wrap:wrap;gap:20px 44px;padding:26px 32px}
+.stmt-filter__col{display:flex;flex-direction:column;gap:10px}
+.stmt-filter__label{font-size:14px;color:var(--muted2)}
+.stmt-filter__dates{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.stmt-filter__dates input{padding:9px 12px;border:1.5px solid var(--line);border-radius:10px;background:var(--surface);font-family:inherit;font-size:15px;color:var(--ink)}
+.stmt{padding:40px 48px 36px;gap:26px}
+.stmt__title{font-size:22px;font-weight:700;letter-spacing:-.5px}
+.stmt__days{display:flex;flex-direction:column;gap:22px}
+.stmt__day{font-size:14px;font-weight:600;color:var(--accentText);letter-spacing:.3px;padding-bottom:6px}
+.stmt__row{display:flex;align-items:center;gap:18px;padding:14px 0;border-top:1px solid var(--line)}
+.stmt__mark{flex:0 0 40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px}
+.stmt__mark--in{background:#DDF3E4;color:#1E7B45}
+.stmt__mark--out{background:var(--fld);color:var(--muted)}
+html.dark .stmt__mark--in{background:#17331F}
+.stmt__what{flex:1;min-width:0}
+.stmt__what b{display:block;font-size:17px;font-weight:500}
+.stmt__what small{display:block;font-size:14px;color:var(--muted2);margin-top:1px}
+.stmt__amt{font-size:18px;font-weight:600;white-space:nowrap}
+.stmt__empty{padding:36px 0;text-align:center;font-size:17px;color:var(--muted2)}
+.chips a.chip{display:inline-block}

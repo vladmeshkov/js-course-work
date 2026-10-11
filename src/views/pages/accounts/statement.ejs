@@ -1,27 +1,71 @@
 <%- include('../../partials/header', { title }) %>
 <nav class="crumbs" aria-label="Навигационная цепочка"><a href="/cabinet">Главная</a> &nbsp;›&nbsp; <a href="/accounts">Счета и карты</a> &nbsp;›&nbsp; <a href="/accounts/<%= statement.account.id %>"><%= statement.account.title %></a> &nbsp;›&nbsp; Выписка</nav>
+<%
+  const acc = statement.account;
+  const base = '/accounts/' + acc.id + '/statement';
+  const iso = (d) => d.toISOString().slice(0, 10);
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth();
+  const presets = [
+    ['Этот месяц', iso(new Date(Date.UTC(y, m, 1))), iso(now)],
+    ['Прошлый месяц', iso(new Date(Date.UTC(y, m - 1, 1))), iso(new Date(Date.UTC(y, m, 0)))],
+    ['3 месяца', iso(new Date(Date.UTC(y, m - 2, 1))), iso(now)],
+    ['Год', iso(new Date(Date.UTC(y - 1, m, now.getDate()))), iso(now)]
+  ];
+  const dmy = (v) => String(v).slice(0, 10).split('-').reverse().join('.');
+  const groups = [];
+  statement.operations.forEach((o) => { const d = String(o.date).slice(0, 10); let g = groups[groups.length - 1]; if (!g || g.d !== d) { g = { d, rows: [] }; groups.push(g); } g.rows.push(o); });
+%>
 <h1>Выписка по счёту</h1>
-<form class="tile search" method="get" action="/accounts/<%= statement.account.id %>/statement">
-  <label class="muted2" for="from">С</label><input id="from" name="from" type="date" value="<%= statement.from %>">
-  <label class="muted2" for="to">По</label><input id="to" name="to" type="date" value="<%= statement.to %>">
-  <button class="btn" type="submit">Показать</button>
-  <a class="btn btn--ghost" href="/accounts/<%= statement.account.id %>/statement.pdf?from=<%= statement.from %>&to=<%= statement.to %>">Скачать PDF</a>
-  <% if (errors.from) { %><span class="field__error"><%= errors.from %></span><% } %>
+<form class="panel stmt-filter" method="get" action="<%= base %>">
+  <div class="stmt-filter__col">
+    <div class="stmt-filter__label">Период</div>
+    <div class="chips">
+      <% presets.forEach((p) => { %><a class="chip" aria-selected="<%= p[1] === statement.from && p[2] === statement.to %>" href="<%= base %>?from=<%= p[1] %>&to=<%= p[2] %>"><%= p[0] %></a><% }) %>
+    </div>
+  </div>
+  <div class="stmt-filter__col">
+    <div class="stmt-filter__label">Свои даты</div>
+    <div class="stmt-filter__dates">
+      <label class="muted2" for="from">С</label><input id="from" name="from" type="date" value="<%= statement.from %>">
+      <label class="muted2" for="to">По</label><input id="to" name="to" type="date" value="<%= statement.to %>">
+      <button class="btn btn--small" type="submit">Показать</button>
+    </div>
+    <% if (errors.from) { %><span class="field__error"><%= errors.from %></span><% } %>
+  </div>
 </form>
-<section class="tile">
-  <dl class="facts">
-    <div><dt>Счёт</dt><dd><%= formatIban(statement.account.iban) %></dd></div>
-    <div><dt>Входящий остаток</dt><dd><%= formatAmount(statement.opening) %> <%= statement.account.currency %></dd></div>
-    <div><dt>Поступления</dt><dd class="text-good"><%= formatAmount(statement.credit) %></dd></div>
-    <div><dt>Списания</dt><dd><%= formatAmount(statement.debit) %></dd></div>
-    <div><dt>Исходящий остаток</dt><dd><%= formatAmount(statement.closing) %> <%= statement.account.currency %></dd></div>
-  </dl>
-  <div class="scroll-x"><table class="table">
-    <thead><tr><th>Дата</th><th>Операция</th><th>Сумма</th><th>Остаток</th></tr></thead>
-    <tbody>
-      <% statement.operations.forEach((o) => { %><tr><td><%= o.date %></td><td><%= o.description %></td><td class="<%= o.amount > 0 ? 'text-good' : '' %>"><%= o.amount > 0 ? '+' : '' %><%= formatAmount(o.amount) %></td><td><%= formatAmount(o.balance) %></td></tr><% }) %>
-    </tbody>
-  </table></div>
-  <% if (!statement.operations.length) { %><p class="muted m0">За выбранный период операций не было.</p><% } %>
+<section class="talon-wide stmt">
+  <div class="talon-wide__top">
+    <div class="talon-wide__who"><img src="/img/emblem.png" alt="" width="48" height="48"><div><div class="muted2 small">ТалерБанк, выписка</div><div class="stmt__title"><%= acc.title %></div><div class="muted2 small"><%= formatIban(acc.iban) %>, <%= dmy(statement.from) %> – <%= dmy(statement.to) %></div></div></div>
+    <div class="talon-wide__facts">
+      <div><small>Входящий остаток</small><b><%= formatAmount(statement.opening) %></b></div>
+      <div><small>Исходящий остаток</small><b><%= formatAmount(statement.closing) %> <%= acc.currency %></b></div>
+    </div>
+  </div>
+  <div class="talon-wide__cut"></div>
+  <div class="stmt__days">
+    <% groups.forEach((g) => { %>
+      <div>
+        <div class="stmt__day"><%= dmy(g.d) %></div>
+        <% g.rows.forEach((o) => { %>
+          <div class="stmt__row">
+            <span class="stmt__mark stmt__mark--<%= o.amount > 0 ? 'in' : 'out' %>"><%= o.amount > 0 ? '+' : '−' %></span>
+            <span class="stmt__what"><b><%= o.description %></b><small>Остаток <%= formatAmount(o.balance) %></small></span>
+            <span class="stmt__amt<%= o.amount > 0 ? ' text-good' : '' %>"><%= o.amount > 0 ? '+' : '' %><%= formatAmount(o.amount) %></span>
+          </div>
+        <% }) %>
+      </div>
+    <% }) %>
+    <% if (!groups.length) { %><div class="stmt__empty">За выбранный период операций нет. Выберите другой месяц.</div><% } %>
+  </div>
+  <div class="talon-wide__cut"></div>
+  <div class="talon-wide__bottom">
+    <div class="talon-wide__facts">
+      <div><small>Поступления</small><b class="text-good"><%= formatAmount(statement.credit) %></b></div>
+      <div><small>Списания</small><b><%= formatAmount(statement.debit) %></b></div>
+      <div><small>Операций</small><b><%= statement.operations.length %></b></div>
+    </div>
+    <a class="btn btn--lg" href="<%= base %>.pdf?from=<%= statement.from %>&to=<%= statement.to %>">Скачать PDF</a>
+  </div>
 </section>
 <%- include('../../partials/footer') %>
