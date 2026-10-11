@@ -1,16 +1,44 @@
 <%- include('../../partials/header', { title }) %>
 <nav class="crumbs" aria-label="Навигационная цепочка"><a href="/cabinet">Главная</a> &nbsp;›&nbsp; <a href="/accounts">Счета и карты</a> &nbsp;›&nbsp; Открыть счёт</nav>
 <h1>Открыть счёт</h1>
-<form class="tile form w640" method="post" action="/accounts" novalidate>
+<form class="acc-new" method="post" action="/accounts" novalidate id="acc-form">
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
   <% if (errors.common) { %><div class="alert alert--error" role="alert"><%= errors.common %></div><% } %>
-  <div class="field<%= errors.currency ? ' field--error' : '' %>"><label for="currency">Валюта</label>
-    <select id="currency" name="currency"><% [['BYN', 'Белорусский рубль'], ['USD', 'Доллар США'], ['EUR', 'Евро'], ['RUB', 'Российский рубль'], ['CNY', 'Китайский юань']].forEach(([c, n]) => { %><option value="<%= c %>"<%= form.currency === c ? ' selected' : '' %>><%= c %>, <%= n %></option><% }) %></select>
-    <% if (errors.currency) { %><span class="field__error"><%= errors.currency %></span><% } %></div>
-  <div class="field<%= errors.kind ? ' field--error' : '' %>"><label for="kind">Вид счёта</label>
-    <select id="kind" name="kind"><option value="current"<%= form.kind !== 'savings' ? ' selected' : '' %>>Текущий: платежи, переводы, карты</option><option value="savings"<%= form.kind === 'savings' ? ' selected' : '' %>>Накопительный</option></select>
-    <% if (errors.kind) { %><span class="field__error"><%= errors.kind %></span><% } %></div>
-  <p class="muted2 m0 small">Номер счёта в формате IBAN Беларуси формируется автоматически, контрольные цифры считаются по стандарту ISO 13616 (mod 97).</p>
-  <div><button class="btn btn--lg" type="submit">Открыть счёт</button></div>
+  <fieldset class="acc-new__block">
+    <legend>В какой валюте</legend>
+    <div class="cur-cards">
+      <% [['BYN', 'Белорусский рубль', 'byn'], ['USD', 'Доллар США', 'usd'], ['EUR', 'Евро', 'eur'], ['RUB', 'Российский рубль', 'rub'], ['CNY', 'Китайский юань', 'cny']].forEach(([c, n, code]) => { %>
+        <label class="cur-card"><input type="radio" name="currency" value="<%= c %>"<%= (form.currency || 'BYN') === c ? ' checked' : '' %>>
+          <span class="cur-card__in"><%- include('../../partials/flag', { code, w: 44 }) %><span><b><%= c %></b><small><%= n %></small></span></span></label>
+      <% }) %>
+    </div>
+    <% if (errors.currency) { %><span class="field__error"><%= errors.currency %></span><% } %>
+  </fieldset>
+  <fieldset class="acc-new__block">
+    <legend>Какой счёт</legend>
+    <div class="chips">
+      <label class="chip-radio"><input type="radio" name="kind" value="current"<%= form.kind !== 'savings' ? ' checked' : '' %>><span>Текущий</span></label>
+      <label class="chip-radio"><input type="radio" name="kind" value="savings"<%= form.kind === 'savings' ? ' checked' : '' %>><span>Накопительный</span></label>
+    </div>
+    <p class="muted acc-new__note" id="kind-note">Текущий счёт нужен для платежей, переводов и карт.</p>
+    <% if (errors.kind) { %><span class="field__error"><%= errors.kind %></span><% } %>
+  </fieldset>
+  <section class="talon-wide">
+    <div class="talon-wide__top">
+      <div class="talon-wide__who"><img src="/img/emblem.png" alt="" width="44" height="44"><span class="muted2">Реквизиты нового счёта</span></div>
+      <span class="talon-wide__st">Номер присваивается при открытии</span>
+    </div>
+    <div class="talon-wide__iban" aria-label="Номер счёта появится после открытия">BY•• TLRB 2400 •••• •••• •••• ••••</div>
+    <div class="talon-wide__cut"></div>
+    <div class="talon-wide__bottom">
+      <div class="talon-wide__facts">
+        <div><small>Валюта</small><b id="acc-cur">BYN</b></div>
+        <div><small>Формат номера</small><b>IBAN Беларуси, mod 97</b></div>
+        <div><small>Обслуживание</small><b>0 BYN</b></div>
+      </div>
+      <button class="btn btn--lg" type="submit">Открыть счёт</button>
+    </div>
+  </section>
 </form>
+<script src="/js/account-new.js" defer></script>
 <%- include('../../partials/footer') %>
