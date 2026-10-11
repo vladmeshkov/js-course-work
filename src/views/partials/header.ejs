@@ -5,6 +5,7 @@
       <span><%= user ? user.role_name : 'Интернет-банкинг для физических лиц' %></span>
       <div class="util-bar__links">
         <a href="/rates">Курсы валют</a>
+        <button class="search-toggle" type="button" id="search-toggle" aria-expanded="false" aria-controls="search-panel">Поиск <kbd>/</kbd></button>
         <button class="theme-toggle" type="button" data-theme-toggle aria-pressed="false" title="Переключить тему"><span class="theme-toggle__icon" aria-hidden="true"></span><span data-theme-label>Тёмная тема</span></button>
         <% if (user) { %>
           <a href="/security">Безопасность</a>
@@ -12,6 +13,17 @@
         <% } %>
         <a class="phone-link" href="tel:147">147</a>
       </div>
+    </div>
+  </div>
+  <div class="search-panel" id="search-panel" role="dialog" aria-label="Поиск по банку" hidden>
+    <div class="search-panel__in">
+      <div class="search-panel__row">
+        <label for="search-q">Что вы ищете</label>
+        <input id="search-q" type="search" placeholder="Перевод, ЖКУ, вклад, номер счёта" autocomplete="off">
+        <button class="link-btn" type="button" id="search-close">Закрыть</button>
+      </div>
+      <div class="chips" id="search-cats"></div>
+      <div id="search-results" aria-live="polite"></div>
     </div>
   </div>
   <div class="top-bar">

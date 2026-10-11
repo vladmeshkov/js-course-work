@@ -1,5 +1,6 @@
 import * as loanModel from '../models/loanModel.js';
 import * as depositModel from '../models/depositModel.js';
+import * as searchService from '../services/searchService.js';
 import * as settingsService from '../services/settingsService.js';
 
 const NAMES = {
@@ -82,4 +83,9 @@ export function info(req, res, next) {
   const page = INFO[key];
   if (!page) return next();
   res.render('pages/info', { title: page.title, blocks: page.blocks });
+}
+
+/** JSON-индекс для поиска в шапке. */
+export async function searchIndex(req, res) {
+  res.json(await searchService.buildIndex(req.user));
 }

@@ -27,6 +27,7 @@ const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 30, skip: () =
 
 router.get('/', home.home);
 router.get('/info/:slug', home.info);
+router.get('/search/index', home.searchIndex);
 router.get('/forgot', home.info);
 router.get('/health', (req, res) => res.json({ status: 'ok' }));
 
