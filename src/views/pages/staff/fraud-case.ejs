@@ -1,0 +1,24 @@
+<%- include('../../partials/header', { title }) %>
+<nav class="crumbs" aria-label="Навигационная цепочка"><a href="/staff/fraud">Антифрод</a> &nbsp;›&nbsp; Случай № <%= fraudCase.id %></nav>
+<h1>Случай № <%= fraudCase.id %></h1>
+<section class="tile">
+  <dl class="facts">
+    <div><dt>Клиент</dt><dd><%= fraudCase.login %></dd></div>
+    <div><dt>Сумма</dt><dd><%= formatAmount(fraudCase.amount) %> <%= fraudCase.currency %></dd></div>
+    <div><dt>Со счёта</dt><dd><%= formatIban(fraudCase.from_iban) %></dd></div>
+    <div><dt>На счёт</dt><dd><%= formatIban(fraudCase.to_iban) %></dd></div>
+    <div><dt>Назначение</dt><dd><%= fraudCase.comment || '—' %></dd></div>
+    <div><dt>Балл риска</dt><dd><%= fraudCase.score %></dd></div>
+  </dl>
+  <h2 class="mb10">Сработавшие правила</h2>
+  <% fraudCase.reasons.forEach((r) => { %><div class="account"><div class="account__title"><%= r.text %></div><b>+<%= r.points %></b></div><% }) %>
+</section>
+<% if (fraudCase.status === 'open') { %>
+<form class="tile form w720" method="post" action="/staff/fraud/<%= fraudCase.id %>">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <h2>Решение</h2>
+  <div class="field<%= errors.comment ? ' field--error' : '' %>"><label for="comment">Комментарий (обязателен при отказе)</label><input id="comment" name="comment"><% if (errors.comment) { %><span class="field__error"><%= errors.comment %></span><% } %></div>
+  <div class="actions"><button class="btn" type="submit" name="decision" value="approve">Провести перевод</button><button class="btn btn--ghost" type="submit" name="decision" value="reject">Отклонить</button></div>
+</form>
+<% } else { %><div class="alert alert--info">Случай рассмотрен: <%= fraudCase.status === 'approved' ? 'перевод проведён' : 'перевод отклонён' %>.</div><% } %>
+<%- include('../../partials/footer') %>

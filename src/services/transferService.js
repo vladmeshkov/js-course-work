@@ -11,6 +11,7 @@ import * as auditService from './auditService.js';
 import * as ledgerService from './ledgerService.js';
 import * as otpService from './otpService.js';
 import * as ratesService from './ratesService.js';
+import * as fraudService from './fraudService.js';
 
 /*
  * Конвейер перевода:
@@ -29,7 +30,7 @@ async function verifiedClient(userId) {
  * Создаёт заявку на перевод. Если нужен код подтверждения, возвращает заявку и код; иначе сразу проводит.
  * @param {number} userId
  * @param {{kind:'own'|'client', fromAccountId:number, toAccountId?:number, toIban?:string, amount:number, comment?:string}} input
- * @returns {Promise<{intent:any, otpCode?:string, executed:boolean}>}
+ * @returns {Promise<{intent:any, otpCode?:string, executed:boolean, review?:boolean}>}
  */
 export async function createTransfer(userId, input) {
   const client = await verifiedClient(userId);
@@ -62,13 +63,29 @@ export async function createTransfer(userId, input) {
     if (sent + amountByn > limit) throw new BusinessError('Превышен суточный лимит переводов', 'daily_limit');
   }
 
+  const risk = input.kind === 'client'
+    ? await fraudService.evaluate({ userId, clientId: client.id, toAccountId: to.id, amountByn })
+    : { score: 0, reasons: [], decision: 'allow', special: false };
+
   const intent = await transferModel.insertIntent(pool, {
     userId, kind: input.kind, fromAccountId: from.id, toAccountId: to.id, amount: input.amount, amountByn, fee,
     comment: String(input.comment ?? '').trim().slice(0, 140)
   });
 
+  // подозрительный перевод задерживается: деньги резервируются, решение принимает специалист по мониторингу
+  if (risk.decision === 'review') {
+    await withTransaction(async (db) => {
+      await transferModel.setStatus(intent.id, 'review', db);
+      await db.query('INSERT INTO holds (account_id, amount, intent_id) VALUES ($1, $2, $3)', [from.id, input.amount + fee, intent.id]);
+      await fraudService.recordCase(db, intent, risk);
+      await auditService.log({ userId, action: 'transfer.held', entity: 'transfer', entityId: intent.id, details: { score: risk.score } }, db);
+    });
+    return { intent: { ...intent, status: 'review' }, executed: false, review: true };
+  }
+  if (risk.decision === 'confirm' || risk.special) await fraudService.recordCase(pool, intent, risk);
+
   const otpThreshold = await settingsModel.getNumber('transfer.otp_threshold');
-  if (input.kind === 'client' && amountByn >= otpThreshold) {
+  if (input.kind === 'client' && (amountByn >= otpThreshold || risk.decision === 'confirm')) {
     const otpCode = await otpService.issue(userId, `transfer:${intent.id}`);
     await auditService.log({ userId, action: 'transfer.otp_sent', entity: 'transfer', entityId: intent.id });
     return { intent, otpCode, executed: false };
@@ -99,7 +116,7 @@ export async function cancelTransfer(userId, intentId) {
 /**
  * Проводит перевод. Повторный вызов для той же заявки ничего не делает (идемпотентность).
  */
-async function executeIntent(userId, intentId) {
+export async function executeIntent(userId, intentId) {
   return withTransaction(async (db) => {
     const intent = await transferModel.lockIntent(db, intentId, userId);
     if (!intent) throw new AppError('Перевод не найден', 404);
@@ -134,4 +151,9 @@ async function executeIntent(userId, intentId) {
     await auditService.log({ userId, action: 'transfer.done', entity: 'transfer', entityId: intent.id, details: { kind: intent.kind, amount: intent.amount, currency: from.currency } }, db);
     return { documentId, duplicate: false, intent };
   });
+}
+
+/** Решение специалиста по мониторингу по задержанному переводу. */
+export function reviewHeldTransfer(officerId, caseId, decision) {
+  return fraudService.review(officerId, caseId, decision, executeIntent);
 }

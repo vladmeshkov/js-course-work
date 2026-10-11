@@ -13,6 +13,7 @@ import * as loans from '../controllers/loanController.js';
 import * as staffLoans from '../controllers/staffLoanController.js';
 import * as cards from '../controllers/cardController.js';
 import * as payments from '../controllers/paymentController.js';
+import * as staffFraud from '../controllers/staffFraudController.js';
 
 const router = Router();
 
@@ -85,6 +86,10 @@ router.post('/cards/:id/block', requireAuth, cards.block);
 router.post('/cards/:id/close', requireAuth, cards.close);
 router.post('/cards/:id/limits', requireAuth, cards.limits);
 router.post('/cards/:id/purchase', requireAuth, cards.purchase);
+
+router.get('/staff/fraud', requirePermission('fraud.review'), staffFraud.queue);
+router.get('/staff/fraud/:id', requirePermission('fraud.review'), staffFraud.show);
+router.post('/staff/fraud/:id', requirePermission('fraud.review'), staffFraud.decide);
 
 router.get('/cabinet', requireAuth, cabinet.cabinet);
 router.get('/workplace', requireStaff, cabinet.workplace);

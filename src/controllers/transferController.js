@@ -33,6 +33,10 @@ export async function submit(req, res) {
       kind, amount, comment: req.body.comment,
       fromAccountId: Number(req.body.fromAccountId), toAccountId: Number(req.body.toAccountId), toIban: req.body.toIban
     });
+    if (result.review) {
+      req.flash('info', 'Перевод принят и находится на проверке в банке. Мы сообщим о результате, деньги на счёте зарезервированы.');
+      return res.redirect(`/accounts/${result.intent.from_account_id}`);
+    }
     if (result.executed) {
       req.flash('success', 'Перевод выполнен');
       return res.redirect(`/accounts/${result.intent.from_account_id}`);

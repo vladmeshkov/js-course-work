@@ -21,6 +21,7 @@ export function navFor(user) {
   if (user.role_code === 'client') return CLIENT;
   const items = [...STAFF];
   if (user.permissions.includes('loan.review')) items.push({ label: 'Заявки на кредит', href: '/staff/loans' });
+  if (user.permissions.includes('fraud.review')) items.push({ label: 'Антифрод', href: '/staff/fraud' });
   if (user.permissions.includes('eod.run')) items.push({ label: 'Операционный день', href: '/admin/eod' });
   return items;
 }
