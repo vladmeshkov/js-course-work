@@ -189,3 +189,24 @@ describe('страницы клиента открываются без ошиб
     }
   });
 });
+
+describe('счета и курсы', () => {
+  it('клиент открывает и закрывает счёт, курсы и конвертер открыты без входа', async () => {
+    const { openForUser, closeForUser } = await import('../src/services/accountService.js');
+    const c = await createClientWithAccount(0);
+    const usd = await openForUser(c.userId, { kind: 'current', currency: 'USD' });
+    expect(usd.currency).toBe('USD');
+    expect(usd.iban).toMatch(/^BY\d{2}TLRB2400/);
+    await expect(openForUser(c.userId, { kind: 'x', currency: 'USD' })).rejects.toMatchObject({ fields: { kind: expect.any(String) } });
+    await closeForUser(c.userId, usd.id);
+    expect((await pool.query('SELECT status FROM accounts WHERE id = $1', [usd.id])).rows[0].status).toBe('closed');
+    // нельзя закрыть счёт с деньгами
+    const rich = await createClientWithAccount(5000);
+    await expect(closeForUser(rich.userId, rich.accountId)).rejects.toThrow(/нулевым остатком/);
+
+    expect((await request(app).get('/rates')).status).toBe(200);
+    const conv = await request(app).get('/rates/convert?from=USD&to=BYN&amount=100');
+    expect(conv.body.ok).toBe(true);
+    expect(conv.body.result).toBeGreaterThan(30000);
+  });
+});

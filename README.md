@@ -15,8 +15,9 @@
    CREATE DATABASE talerbank_test OWNER taler;
    ```
 
-3. Скопируйте `.env.example` в `.env` и задайте `SESSION_SECRET` и `DATA_KEY`.
-4. Установите зависимости и создайте схему:
+3. Для резервных копий нужны утилиты `pg_dump` и `pg_restore` (входят в PostgreSQL). Если их нет в PATH, задайте `PG_BIN_DIR` в `.env`.
+4. Скопируйте `.env.example` в `.env` и задайте `SESSION_SECRET` и `DATA_KEY`.
+5. Установите зависимости и создайте схему:
 
    ```
    npm install
@@ -25,7 +26,7 @@
    npm start
    ```
 
-5. Откройте http://localhost:3000. Пользователи для разработки (пароль `Taler2026`): сотрудники `admin`, `operator`, `credit`, `monitor` и клиенты `anna`, `igor` со счётом и деньгами.
+6. Откройте http://localhost:3000. Пользователи для разработки (пароль `Taler2026`): сотрудники `admin`, `operator`, `credit`, `monitor` и клиенты `anna`, `igor` со счётом и деньгами. Чтобы увидеть начисление процентов и платежи по кредитам, войдите администратором и прокрутите дни на странице «Операционный день».
 
 ## Команды
 

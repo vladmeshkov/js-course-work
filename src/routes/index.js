@@ -14,6 +14,7 @@ import * as staffLoans from '../controllers/staffLoanController.js';
 import * as cards from '../controllers/cardController.js';
 import * as payments from '../controllers/paymentController.js';
 import * as documents from '../controllers/documentController.js';
+import * as rates from '../controllers/ratesController.js';
 import * as operator from '../controllers/operatorController.js';
 import * as staffFraud from '../controllers/staffFraudController.js';
 
@@ -31,10 +32,8 @@ router.post('/logout', auth.logout);
 router.get('/register', auth.showRegister);
 router.post('/register', auth.register);
 
-// разделы, которые будут реализованы по мере разработки модулей
-for (const [path, title] of [['/rates', 'Курсы валют']]) {
-  router.get(path, (req, res) => res.render('pages/soon', { title }));
-}
+router.get('/rates', rates.index);
+router.get('/rates/convert', rates.convert);
 
 router.get('/payments', requireAuth, payments.hub);
 router.get('/payments/catalog', requireAuth, payments.catalog);
@@ -47,7 +46,10 @@ router.post('/payments/templates/:id/delete', requireAuth, payments.deleteTempla
 router.post('/payments/templates/:id/autopay', requireAuth, payments.createAutopay);
 router.post('/payments/autopay/:id/cancel', requireAuth, payments.cancelAutopay);
 router.get('/accounts', requireAuth, accounts.list);
+router.get('/accounts/new', requireAuth, accounts.showNew);
+router.post('/accounts', requireAuth, accounts.create);
 router.get('/accounts/:id', requireAuth, accounts.show);
+router.post('/accounts/:id/close', requireAuth, accounts.close);
 router.get('/accounts/:id/statement', requireAuth, documents.statementPage);
 router.get('/accounts/:id/statement.pdf', requireAuth, documents.statementPdf);
 router.get('/accounts/:id/certificate.pdf', requireAuth, documents.certificatePdf);

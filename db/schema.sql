@@ -367,6 +367,135 @@ CREATE TABLE loan_schedule (
 );
 CREATE INDEX loan_schedule_due_idx ON loan_schedule (due_date) WHERE status IN ('planned', 'overdue');
 
+-- 007_cards.sql
+-- Виртуальные карты
+
+CREATE TABLE cards (
+  id             bigserial PRIMARY KEY,
+  client_id      bigint NOT NULL REFERENCES clients (id),
+  account_id     bigint NOT NULL REFERENCES accounts (id),
+  system         text NOT NULL CHECK (system IN ('belkart', 'visa', 'mastercard')),
+  number_enc     text NOT NULL,                 -- номер карты в зашифрованном виде
+  number_hash    text NOT NULL UNIQUE,
+  last4          char(4) NOT NULL,
+  holder         text NOT NULL,
+  expires        char(5) NOT NULL CHECK (expires ~ '^[0-9]{2}/[0-9]{2}$'),
+  cvv_hash       text NOT NULL,                 -- CVV и PIN хранятся только как хэш
+  pin_hash       text NOT NULL,
+  status         text NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'blocked', 'closed')),
+  per_op_limit   bigint NOT NULL DEFAULT 100000 CHECK (per_op_limit > 0),
+  daily_limit    bigint NOT NULL DEFAULT 300000 CHECK (daily_limit >= per_op_limit),
+  monthly_limit  bigint NOT NULL DEFAULT 1500000 CHECK (monthly_limit >= daily_limit),
+  online_enabled boolean NOT NULL DEFAULT true,
+  issued_at      timestamptz NOT NULL DEFAULT now(),
+  replaced_by    bigint REFERENCES cards (id)
+);
+CREATE INDEX cards_client_idx ON cards (client_id);
+CREATE INDEX cards_account_idx ON cards (account_id);
+
+-- Операции по картам (для лимитов)
+CREATE TABLE card_operations (
+  id           bigserial PRIMARY KEY,
+  card_id      bigint NOT NULL REFERENCES cards (id),
+  document_id  bigint NOT NULL REFERENCES documents (id),
+  amount       bigint NOT NULL CHECK (amount > 0),
+  online       boolean NOT NULL,
+  place        text NOT NULL DEFAULT '',
+  bank_date    date NOT NULL,
+  created_at   timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX card_operations_card_idx ON card_operations (card_id, bank_date);
+
+-- 008_payments.sql
+-- Каталог платежей по образцу ЕРИП: категории, поставщики, платежи, шаблоны, автоплатежи
+
+CREATE TABLE payment_categories (
+  id    smallserial PRIMARY KEY,
+  name  text NOT NULL,
+  hint  text NOT NULL DEFAULT '',
+  sort  smallint NOT NULL DEFAULT 0
+);
+
+CREATE TABLE payment_providers (
+  id               serial PRIMARY KEY,
+  category_id      smallint NOT NULL REFERENCES payment_categories (id),
+  name             text NOT NULL,
+  city             text,                         -- NULL: действует во всех городах
+  requisite_label  text NOT NULL,                -- что вводит клиент: «Номер телефона», «Лицевой счёт»
+  requisite_regex  text NOT NULL,                -- маска реквизита
+  requisite_hint   text NOT NULL DEFAULT '',
+  min_amount       bigint NOT NULL DEFAULT 100 CHECK (min_amount > 0),
+  max_amount       bigint NOT NULL DEFAULT 500000 CHECK (max_amount >= min_amount),
+  fee_percent      numeric(5, 2) NOT NULL DEFAULT 0 CHECK (fee_percent >= 0),
+  active           boolean NOT NULL DEFAULT true
+);
+CREATE INDEX payment_providers_category_idx ON payment_providers (category_id);
+
+CREATE TABLE payments (
+  id               bigserial PRIMARY KEY,
+  client_id        bigint NOT NULL REFERENCES clients (id),
+  provider_id      integer NOT NULL REFERENCES payment_providers (id),
+  from_account_id  bigint NOT NULL REFERENCES accounts (id),
+  amount           bigint NOT NULL CHECK (amount > 0),
+  fee              bigint NOT NULL DEFAULT 0 CHECK (fee >= 0),
+  requisite        text NOT NULL,
+  document_id      bigint NOT NULL REFERENCES documents (id),
+  source           text NOT NULL DEFAULT 'manual' CHECK (source IN ('manual', 'autopay')),
+  bank_date        date NOT NULL,
+  created_at       timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX payments_client_idx ON payments (client_id, id DESC);
+
+CREATE TABLE payment_templates (
+  id               bigserial PRIMARY KEY,
+  client_id        bigint NOT NULL REFERENCES clients (id) ON DELETE CASCADE,
+  provider_id      integer NOT NULL REFERENCES payment_providers (id),
+  from_account_id  bigint NOT NULL REFERENCES accounts (id),
+  name             text NOT NULL,
+  requisite        text NOT NULL,
+  amount           bigint CHECK (amount IS NULL OR amount > 0)
+);
+CREATE INDEX payment_templates_client_idx ON payment_templates (client_id);
+
+CREATE TABLE autopayments (
+  id             bigserial PRIMARY KEY,
+  client_id      bigint NOT NULL REFERENCES clients (id) ON DELETE CASCADE,
+  template_id    bigint NOT NULL REFERENCES payment_templates (id) ON DELETE CASCADE,
+  amount         bigint NOT NULL CHECK (amount > 0),
+  day_of_month   smallint NOT NULL CHECK (day_of_month BETWEEN 1 AND 28),
+  next_date      date NOT NULL,
+  active         boolean NOT NULL DEFAULT true,
+  fail_count     smallint NOT NULL DEFAULT 0,
+  last_result    text NOT NULL DEFAULT ''
+);
+CREATE INDEX autopayments_due_idx ON autopayments (next_date) WHERE active;
+
+-- 009_fraud.sql
+-- Антифрод: случаи подозрительных операций и холды для задержанных переводов
+
+ALTER TABLE transfer_intents DROP CONSTRAINT transfer_intents_status_check;
+ALTER TABLE transfer_intents ADD CONSTRAINT transfer_intents_status_check
+  CHECK (status IN ('new', 'review', 'confirmed', 'cancelled', 'expired', 'rejected'));
+
+ALTER TABLE holds ADD COLUMN intent_id uuid REFERENCES transfer_intents (id);
+
+CREATE TABLE fraud_cases (
+  id               bigserial PRIMARY KEY,
+  intent_id        uuid NOT NULL REFERENCES transfer_intents (id),
+  user_id          bigint NOT NULL REFERENCES users (id),
+  score            smallint NOT NULL,
+  reasons          jsonb NOT NULL DEFAULT '[]'::jsonb,
+  decision         text NOT NULL CHECK (decision IN ('confirm', 'review', 'special')),
+  status           text NOT NULL CHECK (status IN ('open', 'auto', 'approved', 'rejected')),
+  special_control  boolean NOT NULL DEFAULT false,   -- операция особого контроля (Закон № 165-З)
+  amount_byn       bigint NOT NULL,
+  reviewed_by      bigint REFERENCES users (id),
+  reviewed_at      timestamptz,
+  comment          text,
+  created_at       timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX fraud_cases_status_idx ON fraud_cases (status, id);
+
 -- 010_seed_reference.sql
 -- Начальные данные: роли, права, валюты, настройки
 
@@ -435,3 +564,44 @@ INSERT INTO settings (key, value, description) VALUES
   ('loan.auto_limit',       '500000', 'Автоматическое одобрение возможно до этой суммы кредита, копейки'),
   ('loan.score_approve',    '70',     'Балл, с которого кредит одобряется автоматически'),
   ('loan.score_manual',     '45',     'Балл, с которого заявка идёт на ручное рассмотрение (ниже: отказ)');
+
+-- 013_seed_payments.sql
+INSERT INTO payment_categories (name, hint, sort) VALUES
+  ('Жильё и коммунальные услуги', 'Квартплата, вода, свет, газ, отопление', 1),
+  ('Связь', 'Мобильная связь', 2),
+  ('Интернет и телевидение', 'Домашний интернет, цифровое ТВ', 3),
+  ('Налоги и штрафы', 'Налоговая, ГАИ', 4),
+  ('Образование', 'Детский сад, школа, университет', 5),
+  ('Транспорт', 'Проездные, парковки', 6);
+
+INSERT INTO payment_providers (category_id, name, city, requisite_label, requisite_regex, requisite_hint, min_amount, max_amount, fee_percent) VALUES
+  (1, 'Горводоканал', 'Минск',   'Лицевой счёт', '^\d{8,10}$', '8-10 цифр с квитанции', 100, 300000, 0),
+  (1, 'Энергосбыт', NULL,       'Лицевой счёт', '^\d{8,10}$', '8-10 цифр с квитанции', 100, 300000, 0),
+  (1, 'Горгаз', 'Брест',        'Лицевой счёт', '^\d{9}$', '9 цифр с квитанции', 100, 200000, 0),
+  (1, 'Теплосеть', 'Гомель',    'Лицевой счёт', '^\d{8,10}$', '8-10 цифр с квитанции', 100, 300000, 0),
+  (1, 'Жилищно-эксплуатационный участок', 'Витебск', 'Лицевой счёт', '^\d{8,10}$', '8-10 цифр с квитанции', 100, 300000, 0),
+  (2, 'Мобильный оператор «Синий»', NULL, 'Номер телефона', '^\+375\d{9}$', 'В формате +375291234567', 100, 100000, 0),
+  (2, 'Мобильный оператор «Зелёный»', NULL, 'Номер телефона', '^\+375\d{9}$', 'В формате +375331234567', 100, 100000, 0),
+  (3, 'Интернет-провайдер «Сеть»', 'Минск', 'Номер договора', '^[A-Z0-9]{6,12}$', '6-12 символов из договора', 500, 200000, 0),
+  (3, 'Цифровое телевидение', NULL, 'Номер договора', '^\d{7,10}$', '7-10 цифр', 500, 100000, 0.50),
+  (4, 'Налоговая инспекция', NULL, 'Идентификационный номер', '^\d{7}[A-Z]\d{3}[A-Z]{2}\d$', 'Как в паспорте', 100, 5000000, 0),
+  (4, 'ГАИ: штрафы', NULL, 'Номер постановления', '^\d{12,16}$', '12-16 цифр', 100, 1000000, 0),
+  (5, 'Детский сад', 'Минск', 'Номер договора', '^\d{6,10}$', '6-10 цифр', 100, 100000, 0),
+  (5, 'Университет', NULL, 'Номер договора', '^[A-Z0-9-]{6,14}$', 'Из договора на обучение', 1000, 2000000, 0),
+  (6, 'Городской транспорт', 'Минск', 'Номер проездной карты', '^\d{10}$', '10 цифр на карте', 500, 50000, 0),
+  (6, 'Парковки', NULL, 'Номер автомобиля', '^[A-Z0-9]{4,10}$', 'Например 1234AB7', 100, 100000, 0);
+
+-- 014_seed_fraud.sql
+INSERT INTO settings (key, value, description) VALUES
+  ('fraud.large_amount',        '300000', 'Крупная сумма перевода в BYN, копейки (балл правила +40)'),
+  ('fraud.new_recipient_amount','100000', 'Перевод новому получателю от этой суммы в BYN, копейки (+30)'),
+  ('fraud.velocity_count',      '4',      'Число переводов за период, с которого срабатывает правило частоты (+30)'),
+  ('fraud.velocity_minutes',    '10',     'Период правила частоты, минут'),
+  ('fraud.new_client_amount',   '50000',  'Перевод от этой суммы в BYN в первые 3 дня после регистрации, копейки (+20)'),
+  ('fraud.score_confirm',       '30',     'Балл риска, с которого требуется код подтверждения'),
+  ('fraud.score_review',        '60',     'Балл риска, с которого перевод задерживается на проверку специалиста'),
+  ('fraud.special_control',     '2000000','Порог операций особого контроля в BYN, копейки (Закон № 165-З)');
+
+-- 015_reports_permission.sql
+INSERT INTO permissions (code, description) VALUES ('reports.view', 'Отчёты банка');
+INSERT INTO role_permissions (role_id, permission_code) SELECT id, 'reports.view' FROM roles WHERE code IN ('admin', 'credit_officer');
