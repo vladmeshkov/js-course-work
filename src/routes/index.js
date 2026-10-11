@@ -65,6 +65,15 @@ router.get('/deposits/:id', requireAuth, deposits.show);
 router.get('/deposits/:id/close', requireAuth, deposits.showClose);
 router.post('/deposits/:id/close', requireAuth, deposits.close);
 
+router.get('/admin/rates', requirePermission('rates.manage'), admin.showRates);
+router.post('/admin/rates/spreads', requirePermission('rates.manage'), admin.saveSpreads);
+router.post('/admin/rates/refresh', requirePermission('rates.manage'), admin.refreshRates);
+router.post('/admin/rates/settings', requirePermission('rates.manage'), admin.saveSettings);
+router.get('/admin/users', requirePermission('users.manage'), admin.showUsers);
+router.post('/admin/users', requirePermission('users.manage'), admin.createUser);
+router.post('/admin/users/:id/block', requirePermission('users.manage'), admin.blockUser);
+router.post('/admin/users/:id/role', requirePermission('users.manage'), admin.changeRole);
+router.get('/admin/audit', requirePermission('audit.view'), admin.showAudit);
 router.get('/admin/eod', requirePermission('eod.run'), admin.showEod);
 router.post('/admin/eod', requirePermission('eod.run'), admin.runEod);
 

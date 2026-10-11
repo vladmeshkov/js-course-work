@@ -184,3 +184,12 @@ a.account:hover .account__title{color:var(--accentText)}
 .receipt__cut{border-top:2px dashed var(--line);margin:22px 0}
 .receipt__total{font-size:20px;margin:6px 0 22px}
 @media print{.util-bar,.top-bar,.footer,.no-print,.skip-link{display:none}body{background:#fff}.receipt{box-shadow:none}}
+
+/* Администрирование */
+.between{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px}
+.mini--wide{width:auto;min-width:200px}
+.setting{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 20px;padding:12px 0;border-top:1px solid var(--line)}
+.setting label{font-size:17px}
+.setting__input{display:flex;align-items:center;gap:10px}
+.setting__input input{width:150px;padding:10px 14px;border:1.5px solid var(--line);border-radius:10px;background:var(--fld);font-size:17px;text-align:right}
+.setting__input span{min-width:48px}

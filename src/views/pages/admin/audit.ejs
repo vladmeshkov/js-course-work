@@ -1,0 +1,22 @@
+<%- include('../../partials/header', { title }) %>
+<h1>Журнал аудита</h1>
+<form class="tile search" method="get" action="/admin/audit" role="search">
+  <input name="login" value="<%= filters.login %>" placeholder="Пользователь" aria-label="Пользователь">
+  <input name="action" value="<%= filters.action %>" placeholder="Событие, например transfer" aria-label="Событие">
+  <select name="result" aria-label="Результат"><option value="">Любой результат</option><option value="success"<%= filters.result === 'success' ? ' selected' : '' %>>Успех</option><option value="failure"<%= filters.result === 'failure' ? ' selected' : '' %>>Отказ</option></select>
+  <button class="btn" type="submit">Показать</button>
+</form>
+<section class="tile">
+  <div class="scroll-x"><table class="table">
+    <thead><tr><th>№</th><th>Дата и время</th><th>Пользователь</th><th>Событие</th><th>Объект</th><th>Результат</th><th>Адрес</th></tr></thead>
+    <tbody>
+      <% rows.forEach((r) => { %>
+        <tr><td><%= r.id %></td><td><%= new Date(r.at).toISOString().slice(0, 19).replace('T', ' ') %></td><td><%= r.login || '—' %></td><td><%= r.action %></td>
+          <td><%= r.entity ? r.entity + ' ' + (r.entity_id ?? '') : '' %></td><td class="<%= r.result === 'success' ? 'text-good' : 'text-bad' %>"><%= r.result === 'success' ? 'успех' : 'отказ' %></td><td><%= r.ip || '' %></td></tr>
+      <% }) %>
+    </tbody>
+  </table></div>
+  <% if (!rows.length) { %><p class="muted m0">Записей нет.</p><% } %>
+  <p class="muted2 small mt10 m0">Журнал только дописывается: записи нельзя изменить или удалить, это обеспечивает база данных.</p>
+</section>
+<%- include('../../partials/footer') %>
