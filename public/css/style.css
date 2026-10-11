@@ -736,3 +736,14 @@ html.dark .pay-row__thumb img{mix-blend-mode:screen;filter:invert(1) hue-rotate(
 .search-item__hint{font-size:14px;color:var(--muted2);white-space:nowrap}
 .search-empty{padding:24px 0;color:var(--muted2)}
 .site-header{position:relative}
+
+/* Пользователи: подтверждение, роли */
+.user-item{border-top:1px solid var(--line);padding:6px 0}
+.user-item:first-child{border-top:none}
+.user-row__role{flex:0 1 150px;color:var(--muted);font-size:16px}
+.user-row__status{flex:0 1 120px;font-size:15px;font-weight:600}
+.user-row__btn{min-width:150px}
+.user-confirm{margin:6px 0 10px 60px;padding:14px 18px;border-radius:14px;background:var(--soft);display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.user-confirm[hidden]{display:none}
+.user-confirm__btns{display:flex;gap:10px;align-items:center}
+.user-role{margin:0 0 8px 60px;display:flex;align-items:center;gap:10px;font-size:14px}

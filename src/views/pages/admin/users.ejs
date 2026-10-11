@@ -1,29 +1,41 @@
 <%- include('../../partials/header', { title }) %>
-<div class="q-head"><h1>Пользователи</h1><div class="muted">Найдено: <%= users.length %></div></div>
+<nav class="crumbs" aria-label="Навигационная цепочка"><a href="/workplace">Администрирование</a> &nbsp;›&nbsp; Пользователи</nav>
+<div class="q-head"><h1>Пользователи</h1><div class="muted">Всего <%= users.length %>, заблокировано <%= users.filter((u) => u.status !== 'active').length %></div></div>
 <form class="panel search" method="get" action="/admin/users" role="search">
-  <input name="q" value="<%= q %>" placeholder="Логин" aria-label="Поиск по логину">
-  <select name="role" aria-label="Роль"><option value="">Все роли</option><% roles.forEach((r) => { %><option value="<%= r.code %>"<%= r.code === role ? ' selected' : '' %>><%= r.name %></option><% }) %></select>
-  <button class="btn" type="submit">Найти</button>
+  <input name="q" value="<%= q %>" placeholder="Фамилия или логин" aria-label="Поиск пользователя">
+  <input type="hidden" name="role" value="<%= role %>">
+  <div class="chips">
+    <a class="chip" aria-selected="<%= !role %>" href="/admin/users?q=<%= encodeURIComponent(q) %>">Все</a>
+    <% roles.forEach((r) => { %><a class="chip" aria-selected="<%= r.code === role %>" href="/admin/users?role=<%= r.code %>&q=<%= encodeURIComponent(q) %>"><%= r.name %></a><% }) %>
+  </div>
 </form>
 <section class="panel user-list">
-  <% if (!users.length) { %><p class="muted m0">Никого не нашли.</p><% } %>
-  <% users.forEach((u) => { %>
-    <div class="account user-row">
-      <span class="user-row__ini" aria-hidden="true"><%= (u.last_name ? u.last_name[0] + (u.first_name || '')[0] : u.login.slice(0, 2)).toUpperCase() %></span>
-      <div class="user-row__main"><div class="account__title"><%= u.last_name ? u.last_name + ' ' + u.first_name : u.login %></div>
-        <div class="account__iban"><%= u.login %>, <%= u.role_name %>, <%= u.last_login_at ? 'вход ' + new Date(u.last_login_at).toISOString().slice(0, 16).replace('T', ' ') : 'не входил' %></div></div>
-      <div class="actions">
-        <span class="<%= u.status === 'active' ? 'text-good' : 'text-bad' %>"><%= u.status === 'active' ? 'Активен' : 'Заблокирован' %></span>
+  <% if (!users.length) { %><div class="pay-empty">Никого не нашли. Проверьте фамилию или смените роль.</div><% } %>
+  <% users.forEach((u) => { const active = u.status === 'active'; %>
+    <div class="user-item">
+      <div class="account user-row">
+        <span class="user-row__ini" aria-hidden="true"><%= (u.last_name ? u.last_name[0] + (u.first_name || '')[0] : u.login.slice(0, 2)).toUpperCase() %></span>
+        <div class="user-row__main"><div class="account__title"><%= u.last_name ? u.last_name + ' ' + u.first_name : u.login %></div>
+          <div class="account__iban"><%= u.login %>, <%= u.last_login_at ? 'вход ' + new Date(u.last_login_at).toISOString().slice(0, 16).replace('T', ' ') : 'не входил' %></div></div>
+        <span class="user-row__role"><%= u.role_name %></span>
+        <span class="user-row__status <%= active ? 'text-good' : 'text-bad' %>"><%= active ? 'Активен' : 'Заблокирован' %></span>
         <% if (u.id !== user.id) { %>
-          <form method="post" action="/admin/users/<%= u.id %>/block"><input type="hidden" name="_csrf" value="<%= csrfToken %>">
-            <button class="btn btn--ghost btn--small" type="submit" name="action" value="<%= u.status === 'active' ? 'block' : 'unblock' %>"><%= u.status === 'active' ? 'Заблокировать' : 'Разблокировать' %></button></form>
-          <% if (u.role_code !== 'client') { %>
-          <form class="actions" method="post" action="/admin/users/<%= u.id %>/role"><input type="hidden" name="_csrf" value="<%= csrfToken %>">
-            <select class="mini mini--wide" name="roleCode" aria-label="Роль"><% roles.filter((r) => r.code !== 'client').forEach((r) => { %><option value="<%= r.code %>"<%= r.code === u.role_code ? ' selected' : '' %>><%= r.name %></option><% }) %></select>
-            <button class="link-button" type="submit">Сменить</button></form>
-          <% } %>
+          <button class="btn btn--ghost btn--small user-row__btn<%= active ? ' btn--danger' : '' %>" type="button" data-confirm-toggle="u<%= u.id %>"><%= active ? 'Заблокировать' : 'Разблокировать' %></button>
         <% } else { %><span class="muted2">это вы</span><% } %>
       </div>
+      <% if (u.id !== user.id) { %>
+      <form class="user-confirm" id="u<%= u.id %>" method="post" action="/admin/users/<%= u.id %>/block" hidden>
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <span><%= active ? 'Пользователь не сможет войти и выполнять операции.' : 'Пользователь снова сможет войти в кабинет.' %></span>
+        <span class="user-confirm__btns"><button class="btn btn--small" type="submit" name="action" value="<%= active ? 'block' : 'unblock' %>">Подтвердить</button><button class="link-btn" type="button" data-confirm-cancel="u<%= u.id %>">Отмена</button></span>
+      </form>
+      <% if (u.role_code !== 'client') { %>
+      <form class="user-role" method="post" action="/admin/users/<%= u.id %>/role"><input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <label class="muted2" for="role-<%= u.id %>">Роль</label>
+        <select id="role-<%= u.id %>" class="mini mini--wide" name="roleCode"><% roles.filter((r) => r.code !== 'client').forEach((r) => { %><option value="<%= r.code %>"<%= r.code === u.role_code ? ' selected' : '' %>><%= r.name %></option><% }) %></select>
+        <button class="link-btn" type="submit">Сменить</button></form>
+      <% } %>
+      <% } %>
     </div>
   <% }) %>
 </section>
@@ -35,4 +47,5 @@
   <div class="field<%= errors.roleCode ? ' field--error' : '' %>"><label for="roleCode">Роль</label><select id="roleCode" name="roleCode"><% roles.filter((r) => r.code !== 'client').forEach((r) => { %><option value="<%= r.code %>"<%= form.roleCode === r.code ? ' selected' : '' %>><%= r.name %></option><% }) %></select><% if (errors.roleCode) { %><span class="field__error"><%= errors.roleCode %></span><% } %></div>
   <div><button class="btn" type="submit">Добавить</button></div>
 </form>
+<script src="/js/confirm-toggle.js" defer></script>
 <%- include('../../partials/footer') %>
