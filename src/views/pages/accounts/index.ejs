@@ -2,7 +2,7 @@
 <nav class="crumbs" aria-label="Навигационная цепочка"><a href="/cabinet">Главная</a> &nbsp;›&nbsp; Счета и карты</nav>
 <h1>Счета и карты</h1>
 <section class="tile">
-  <% if (!accounts.length) { %><p class="muted" style="margin:0">Счетов пока нет.</p><% } %>
+  <% if (!accounts.length) { %><p class="muted m0">Счетов пока нет.</p><% } %>
   <% accounts.forEach((a) => { %>
     <a class="account" href="/accounts/<%= a.id %>">
       <div>

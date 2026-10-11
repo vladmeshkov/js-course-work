@@ -1,0 +1,13 @@
+<%- include('../../partials/header', { title }) %>
+<h1>Заявки на кредит</h1>
+<section class="tile">
+  <% if (!applications.length) { %><p class="muted m0">Заявок на рассмотрении нет.</p><% } %>
+  <% applications.forEach((a) => { %>
+    <a class="account" href="/staff/loans/<%= a.id %>">
+      <div><div class="account__title"><%= a.last_name %> <%= a.first_name %>, <%= a.product_name %></div>
+        <div class="account__iban">заявка № <%= a.id %>, балл <%= a.score %>, нагрузка <%= String(Number(a.dti_percent)).replace('.', ',') %>%</div></div>
+      <div class="amount"><%= formatAmount(a.amount) %> <small>BYN</small></div>
+    </a>
+  <% }) %>
+</section>
+<%- include('../../partials/footer') %>

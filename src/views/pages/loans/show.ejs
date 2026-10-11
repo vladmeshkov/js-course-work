@@ -1,0 +1,52 @@
+<%- include('../../partials/header', { title }) %>
+<nav class="crumbs" aria-label="Навигационная цепочка"><a href="/">Главная</a> &nbsp;›&nbsp; <a href="/loans">Кредиты</a> &nbsp;›&nbsp; Договор № <%= loan.id %></nav>
+<section class="tile">
+  <div class="muted2">Остаток долга, договор № <%= loan.id %><%= loan.status === 'active' ? '' : ' (погашен)' %></div>
+  <div class="balance-big"><%= formatAmount(loan.principal_balance) %> <small class="muted unit">BYN</small></div>
+  <dl class="facts">
+    <div><dt>Выдано</dt><dd><%= formatAmount(loan.amount) %> BYN</dd></div>
+    <div><dt>Ставка</dt><dd><%= String(Number(loan.rate_percent)).replace('.', ',') %>% годовых</dd></div>
+    <div><dt>Следующий платёж</dt><dd><%= next ? String(next.due_date).slice(0, 10) + ', ' + formatAmount(next.principal + next.interest + next.penalty) + ' BYN' : '—' %></dd></div>
+    <% if (dpd > 0) { %><div><dt>Просрочка</dt><dd class="text-bad"><%= dpd %> дн.</dd></div><% } %>
+  </dl>
+</section>
+<% if (loan.status === 'active') { %>
+<section class="row">
+  <form class="tile form grow" method="post" action="/loans/<%= loan.id %>/repay-partial" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <h2>Частичное досрочное погашение</h2>
+    <% if (errors.common) { %><div class="alert alert--error" role="alert"><%= errors.common %></div><% } %>
+    <div class="field<%= errors.amount ? ' field--error' : '' %>"><label for="amount">Сумма в погашение долга, BYN</label><input id="amount" name="amount" value="<%= form.amount || '' %>" inputmode="decimal"><% if (errors.amount) { %><span class="field__error"><%= errors.amount %></span><% } %></div>
+    <div class="field<%= errors.mode ? ' field--error' : '' %>"><label for="mode">Что уменьшить</label><select id="mode" name="mode"><option value="term">Срок (платёж прежний)</option><option value="payment"<%= form.mode === 'payment' ? ' selected' : '' %>>Платёж (срок прежний)</option></select></div>
+    <p class="muted2 m0 small">Дополнительно списываются проценты с даты последнего платежа по сегодня.</p>
+    <div><button class="btn btn--ghost" type="submit">Погасить часть</button></div>
+  </form>
+  <form class="tile form grow" method="post" action="/loans/<%= loan.id %>/repay-full">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <h2>Полное погашение</h2>
+    <dl class="facts m0">
+      <div><dt>Основной долг</dt><dd><%= formatAmount(quote.principal) %></dd></div>
+      <div><dt>Проценты на сегодня</dt><dd><%= formatAmount(quote.interest) %></dd></div>
+      <% if (quote.penalty > 0) { %><div><dt>Пеня</dt><dd><%= formatAmount(quote.penalty) %></dd></div><% } %>
+    </dl>
+    <div class="amount"><%= formatAmount(quote.total) %> <small>BYN</small></div>
+    <div><button class="btn" type="submit">Погасить полностью</button></div>
+  </form>
+</section>
+<% } %>
+<section class="tile">
+  <h2 class="mb14">График платежей</h2>
+  <div class="scroll-x"><table class="table">
+    <thead><tr><th>№</th><th>Дата</th><th>Долг</th><th>Проценты</th><th>Пеня</th><th>Платёж</th><th>Статус</th></tr></thead>
+    <tbody>
+      <% const names = { planned: 'ожидается', paid: 'оплачен', overdue: 'просрочен' }; %>
+      <% schedule.forEach((r) => { %>
+        <tr class="<%= r.status === 'overdue' ? 'row--bad' : r.status === 'paid' ? 'row--done' : '' %>">
+          <td><%= r.no %></td><td><%= String(r.due_date).slice(0, 10) %></td><td><%= formatAmount(r.principal) %></td><td><%= formatAmount(r.interest) %></td>
+          <td><%= r.penalty ? formatAmount(r.penalty) : '' %></td><td><b><%= formatAmount(r.principal + r.interest + r.penalty) %></b></td><td><%= names[r.status] %></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table></div>
+</section>
+<%- include('../../partials/footer') %>

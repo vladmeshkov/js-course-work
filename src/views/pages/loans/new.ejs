@@ -1,0 +1,35 @@
+<%- include('../../partials/header', { title }) %>
+<nav class="crumbs" aria-label="Навигационная цепочка"><a href="/">Главная</a> &nbsp;›&nbsp; <a href="/loans">Кредиты</a> &nbsp;›&nbsp; Заявка</nav>
+<h1>Заявка на кредит</h1>
+<% const err = (n) => errors[n] ? `<span class="field__error">${esc(errors[n])}</span>` : ''; const cls = (n) => errors[n] ? ' field--error' : ''; %>
+<form class="tile form" method="post" action="/loans" novalidate id="loan-form" data-product="<%= product.id %>">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <input type="hidden" name="productId" value="<%= product.id %>">
+  <% if (errors.common) { %><div class="alert alert--error" role="alert"><%= errors.common %></div><% } %>
+  <h2>Условия</h2>
+  <div class="form-grid">
+    <div class="field<%= cls('amount') %>"><label for="amount">Сумма, BYN</label><input id="amount" name="amount" value="<%= form.amount || '' %>" inputmode="decimal" placeholder="От <%= formatAmount(product.min_amount) %>"><%- err('amount') %></div>
+    <div class="field<%= cls('termMonths') %>"><label for="termMonths">Срок, месяцев</label><input id="termMonths" name="termMonths" type="number" min="<%= product.min_term %>" max="<%= product.max_term %>" value="<%= form.termMonths || 12 %>"><%- err('termMonths') %></div>
+    <div class="field<%= cls('scheduleType') %>"><label for="scheduleType">Вид платежей</label>
+      <select id="scheduleType" name="scheduleType"><option value="annuity"<%= form.scheduleType !== 'differentiated' ? ' selected' : '' %>>Аннуитетные (равные)</option><option value="differentiated"<%= form.scheduleType === 'differentiated' ? ' selected' : '' %>>Дифференцированные (убывают)</option></select><%- err('scheduleType') %></div>
+    <div class="field<%= cls('targetAccountId') %>"><label for="targetAccountId">Зачислить на счёт</label>
+      <select id="targetAccountId" name="targetAccountId"><% accounts.forEach((a) => { %><option value="<%= a.id %>"<%= String(form.targetAccountId) === String(a.id) ? ' selected' : '' %>><%= a.title %>, <%= formatAmount(a.balance) %> BYN</option><% }) %></select><%- err('targetAccountId') %></div>
+  </div>
+  <h2 class="mt8">О вас</h2>
+  <div class="form-grid">
+    <div class="field<%= cls('income') %>"><label for="income">Доход в месяц, BYN</label><input id="income" name="income" value="<%= form.income || '' %>" inputmode="decimal"><%- err('income') %></div>
+    <div class="field<%= cls('obligations') %>"><label for="obligations">Платежи по другим кредитам в месяц, BYN</label><input id="obligations" name="obligations" value="<%= form.obligations || '' %>" inputmode="decimal" placeholder="0"><%- err('obligations') %></div>
+    <div class="field<%= cls('experienceMonths') %>"><label for="experienceMonths">Стаж на текущем месте, месяцев</label><input id="experienceMonths" name="experienceMonths" type="number" min="0" value="<%= form.experienceMonths || '' %>"><%- err('experienceMonths') %></div>
+    <div class="field<%= cls('dependents') %>"><label for="dependents">Иждивенцев</label><input id="dependents" name="dependents" type="number" min="0" value="<%= form.dependents || 0 %>"><%- err('dependents') %></div>
+  </div>
+  <div><button class="btn btn--lg" type="submit">Отправить заявку</button> <span class="muted2 ml12">Ставка <%= String(Number(product.rate_percent)).replace('.', ',') %>% годовых. Решение по скорингу будет сразу.</span></div>
+</form>
+<section class="tile" aria-live="polite">
+  <h2 class="mb14">График платежей</h2>
+  <div class="facts" id="loan-summary"></div>
+  <div class="scroll-x"><table class="table" id="loan-table" hidden>
+    <thead><tr><th>№</th><th>Дата</th><th>Долг</th><th>Проценты</th><th>Платёж</th><th>Остаток</th></tr></thead><tbody></tbody></table></div>
+  <p class="muted2 m0" id="loan-hint">Введите сумму и срок, график появится здесь.</p>
+</section>
+<script src="/js/loan-calc.js" defer></script>
+<%- include('../../partials/footer') %>

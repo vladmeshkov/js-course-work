@@ -9,6 +9,8 @@ import * as accounts from '../controllers/accountsController.js';
 import * as transfers from '../controllers/transferController.js';
 import * as deposits from '../controllers/depositController.js';
 import * as admin from '../controllers/adminController.js';
+import * as loans from '../controllers/loanController.js';
+import * as staffLoans from '../controllers/staffLoanController.js';
 
 const router = Router();
 
@@ -25,7 +27,7 @@ router.get('/register', auth.showRegister);
 router.post('/register', auth.register);
 
 // разделы, которые будут реализованы по мере разработки модулей
-for (const [path, title] of [['/loans', 'Кредиты'], ['/rates', 'Курсы валют']]) {
+for (const [path, title] of [['/rates', 'Курсы валют']]) {
   router.get(path, (req, res) => res.render('pages/soon', { title }));
 }
 
@@ -49,6 +51,21 @@ router.post('/deposits/:id/close', requireAuth, deposits.close);
 
 router.get('/admin/eod', requirePermission('eod.run'), admin.showEod);
 router.post('/admin/eod', requirePermission('eod.run'), admin.runEod);
+
+router.get('/loans', loans.index);
+router.get('/loans/calc', loans.calc);
+router.get('/loans/new', requireAuth, loans.showNew);
+router.post('/loans', requireAuth, loans.create);
+router.get('/loans/applications/:id', requireAuth, loans.showApplication);
+router.post('/loans/applications/:id/code', requireAuth, loans.sendCode);
+router.post('/loans/applications/:id/sign', requireAuth, loans.sign);
+router.get('/loans/:id', requireAuth, loans.show);
+router.post('/loans/:id/repay-full', requireAuth, loans.repayFull);
+router.post('/loans/:id/repay-partial', requireAuth, loans.repayPartial);
+
+router.get('/staff/loans', requirePermission('loan.review'), staffLoans.queue);
+router.get('/staff/loans/:id', requirePermission('loan.review'), staffLoans.review);
+router.post('/staff/loans/:id', requirePermission('loan.review'), staffLoans.decide);
 
 router.get('/cabinet', requireAuth, cabinet.cabinet);
 router.get('/workplace', requireStaff, cabinet.workplace);

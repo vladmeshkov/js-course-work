@@ -3,6 +3,7 @@ import { addDays } from '../lib/dates.js';
 import { BusinessError } from '../lib/errors.js';
 import * as auditService from './auditService.js';
 import * as depositService from './depositService.js';
+import * as loanService from './loanService.js';
 import * as ledgerService from './ledgerService.js';
 
 /*
@@ -14,7 +15,7 @@ import * as ledgerService from './ledgerService.js';
 
 /**
  * @param {number} userId
- * @returns {Promise<{date:string, deposits:{payouts:number, matured:number}}>}
+ * @returns {Promise<{date:string, deposits:{payouts:number, matured:number}, loans:{paid:number, overdue:number, closed:number}}>}
  */
 export function closeDay(userId) {
   return withTransaction(async (db) => {
@@ -23,12 +24,13 @@ export function closeDay(userId) {
     await db.query('UPDATE bank_state SET bank_date = $1', [date]);
 
     const deposits = await depositService.processDeposits(db, date);
+    const loans = await loanService.processLoans(db, date);
 
     for (const row of await ledgerService.trialBalance(db)) {
       if (!row.ok) throw new BusinessError(`Нарушена двойная запись в валюте ${row.currency}: день не закрыт`);
     }
-    await auditService.log({ userId, action: 'eod.close_day', details: { date, ...deposits } }, db);
-    return { date, deposits };
+    await auditService.log({ userId, action: 'eod.close_day', details: { date, deposits, loans } }, db);
+    return { date, deposits, loans };
   });
 }
 

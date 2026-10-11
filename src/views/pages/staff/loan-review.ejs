@@ -1,0 +1,28 @@
+<%- include('../../partials/header', { title }) %>
+<nav class="crumbs" aria-label="Навигационная цепочка"><a href="/staff/loans">Заявки на кредит</a> &nbsp;›&nbsp; № <%= application.id %></nav>
+<h1>Заявка № <%= application.id %></h1>
+<section class="tile">
+  <h2 class="mb6"><%= application.last_name %> <%= application.first_name %> <%= application.patronymic || '' %></h2>
+  <div class="muted2">Дата рождения <%= String(application.birth_date).slice(0, 10) %></div>
+  <dl class="facts">
+    <div><dt>Кредит</dt><dd><%= application.product_name %></dd></div>
+    <div><dt>Сумма и срок</dt><dd><%= formatAmount(application.amount) %> BYN, <%= application.term_months %> мес.</dd></div>
+    <div><dt>Доход в месяц</dt><dd><%= formatAmount(application.income) %> BYN</dd></div>
+    <div><dt>Платежи по другим кредитам</dt><dd><%= formatAmount(application.obligations) %> BYN</dd></div>
+    <div><dt>Стаж</dt><dd><%= application.experience_months %> мес.</dd></div>
+    <div><dt>Иждивенцы</dt><dd><%= application.dependents %></dd></div>
+    <div><dt>Первый платёж</dt><dd><%= formatAmount(application.first_payment) %> BYN</dd></div>
+    <div><dt>Долговая нагрузка</dt><dd><%= String(Number(application.dti_percent)).replace('.', ',') %>%</dd></div>
+    <div><dt>Скоринговый балл</dt><dd><%= application.score %> из 100</dd></div>
+  </dl>
+  <% application.scoring_notes.forEach((n) => { %><div class="account"><div class="account__title"><%= n.factor %></div><div><span class="muted2"><%= n.text %></span> &nbsp; <b><%= n.points %></b></div></div><% }) %>
+</section>
+<% if (application.status === 'manual_review') { %>
+<form class="tile form w720" method="post" action="/staff/loans/<%= application.id %>">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <h2>Решение</h2>
+  <div class="field<%= errors.comment ? ' field--error' : '' %>"><label for="comment">Комментарий (обязателен при отказе)</label><input id="comment" name="comment"><% if (errors.comment) { %><span class="field__error"><%= errors.comment %></span><% } %></div>
+  <div class="actions actions--tight"><button class="btn" type="submit" name="decision" value="approve">Одобрить</button><button class="btn btn--ghost" type="submit" name="decision" value="reject">Отказать</button></div>
+</form>
+<% } else { %><div class="alert alert--info">Заявка уже рассмотрена.</div><% } %>
+<%- include('../../partials/footer') %>

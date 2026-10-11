@@ -2,7 +2,7 @@
 <nav class="crumbs" aria-label="Навигационная цепочка"><a href="/">Главная</a> &nbsp;›&nbsp; <a href="/deposits">Вклады</a> &nbsp;›&nbsp; Открыть вклад</nav>
 <h1>Вклад «<%= product.name %>»</h1>
 <div class="row">
-  <form class="tile form grow" method="post" action="/deposits" novalidate style="flex:3 1 480px">
+  <form class="tile form grow grow-3" method="post" action="/deposits" novalidate>
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <input type="hidden" name="productId" value="<%= product.id %>">
     <% if (errors.common) { %><div class="alert alert--error" role="alert"><%= errors.common %></div><% } %>
@@ -19,14 +19,14 @@
       <input id="amount" name="amount" value="<%= form.amount || '' %>" inputmode="decimal" autocomplete="off" placeholder="От <%= formatAmount(product.min_amount) %>" data-product="<%= product.id %>">
       <% if (errors.amount) { %><span class="field__error"><%= errors.amount %></span><% } %>
     </div>
-    <div><button class="btn" type="submit" style="font-size:18px">Открыть вклад</button></div>
+    <div><button class="btn btn--lg" type="submit">Открыть вклад</button></div>
   </form>
-  <aside class="tile tile--dark grow" style="flex:2 1 320px" aria-live="polite">
-    <div style="color:var(--onDark)">Доход за весь срок</div>
+  <aside class="tile tile--dark grow grow-2" aria-live="polite">
+    <div class="on-dark">Доход за весь срок</div>
     <div class="balance-big" id="calc-income">—</div>
-    <div style="margin-top:14px;color:rgba(255,255,255,.75)">В конце срока вы получите</div>
+    <div class="tile__lead">В конце срока вы получите</div>
     <div class="amount" id="calc-total">—</div>
-    <p style="margin:18px 0 0;font-size:14px;color:rgba(255,255,255,.65)"><%= String(Number(product.rate_percent)).replace('.', ',') %>% годовых, <%= product.term_months %> мес. <%= product.capitalization ? 'С капитализацией процентов.' : 'Проценты выплачиваются на текущий счёт.' %></p>
+    <p class="tile__note"><%= String(Number(product.rate_percent)).replace('.', ',') %>% годовых, <%= product.term_months %> мес. <%= product.capitalization ? 'С капитализацией процентов.' : 'Проценты выплачиваются на текущий счёт.' %></p>
   </aside>
 </div>
 <script src="/js/deposit-calc.js" defer></script>

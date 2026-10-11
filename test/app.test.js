@@ -152,3 +152,16 @@ describe('перевод через веб-форму', () => {
     expect((await getAccount(b.accountId)).balance).toBe(25000);
   });
 });
+
+describe('единая таблица стилей', () => {
+  it('в шаблонах нет встроенных стилей: их блокирует CSP и они нарушают требование одной таблицы стилей', async () => {
+    const { readdir, readFile } = await import('node:fs/promises');
+    const path = await import('node:path');
+    const root = path.resolve('src/views');
+    const walk = async (dir) => (await Promise.all((await readdir(dir, { withFileTypes: true })).map((e) =>
+      e.isDirectory() ? walk(path.join(dir, e.name)) : [path.join(dir, e.name)]))).flat();
+    for (const file of await walk(root)) {
+      expect(await readFile(file, 'utf8'), file).not.toMatch(/\sstyle="/);
+    }
+  });
+});

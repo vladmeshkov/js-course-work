@@ -5,7 +5,7 @@
   <a class="chip" role="tab" aria-selected="<%= kind === 'client' %>" href="/transfers/new?kind=client">Клиенту банка</a>
   <a class="chip" role="tab" aria-selected="<%= kind === 'own' %>" href="/transfers/new?kind=own">Между своими счетами</a>
 </div>
-<form class="tile form" method="post" action="/transfers" novalidate style="max-width:720px">
+<form class="tile form w720" method="post" action="/transfers" novalidate>
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
   <input type="hidden" name="kind" value="<%= kind %>">
   <% if (errors.common) { %><div class="alert alert--error" role="alert"><%= errors.common %></div><% } %>
@@ -38,6 +38,6 @@
     <label for="comment">Назначение платежа</label>
     <input id="comment" name="comment" maxlength="140" value="<%= form.comment || '' %>">
   </div>
-  <div><button class="btn" type="submit" style="font-size:18px">Перевести</button></div>
+  <div><button class="btn btn--lg" type="submit">Перевести</button></div>
 </form>
 <%- include('../../partials/footer') %>

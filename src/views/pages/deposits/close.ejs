@@ -1,16 +1,16 @@
 <%- include('../../partials/header', { title }) %>
 <h1>Закрыть вклад досрочно</h1>
-<form class="tile form" method="post" action="/deposits/<%= quote.deposit.id %>/close" style="max-width:640px">
+<form class="tile form w640" method="post" action="/deposits/<%= quote.deposit.id %>/close">
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-  <p class="muted" style="margin:0">При досрочном закрытии весь срок пересчитывается по ставке «до востребования» (<%= String(Number(quote.deposit.demand_rate_percent)).replace('.', ',') %>%). Излишне начисленные проценты удерживаются.</p>
+  <p class="muted m0">При досрочном закрытии весь срок пересчитывается по ставке «до востребования» (<%= String(Number(quote.deposit.demand_rate_percent)).replace('.', ',') %>%). Излишне начисленные проценты удерживаются.</p>
   <dl class="facts">
     <div><dt>Сумма на вкладе</dt><dd><%= formatAmount(quote.deposit.balance) %> <%= quote.deposit.currency %></dd></div>
     <div><dt>Проценты по ставке вклада</dt><dd><%= formatAmount(quote.paidInterest) %></dd></div>
     <div><dt>Проценты по ставке до востребования</dt><dd><%= formatAmount(quote.demandInterest) %></dd></div>
     <div><dt>Пересчёт</dt><dd><%= quote.adjustment >= 0 ? '+' : '' %><%= formatAmount(quote.adjustment) %></dd></div>
   </dl>
-  <div><div class="muted2">Вы получите на текущий счёт</div><div class="balance-big" style="font-size:44px"><%= formatAmount(quote.payout) %> <small class="muted" style="font-size:20px;font-weight:400"><%= quote.deposit.currency %></small></div></div>
+  <div><div class="muted2">Вы получите на текущий счёт</div><div class="balance-big balance-mid"><%= formatAmount(quote.payout) %> <small class="muted unit unit--sm"><%= quote.deposit.currency %></small></div></div>
   <% if (error) { %><div class="alert alert--error" role="alert"><%= error %></div><% } %>
-  <div style="display:flex;gap:14px;align-items:center"><button class="btn" type="submit">Закрыть вклад</button><a class="link" href="/deposits/<%= quote.deposit.id %>">Отмена</a></div>
+  <div class="actions"><button class="btn" type="submit">Закрыть вклад</button><a class="link" href="/deposits/<%= quote.deposit.id %>">Отмена</a></div>
 </form>
 <%- include('../../partials/footer') %>

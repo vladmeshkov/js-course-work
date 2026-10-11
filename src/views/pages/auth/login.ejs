@@ -7,7 +7,7 @@
   <div class="auth__panel">
     <div class="auth__card">
       <h2>Вход в интернет-банк</h2>
-      <p class="muted" style="margin:0 0 20px">Управляйте своими финансами в любое время и в любом месте</p>
+      <p class="muted mb20">Управляйте своими финансами в любое время и в любом месте</p>
       <form class="form" method="post" action="/login">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <div class="field">
@@ -19,7 +19,7 @@
           <input id="password" name="password" type="password" autocomplete="current-password" required>
         </div>
         <% if (errors.common) { %><div class="alert alert--error" role="alert"><%= errors.common %></div><% } %>
-        <button class="btn" type="submit" style="font-size:18px">Войти &nbsp;→</button>
+        <button class="btn btn--lg" type="submit">Войти &nbsp;→</button>
         <a class="link" href="/register">Стать клиентом</a>
       </form>
     </div>

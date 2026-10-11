@@ -121,3 +121,36 @@ a.account:hover .account__title{color:var(--accentText)}
 .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px 30px;margin:20px 0 24px}
 .facts dt{font-size:14px;color:var(--muted2)}
 .facts dd{margin:2px 0 0;font-size:19px;font-weight:600}
+
+/* Таблицы */
+.table{width:100%;border-collapse:collapse;font-size:16px}
+.table th{text-align:left;font-size:14px;font-weight:500;color:var(--muted2);padding:8px 12px;border-bottom:1.5px solid var(--line);white-space:nowrap}
+.table td{padding:12px;border-bottom:1px solid var(--line);white-space:nowrap}
+.table tr.row--done td{color:var(--muted2)}
+.table tr.row--bad td{background:#FBE4E7}
+
+/* Служебные классы (вместо встроенных стилей, которые запрещает CSP) */
+.m0{margin:0}.mb6{margin-bottom:6px}.mb10{margin-bottom:10px}.mb12{margin-bottom:12px}.mb14{margin-bottom:14px}.mb20{margin-bottom:20px}.mb22{margin-bottom:22px}
+.mt8{margin-top:8px}.mt10{margin-top:10px}.ml12{margin-left:12px}
+.w140{width:140px}.w420{max-width:420px}.w640{max-width:640px}.w720{max-width:720px}.measure{max-width:62ch}
+.btn--lg{font-size:18px}
+.unit{font-size:22px;font-weight:400;color:var(--muted)}.unit--sm{font-size:20px}
+.balance-mid{font-size:44px}
+.scroll-x{overflow-x:auto}
+.small{font-size:14px}
+.iban-line{margin:6px 0 20px}
+.on-dark{color:var(--onDark)}
+.tile__lead{margin-top:14px;color:rgba(255,255,255,.75)}
+.tile__note{margin:18px 0 0;font-size:14px;color:rgba(255,255,255,.65)}
+.plain-list{margin:0;padding-left:20px;line-height:1.8}
+.is-disabled{opacity:.6}
+.otp-input{font-size:30px;letter-spacing:10px;font-weight:600}
+.phone-link{font-size:18px;font-weight:700}
+.grow-3{flex:3 1 480px}.grow-2{flex:2 1 320px}
+.actions{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.actions--end{align-items:flex-end;gap:12px}.actions--tight{gap:12px}
+.text-bad{color:#B4233C}.text-good{color:#1E7B45}
+.link-button{background:none;border:0;border-bottom:1.5px solid transparent;cursor:pointer;color:var(--accentText);font-weight:500}
+.link-button:hover{border-bottom-color:currentColor}
+.debug{overflow:auto;font-size:13px;margin-top:24px}
+.strong{font-weight:600}

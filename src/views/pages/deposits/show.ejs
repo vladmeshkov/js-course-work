@@ -2,7 +2,7 @@
 <nav class="crumbs" aria-label="Навигационная цепочка"><a href="/">Главная</a> &nbsp;›&nbsp; <a href="/deposits">Вклады</a> &nbsp;›&nbsp; Вклад «<%= deposit.product_name %>»</nav>
 <section class="tile">
   <div class="muted2">Вклад «<%= deposit.product_name %>»<%= deposit.status === 'active' ? '' : deposit.status === 'closed' ? ', закрыт по окончании срока' : ', закрыт досрочно' %></div>
-  <div class="balance-big"><%= formatAmount(deposit.status === 'active' ? deposit.balance : deposit.amount) %> <small class="muted" style="font-size:22px;font-weight:400"><%= deposit.currency %></small></div>
+  <div class="balance-big"><%= formatAmount(deposit.status === 'active' ? deposit.balance : deposit.amount) %> <small class="muted unit"><%= deposit.currency %></small></div>
   <dl class="facts">
     <div><dt>Ставка</dt><dd><%= String(Number(deposit.rate_percent)).replace('.', ',') %>% годовых</dd></div>
     <div><dt>Открыт</dt><dd><%= String(deposit.opened_date).slice(0, 10) %></dd></div>

@@ -1,9 +1,9 @@
 <%- include('../../partials/header', { title }) %>
 <h1>Рабочее место</h1>
 <section class="tile">
-  <p class="muted" style="margin:0 0 12px">Вы вошли как: <%= user.role_name %></p>
-  <h2 style="margin-bottom:10px">Доступные действия</h2>
-  <ul style="margin:0;padding-left:20px;line-height:1.8">
+  <p class="muted mb12">Вы вошли как: <%= user.role_name %></p>
+  <h2 class="mb10">Доступные действия</h2>
+  <ul class="plain-list">
     <% user.permissions.forEach((p) => { %><li><%= p %></li><% }) %>
   </ul>
 </section>

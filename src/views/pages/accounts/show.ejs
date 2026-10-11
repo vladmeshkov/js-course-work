@@ -2,20 +2,20 @@
 <nav class="crumbs" aria-label="Навигационная цепочка"><a href="/cabinet">Главная</a> &nbsp;›&nbsp; <a href="/accounts">Счета и карты</a> &nbsp;›&nbsp; <%= account.title %></nav>
 <section class="tile">
   <div class="muted2"><%= account.title %></div>
-  <div class="balance-big"><%= formatAmount(account.balance) %> <small class="muted" style="font-size:22px;font-weight:400"><%= account.currency %></small></div>
-  <div class="account__iban" style="margin:6px 0 20px"><%= formatIban(account.iban) %></div>
+  <div class="balance-big"><%= formatAmount(account.balance) %> <small class="muted unit"><%= account.currency %></small></div>
+  <div class="account__iban iban-line"><%= formatIban(account.iban) %></div>
   <a class="btn" href="/transfers/new?kind=client&from=<%= account.id %>">Перевести</a>
 </section>
 <section class="tile">
-  <h2 style="margin-bottom:10px">Операции</h2>
-  <% if (!operations.length) { %><p class="muted" style="margin:0">Операций пока нет.</p><% } %>
+  <h2 class="mb10">Операции</h2>
+  <% if (!operations.length) { %><p class="muted m0">Операций пока нет.</p><% } %>
   <% operations.forEach((o) => { %>
     <div class="account">
       <div>
         <div class="account__title"><%= o.description || o.type %></div>
         <div class="account__iban"><%= String(o.bank_date).slice(0, 10) %></div>
       </div>
-      <div class="amount" style="color:<%= o.signed > 0 ? '#1E7B45' : 'inherit' %>"><%= o.signed > 0 ? '+' : '' %><%= formatAmount(o.signed) %> <small><%= o.currency %></small></div>
+      <div class="amount<%= o.signed > 0 ? ' text-good' : '' %>"><%= o.signed > 0 ? '+' : '' %><%= formatAmount(o.signed) %> <small><%= o.currency %></small></div>
     </div>
   <% }) %>
 </section>

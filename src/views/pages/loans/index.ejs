@@ -1,0 +1,38 @@
+<%- include('../../partials/header', { title }) %>
+<nav class="crumbs" aria-label="Навигационная цепочка"><a href="/">Главная</a> &nbsp;›&nbsp; Кредиты</nav>
+<h1>Кредиты</h1>
+<section class="tiles">
+  <% products.forEach((p) => { %>
+    <a class="tile-link" href="/loans/new?product=<%= p.id %>">
+      <h3><%= p.name %></h3>
+      <div class="rate"><%= String(Number(p.rate_percent)).replace('.', ',') %>%<small> годовых</small></div>
+      <span class="muted">От <%= formatAmount(p.min_amount) %> до <%= formatAmount(p.max_amount) %> BYN<br>Срок от <%= p.min_term %> до <%= p.max_term %> мес.<br>Аннуитетные или дифференцированные платежи</span>
+    </a>
+  <% }) %>
+</section>
+<% if (loans.length) { %>
+<section class="tile">
+  <h2 class="mb10">Мои кредиты</h2>
+  <% loans.forEach((l) => { %>
+    <a class="account" href="/loans/<%= l.id %>">
+      <div><div class="account__title">Договор № <%= l.id %><%= l.status === 'active' ? '' : ' (погашен)' %></div>
+        <div class="account__iban"><%= l.status === 'active' && l.next_due ? 'следующий платёж ' + String(l.next_due).slice(0, 10) : String(Number(l.rate_percent)).replace('.', ',') + '%' %></div></div>
+      <div class="amount"><%= formatAmount(l.principal_balance) %> <small>BYN</small></div>
+    </a>
+  <% }) %>
+</section>
+<% } %>
+<% const labels = { manual_review: 'на рассмотрении', approved: 'одобрена', rejected: 'отклонена', signed: 'договор подписан' }; %>
+<% const open = applications.filter((a) => a.status !== 'signed'); %>
+<% if (open.length) { %>
+<section class="tile">
+  <h2 class="mb10">Мои заявки</h2>
+  <% open.forEach((a) => { %>
+    <a class="account" href="/loans/applications/<%= a.id %>">
+      <div><div class="account__title">Заявка № <%= a.id %>, <%= a.product_name %></div><div class="account__iban"><%= labels[a.status] %></div></div>
+      <div class="amount"><%= formatAmount(a.amount) %> <small>BYN</small></div>
+    </a>
+  <% }) %>
+</section>
+<% } %>
+<%- include('../../partials/footer') %>
