@@ -14,7 +14,9 @@
     "db:migrate": "node --env-file=.env src/db/migrate.js",
     "db:seed": "node --env-file=.env src/db/seed.js",
     "db:schema": "node scripts/build-schema.js",
-    "test": "vitest run"
+    "test": "vitest run",
+    "staff2fa:off": "node --env-file=.env scripts/staff-2fa.js off",
+    "staff2fa:on": "node --env-file=.env scripts/staff-2fa.js on"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

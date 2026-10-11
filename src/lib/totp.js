@@ -50,11 +50,11 @@ export function totp(secret, timeMs = Date.now(), digits = 6) {
 }
 
 /**
- * Проверяет код с допуском на расхождение часов (по одному интервалу в обе стороны).
+ * Проверяет код с допуском на расхождение часов (по два интервала в обе стороны, то есть плюс-минус минута).
  * Интервалы, не новее lastStep, отклоняются: один и тот же код нельзя использовать дважды.
  * @returns {number | null} номер подошедшего интервала или null
  */
-export function verify(secret, token, { timeMs = Date.now(), window = 1, lastStep = null } = {}) {
+export function verify(secret, token, { timeMs = Date.now(), window = 2, lastStep = null } = {}) {
   const code = String(token ?? '').replace(/\s/g, '');
   if (!/^\d{6}$/.test(code)) return null;
   const current = stepOf(timeMs);
