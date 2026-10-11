@@ -210,3 +210,32 @@ describe('счета и курсы', () => {
     expect(conv.body.result).toBeGreaterThan(30000);
   });
 });
+
+describe('главная страница клиента', () => {
+  it('показывает сумму по счетам в BYN с учётом валют, последние операции и курсы', async () => {
+    const hash = await hashPassword('Parol2026');
+    const c = await createClientWithAccount(100000, 'BYN', hash);
+    const { addAccount } = await import('./helpers.js');
+    await addAccount(c.clientId, 'USD', 10000);
+    const { forClient } = await import('../src/services/dashboardService.js');
+    const d = await forClient(c.userId);
+    // 1000 BYN + 100 USD по курсу Нацбанка 3,275
+    expect(d.totalByn).toBe(100000 + Math.round(10000 * 3.275));
+    expect(d.operations.length).toBeGreaterThan(0);
+    expect(d.rates.map((r) => r.currency)).toEqual(expect.arrayContaining(['USD', 'EUR', 'RUB']));
+    expect(d.maxDepositRate).toBeGreaterThan(10);
+
+    const agent = request.agent(app);
+    const token = tokenOf(await agent.get('/login'));
+    await agent.post('/login').type('form').send({ _csrf: token, login: c.login, password: 'Parol2026' });
+    const page = await agent.get('/cabinet');
+    expect(page.status).toBe(200);
+    expect(page.text).toContain('Всего на счетах');
+    expect(page.text).toContain('Платёжные карты');
+    expect(page.text).toContain('Курсы Нацбанка');
+  });
+});
+
+function tokenOf(res) {
+  return /name="_csrf" value="([0-9a-f]+)"/.exec(res.text)[1];
+}
