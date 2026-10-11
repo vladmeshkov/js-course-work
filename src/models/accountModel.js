@@ -76,3 +76,18 @@ export async function operations(accountId, limit = 50) {
   );
   return rows;
 }
+
+/** Поиск клиентских счетов по IBAN (часть номера) или логину владельца. */
+export async function search(text, limit = 30) {
+  const like = `%${String(text).replace(/\s/g, '').toLowerCase()}%`;
+  const { rows } = await query(
+    `SELECT a.id, a.iban, a.kind, a.title, a.currency, a.status, a.balance, u.login, c.last_name, c.first_name
+     FROM accounts a JOIN clients c ON c.id = a.owner_client_id JOIN users u ON u.id = c.user_id
+     WHERE a.kind <> 'internal' AND a.status <> 'closed' AND (lower(a.iban) LIKE $1 OR lower(u.login) LIKE $1)
+     ORDER BY a.id LIMIT $2`, [like, limit]);
+  return rows;
+}
+
+export async function setStatus(db, id, status) {
+  await db.query('UPDATE accounts SET status = $2 WHERE id = $1', [id, status]);
+}

@@ -20,6 +20,9 @@ export function navFor(user) {
   if (!user) return GUEST;
   if (user.role_code === 'client') return CLIENT;
   const items = [...STAFF];
+  if (user.permissions.includes('kyc.review')) items.push({ label: 'Анкеты', href: '/staff/kyc' });
+  if (user.permissions.includes('cash.operate')) items.push({ label: 'Касса', href: '/staff/cash' });
+  if (user.permissions.includes('account.freeze')) items.push({ label: 'Счета клиентов', href: '/staff/accounts' });
   if (user.permissions.includes('loan.review')) items.push({ label: 'Заявки на кредит', href: '/staff/loans' });
   if (user.permissions.includes('fraud.review')) items.push({ label: 'Антифрод', href: '/staff/fraud' });
   if (user.permissions.includes('reports.view')) items.push({ label: 'Отчёты', href: '/admin/reports' });

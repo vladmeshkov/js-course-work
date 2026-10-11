@@ -28,3 +28,16 @@ export async function existsByIdHash(hash) {
 export async function setKycStatus(db, clientId, status, comment = null) {
   await db.query('UPDATE clients SET kyc_status = $2, kyc_comment = $3 WHERE id = $1', [clientId, status, comment]);
 }
+
+export async function listByKycStatus(status) {
+  const { rows } = await query(
+    `SELECT c.id, c.last_name, c.first_name, c.patronymic, c.birth_date, c.phone, c.created_at, u.login
+     FROM clients c JOIN users u ON u.id = c.user_id WHERE c.kyc_status = $1 ORDER BY c.id`, [status]);
+  return rows;
+}
+
+export async function findFull(id) {
+  const { rows } = await query(
+    `SELECT c.*, u.login FROM clients c JOIN users u ON u.id = c.user_id WHERE c.id = $1`, [id]);
+  return rows[0];
+}

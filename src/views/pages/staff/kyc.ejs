@@ -1,0 +1,9 @@
+<%- include('../../partials/header', { title }) %>
+<h1>Анкеты клиентов</h1>
+<section class="tile">
+  <% if (!clients.length) { %><p class="muted m0">Новых заявок нет.</p><% } %>
+  <% clients.forEach((c) => { %>
+    <a class="account" href="/staff/kyc/<%= c.id %>"><div><div class="account__title"><%= c.last_name %> <%= c.first_name %> <%= c.patronymic || '' %></div><div class="account__iban"><%= c.login %>, <%= c.phone %>, подана <%= new Date(c.created_at).toISOString().slice(0, 10) %></div></div><span class="link">Проверить &nbsp;→</span></a>
+  <% }) %>
+</section>
+<%- include('../../partials/footer') %>

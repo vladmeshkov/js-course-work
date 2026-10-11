@@ -1,4 +1,5 @@
 import { config } from '../config/index.js';
+import { withTransaction } from '../db/pool.js';
 import { buildIban } from '../lib/iban.js';
 import { BusinessError } from '../lib/errors.js';
 import * as accountModel from '../models/accountModel.js';
@@ -66,3 +67,23 @@ export async function ensureInternalAccount(db, purpose, currency) {
 export function listForClient(clientId) {
   return accountModel.listByClient(clientId);
 }
+
+/**
+ * Арест или блокировка счёта: списание запрещено, зачисление разрешено.
+ * @param {number} operatorId
+ * @param {number} accountId
+ * @param {boolean} frozen
+ * @param {string} reason
+ */
+export async function setFrozen(operatorId, accountId, frozen, reason) {
+  if (frozen && !String(reason ?? '').trim()) throw new BusinessError('Укажите основание блокировки');
+  return withTransaction(async (db) => {
+    const { rows: [account] } = await db.query('SELECT id, status, kind FROM accounts WHERE id = $1 FOR UPDATE', [accountId]);
+    if (!account || account.kind === 'internal') throw new BusinessError('Счёт не найден');
+    if (account.status === 'closed') throw new BusinessError('Счёт закрыт');
+    await accountModel.setStatus(db, accountId, frozen ? 'frozen' : 'open');
+    await auditService.log({ userId: operatorId, action: frozen ? 'account.freeze' : 'account.unfreeze', entity: 'account', entityId: accountId, details: { reason: String(reason ?? '').trim() } }, db);
+  });
+}
+
+export const searchAccounts = (text) => accountModel.search(text);

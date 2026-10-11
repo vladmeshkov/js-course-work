@@ -14,6 +14,7 @@ import * as staffLoans from '../controllers/staffLoanController.js';
 import * as cards from '../controllers/cardController.js';
 import * as payments from '../controllers/paymentController.js';
 import * as documents from '../controllers/documentController.js';
+import * as operator from '../controllers/operatorController.js';
 import * as staffFraud from '../controllers/staffFraudController.js';
 
 const router = Router();
@@ -105,6 +106,14 @@ router.post('/cards/:id/block', requireAuth, cards.block);
 router.post('/cards/:id/close', requireAuth, cards.close);
 router.post('/cards/:id/limits', requireAuth, cards.limits);
 router.post('/cards/:id/purchase', requireAuth, cards.purchase);
+
+router.get('/staff/kyc', requirePermission('kyc.review'), operator.kycQueue);
+router.get('/staff/kyc/:id', requirePermission('kyc.review'), operator.kycShow);
+router.post('/staff/kyc/:id', requirePermission('kyc.review'), operator.kycDecide);
+router.get('/staff/cash', requirePermission('cash.operate'), operator.showCash);
+router.post('/staff/cash', requirePermission('cash.operate'), operator.cash);
+router.get('/staff/accounts', requirePermission('account.freeze'), operator.accounts);
+router.post('/staff/accounts/:id/freeze', requirePermission('account.freeze'), operator.freeze);
 
 router.get('/staff/fraud', requirePermission('fraud.review'), staffFraud.queue);
 router.get('/staff/fraud/:id', requirePermission('fraud.review'), staffFraud.show);

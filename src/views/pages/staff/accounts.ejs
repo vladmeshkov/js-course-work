@@ -1,0 +1,20 @@
+<%- include('../../partials/header', { title }) %>
+<h1>Счета клиентов</h1>
+<form class="tile search" method="get" action="/staff/accounts" role="search">
+  <input name="q" value="<%= q %>" placeholder="Логин клиента или часть номера счёта" aria-label="Поиск счёта">
+  <button class="btn" type="submit">Найти</button>
+</form>
+<% if (q) { %>
+<section class="tile">
+  <% if (!accounts.length) { %><p class="muted m0">Счетов не найдено.</p><% } %>
+  <% accounts.forEach((a) => { %>
+    <div class="account">
+      <div><div class="account__title"><%= a.last_name %> <%= a.first_name %>, <%= a.title %></div><div class="account__iban"><%= formatIban(a.iban) %>, <%= formatAmount(a.balance) %> <%= a.currency %>, <span class="<%= a.status === 'open' ? 'text-good' : 'text-bad' %>"><%= a.status === 'open' ? 'открыт' : 'заблокирован' %></span></div></div>
+      <form class="actions" method="post" action="/staff/accounts/<%= a.id %>/freeze"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="q" value="<%= q %>">
+        <% if (a.status === 'open') { %><input class="mini mini--wide" name="reason" placeholder="Основание блокировки" aria-label="Основание блокировки"><button class="btn btn--ghost btn--small text-bad" type="submit" name="action" value="freeze">Заблокировать</button>
+        <% } else { %><button class="btn btn--ghost btn--small" type="submit" name="action" value="unfreeze">Разблокировать</button><% } %></form>
+    </div>
+  <% }) %>
+</section>
+<% } %>
+<%- include('../../partials/footer') %>
