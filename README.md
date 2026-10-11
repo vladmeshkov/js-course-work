@@ -96,6 +96,7 @@
 | `npm run db:migrate` | применяет SQL-файлы из `db/sql` |
 | `npm run db:seed` | служебные счета банка и демонстрационные пользователи |
 | `npm run scoring:train` | обучает и включает модель кредитного скоринга |
+| `npm run er:drawio` / `npm run uml:drawio` | пересоздают диаграммы draw.io в `docs/diagrams` |
 | `npm run db:schema` | собирает `db/schema.sql` (полный скрипт БД для приложения к записке) |
 | `npm test` | автотесты (используют базу `talerbank_test`, пересоздают её схему) |
 | `npm run staff2fa:off` / `staff2fa:on` | выключить или включить обязательную 2FA сотрудников |
@@ -153,6 +154,7 @@ npm test
 | [docs/user-guide-staff.md](docs/user-guide-staff.md) | руководство пользователя: сотрудники банка (операционист, кредитный специалист, специалист по мониторингу) |
 | [docs/user-guide-admin.md](docs/user-guide-admin.md) | руководство пользователя: администратор |
 | [docs/concept.md](docs/concept.md) | концепция: модули, роли, операционный день, функциональная модель |
+| [docs/diagrams](docs/diagrams/README.md) | диаграммы draw.io: ER базы данных, классы, варианты использования, последовательности |
 | [db/schema.sql](db/schema.sql) | полный SQL-скрипт создания базы данных |
 
 ## Окружение

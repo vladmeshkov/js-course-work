@@ -14,6 +14,8 @@
     "db:migrate": "node --env-file=.env src/db/migrate.js",
     "db:seed": "node --env-file=.env src/db/seed.js",
     "scoring:train": "node --env-file=.env scripts/train-scoring.js",
+    "er:drawio": "node --env-file=.env scripts/er-drawio.js",
+    "uml:drawio": "node scripts/uml-drawio.js",
     "db:schema": "node scripts/build-schema.js",
     "test": "vitest run",
     "staff2fa:off": "node --env-file=.env scripts/staff-2fa.js off",
