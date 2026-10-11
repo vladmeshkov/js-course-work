@@ -40,6 +40,7 @@ router.post('/login/2fa', loginLimiter, auth.verify2fa);
 router.get('/security', requireAuth, security.show);
 router.get('/security/2fa/setup', requireAuth, security.showSetup);
 router.post('/security/2fa/setup', requireAuth, security.confirmSetup);
+router.post('/security/email', requireAuth, security.setEmailNotifications);
 router.post('/security/2fa/disable', requireAuth, security.disable);
 router.get('/notifications', requireAuth, security.notifications);
 router.get('/register', auth.showRegister);

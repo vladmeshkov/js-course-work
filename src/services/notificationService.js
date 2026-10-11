@@ -1,10 +1,11 @@
 import { query } from '../db/pool.js';
 import { formatAmount } from '../lib/money.js';
+import * as mailService from './mailService.js';
 
 /*
  * Уведомления клиента и сотрудника внутри кабинета. Создаются в той же транзакции, что и событие,
  * поэтому уведомление не появится, если операция откатилась.
- * В боевой системе тут же уходили бы SMS и письма: точка расширения — функция notify.
+ * Если настроена почта (SMTP_HOST), уведомление ставится в очередь писем mailService.enqueue в той же транзакции.
  */
 
 export const money = (minor, currency = 'BYN') => `${formatAmount(minor)} ${currency}`;
@@ -17,6 +18,7 @@ export const money = (minor, currency = 'BYN') => `${formatAmount(minor)} ${curr
 export async function notify(userId, { type, title, body = '', link = null }, db = { query }) {
   if (!userId) return;
   await db.query('INSERT INTO notifications (user_id, type, title, body, link) VALUES ($1, $2, $3, $4, $5)', [userId, type, title, body, link]);
+  await mailService.enqueue(userId, { title, body }, db);
 }
 
 /** Уведомление владельцу счёта (если владелец клиент банка). */

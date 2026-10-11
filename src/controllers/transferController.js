@@ -5,6 +5,7 @@ import * as accountModel from '../models/accountModel.js';
 import * as clientModel from '../models/clientModel.js';
 import * as transferModel from '../models/transferModel.js';
 import * as accountService from '../services/accountService.js';
+import * as mailService from '../services/mailService.js';
 import * as transferService from '../services/transferService.js';
 
 async function clientAccounts(req) {
@@ -41,8 +42,10 @@ export async function submit(req, res) {
       req.flash('success', 'Перевод выполнен');
       return res.redirect(`/accounts/${result.intent.from_account_id}`);
     }
-    // в учебной версии код показывается на экране вместо отправки по SMS
-    if (!config.isProd) req.session.demoOtp = { intentId: result.intent.id, code: result.otpCode };
+    // код уходит письмом на почту клиента; без настроенной почты в учебной версии он показывается на экране
+    const sentTo = await mailService.sendCode(req.user.id, result.otpCode, 'подтверждения перевода');
+    if (sentTo) req.flash('info', `Код подтверждения отправлен на почту ${sentTo}`);
+    else if (!config.isProd) req.session.demoOtp = { intentId: result.intent.id, code: result.otpCode };
     return res.redirect(`/transfers/${result.intent.id}/confirm`);
   } catch (error) {
     if (error instanceof ValidationError) return renderForm(req, res, { form: req.body, errors: error.fields, status: 422 });

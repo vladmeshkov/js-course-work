@@ -733,3 +733,22 @@ ALTER TABLE interbank_transfers
 ALTER TABLE fraud_cases ALTER COLUMN intent_id DROP NOT NULL;
 ALTER TABLE fraud_cases ADD COLUMN interbank_id bigint REFERENCES interbank_transfers (id);
 ALTER TABLE fraud_cases ADD CONSTRAINT fraud_cases_target_check CHECK ((intent_id IS NOT NULL) <> (interbank_id IS NOT NULL));
+
+-- 023_mail.sql
+-- Почта: очередь исходящих писем (transactional outbox) и согласие клиента на дублирование уведомлений
+
+ALTER TABLE users ADD COLUMN notify_email boolean NOT NULL DEFAULT true;
+
+CREATE TABLE mail_outbox (
+  id          bigserial PRIMARY KEY,
+  user_id     bigint REFERENCES users (id),
+  to_email    text NOT NULL,
+  subject     text NOT NULL,
+  body        text NOT NULL,
+  status      text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'sent', 'failed')),
+  attempts    smallint NOT NULL DEFAULT 0,
+  last_error  text,
+  created_at  timestamptz NOT NULL DEFAULT now(),
+  sent_at     timestamptz
+);
+CREATE INDEX mail_outbox_pending_idx ON mail_outbox (id) WHERE status = 'pending';

@@ -23,6 +23,14 @@ export const config = {
     intervalHours: Number(env.BACKUP_INTERVAL_HOURS || 24),
     keep: Number(env.BACKUP_KEEP || 14)
   },
+  mail: {
+    host: env.SMTP_HOST || '',
+    port: Number(env.SMTP_PORT || 587),
+    secure: env.SMTP_SECURE === 'true',
+    user: env.SMTP_USER || '',
+    pass: env.SMTP_PASS || '',
+    from: env.MAIL_FROM || 'ТалерБанк <no-reply@talerbank.local>'
+  },
   login: {
     maxAttempts: Number(env.LOGIN_MAX_ATTEMPTS || 5),
     lockMinutes: Number(env.LOGIN_LOCK_MINUTES || 15)

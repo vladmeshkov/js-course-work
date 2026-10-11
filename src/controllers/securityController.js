@@ -1,5 +1,7 @@
 import { AppError, ValidationError } from '../lib/errors.js';
 import * as settingsModel from '../models/settingsModel.js';
+import * as mailService from '../services/mailService.js';
+import * as userModel from '../models/userModel.js';
 import * as notificationService from '../services/notificationService.js';
 import * as twoFactorService from '../services/twoFactorService.js';
 
@@ -7,9 +9,17 @@ export async function show(req, res) {
   const codes = req.session.recoveryCodes ?? null;
   delete req.session.recoveryCodes;
   const locked = req.user.role_code !== 'client' && (await settingsModel.getNumber('security.require_2fa_staff')) === 1;
+  const email = req.user.role_code === 'client' ? await mailService.emailOf(req.user.id) : null;
   res.render('pages/security/index', {
-    title: 'Безопасность', locked, recoveryCodes: codes, left: req.user.totp_enabled ? await twoFactorService.recoveryLeft(req.user.id) : 0, errors: {}
+    title: 'Безопасность', locked, recoveryCodes: codes, left: req.user.totp_enabled ? await twoFactorService.recoveryLeft(req.user.id) : 0, errors: {},
+    mail: { enabled: mailService.enabled(), email: email ? mailService.maskEmail(email) : null }
   });
+}
+
+export async function setEmailNotifications(req, res) {
+  await userModel.setNotifyEmail(req.user.id, req.body.enabled === 'on');
+  req.flash('success', req.body.enabled === 'on' ? 'Уведомления будут дублироваться на почту' : 'Дублирование на почту отключено');
+  res.redirect('/security');
 }
 
 export async function showSetup(req, res) {
@@ -47,7 +57,7 @@ export async function disable(req, res) {
     res.redirect('/security');
   } catch (error) {
     if (error instanceof ValidationError) {
-      return res.status(422).render('pages/security/index', { title: 'Безопасность', locked: false, recoveryCodes: null, left: await twoFactorService.recoveryLeft(req.user.id), errors: error.fields });
+      return res.status(422).render('pages/security/index', { title: 'Безопасность', locked: false, recoveryCodes: null, left: await twoFactorService.recoveryLeft(req.user.id), errors: error.fields, mail: { enabled: mailService.enabled(), email: null } });
     }
     if (error instanceof AppError && error.status < 500) {
       req.flash('error', error.message);

@@ -27,4 +27,22 @@
     <% } %>
   <% } %>
 </section>
+<% if (user.role_code === 'client') { %>
+<section class="panel">
+  <h2>Письма на почту</h2>
+  <% if (!mail.enabled) { %>
+    <p class="muted m0">Отправка писем в этой установке не настроена: коды подтверждения показываются на странице. Администратор включает почту параметрами SMTP в настройках сервера.</p>
+  <% } else if (!mail.email) { %>
+    <p class="muted m0">В вашей анкете не указана электронная почта, поэтому письма отправлять некуда.</p>
+  <% } else { %>
+    <p class="muted m0">Коды подтверждения операций приходят на адрес <b><%= mail.email %></b>. Остальные уведомления можно дублировать на почту.</p>
+    <form class="switch-row" method="post" action="/security/email">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <span><b>Дублировать уведомления на почту</b><small>Платежи, переводы, решения по заявкам, напоминания</small></span>
+      <span class="switch"><input type="checkbox" name="enabled" role="switch"<%= user.notify_email ? ' checked' : '' %> data-autosubmit><i></i></span>
+    </form>
+  <% } %>
+</section>
+<script src="/js/autosubmit.js" defer></script>
+<% } %>
 <%- include('../../partials/footer') %>

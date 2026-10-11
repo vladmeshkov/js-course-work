@@ -23,8 +23,8 @@
     <p class="muted measure">Условия на одной странице: сумма <%= formatAmount(application.amount) %> BYN, ставка <%= String(Number(application.rate_percent)).replace('.', ',') %>% годовых, срок <%= application.term_months %> мес., первый платёж <%= formatAmount(application.first_payment) %> BYN. Платежи списываются со счёта зачисления в дату платежа. Договор подписывается кодом из SMS.</p>
     <form class="form w420" method="post" action="/loans/applications/<%= application.id %>/sign">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-      <div class="field"><label for="code">Код из SMS</label><input class="otp-input" id="code" name="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></div>
-      <% if (demoCode) { %><div class="alert alert--info">Учебная версия: код вместо SMS: <b><%= demoCode %></b></div><% } %>
+      <div class="field"><label for="code">Код из письма</label><input class="otp-input" id="code" name="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></div>
+      <% if (demoCode) { %><div class="alert alert--info">Учебная версия: код вместо письма: <b><%= demoCode %></b></div><% } %>
       <% if (error) { %><div class="alert alert--error" role="alert"><%= error %></div><% } %>
       <div class="actions">
         <button class="btn" type="submit">Подписать договор</button>

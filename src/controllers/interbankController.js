@@ -3,6 +3,7 @@ import { AppError, ForbiddenError, ValidationError } from '../lib/errors.js';
 import { parseAmount } from '../lib/money.js';
 import * as accountService from '../services/accountService.js';
 import * as clientModel from '../models/clientModel.js';
+import * as mailService from '../services/mailService.js';
 import * as interbankService from '../services/interbankService.js';
 
 function requireClient(req) {
@@ -28,7 +29,9 @@ export async function create(req, res) {
     const amount = parseAmount(b.amount);
     if (amount === null) throw new ValidationError({ amount: 'Введите сумму, например 150,00' });
     const r = await interbankService.createTransfer(req.user.id, { fromAccountId: Number(b.fromAccountId), iban: b.iban, name: b.name, amount, purpose: b.purpose });
-    if (!config.isProd) req.session.demoOtp = { intentId: String(r.transfer.id), code: r.otpCode };
+    const sentTo = await mailService.sendCode(req.user.id, r.otpCode, 'подтверждения перевода в другой банк');
+    if (sentTo) req.flash('info', `Код подтверждения отправлен на почту ${sentTo}`);
+    else if (!config.isProd) req.session.demoOtp = { intentId: String(r.transfer.id), code: r.otpCode };
     res.redirect(`/transfers/interbank/${r.transfer.id}/confirm`);
   } catch (error) {
     if (error instanceof ValidationError) return renderForm(req, res, { form: b, errors: error.fields, status: 422 });

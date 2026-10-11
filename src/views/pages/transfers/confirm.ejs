@@ -8,10 +8,10 @@
   </div>
   <div class="muted">Со счёта: <%= formatIban(from.iban) %><br>На счёт: <%= formatIban(to.iban) %><% if (intent.fee > 0) { %><br>Комиссия: <%= formatAmount(intent.fee) %> <%= from.currency %><% } %></div>
   <div class="field">
-    <label for="code">Код из SMS</label>
+    <label for="code">Код из письма</label>
     <input class="otp-input" id="code" name="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" autofocus>
   </div>
-  <% if (demoCode) { %><div class="alert alert--info">Учебная версия: код вместо SMS показан здесь: <b><%= demoCode %></b></div><% } %>
+  <% if (demoCode) { %><div class="alert alert--info">Учебная версия: код вместо письма показан здесь: <b><%= demoCode %></b></div><% } %>
   <% if (error) { %><div class="alert alert--error" role="alert"><%= error %></div><% } %>
   <div class="actions">
     <button class="btn btn--lg" type="submit">Подтвердить</button>

@@ -4,6 +4,7 @@ import { parseAmount } from '../lib/money.js';
 import * as clientModel from '../models/clientModel.js';
 import * as loanModel from '../models/loanModel.js';
 import * as accountService from '../services/accountService.js';
+import * as mailService from '../services/mailService.js';
 import * as loanService from '../services/loanService.js';
 
 function requireClient(req) {
@@ -77,8 +78,12 @@ export async function sendCode(req, res) {
   requireClient(req);
   const id = Number(req.params.id);
   const code = await loanService.requestSignCode(req.user.id, id);
-  if (!config.isProd) req.session.demoOtp = { loanId: id, code };
-  req.flash('info', 'Код отправлен на ваш телефон');
+  const sentTo = await mailService.sendCode(req.user.id, code, 'подписания кредитного договора');
+  if (sentTo) req.flash('info', `Код подписания отправлен на почту ${sentTo}`);
+  else {
+    if (!config.isProd) req.session.demoOtp = { loanId: id, code };
+    req.flash('info', 'Код сформирован. В учебной версии он показан на странице');
+  }
   res.redirect(`/loans/applications/${id}`);
 }
 

@@ -3,7 +3,7 @@ import { query } from '../db/pool.js';
 /** @typedef {{id:number, login:string, password_hash:string, role_code:string, role_name:string, status:string, failed_attempts:number, locked_until:Date|null}} UserRow */
 
 const SELECT_USER = `
-  SELECT u.id, u.login, u.password_hash, u.status, u.failed_attempts, u.locked_until, u.totp_enabled, u.totp_secret_enc, u.totp_last_step, u.last_login_at,
+  SELECT u.id, u.login, u.password_hash, u.status, u.failed_attempts, u.locked_until, u.totp_enabled, u.totp_secret_enc, u.totp_last_step, u.last_login_at, u.notify_email,
          r.code AS role_code, r.name AS role_name,
          COALESCE(ARRAY(SELECT permission_code FROM role_permissions rp WHERE rp.role_id = r.id), '{}') AS permissions
   FROM users u JOIN roles r ON r.id = u.role_id`;
@@ -46,4 +46,8 @@ export async function registerSuccessfulLogin(id) {
 
 export async function setStatus(id, status) {
   await query('UPDATE users SET status = $2 WHERE id = $1', [id, status]);
+}
+
+export async function setNotifyEmail(id, value) {
+  await query('UPDATE users SET notify_email = $2 WHERE id = $1', [id, value]);
 }

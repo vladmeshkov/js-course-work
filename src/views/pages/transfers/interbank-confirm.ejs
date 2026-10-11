@@ -4,8 +4,8 @@
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
   <div><div class="muted2">Сумма</div><div class="balance-big balance-mid"><%= formatAmount(transfer.amount) %> <small class="unit unit--sm">BYN</small></div></div>
   <div class="muted">Получатель: <%= transfer.counterparty_name %>, <%= transfer.bank_name %><br>Счёт: <%= formatIban(transfer.counterparty_iban) %><br>Комиссия: <%= formatAmount(transfer.fee) %> BYN</div>
-  <div class="field"><label for="code">Код из SMS</label><input id="code" name="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" autofocus class="otp-input"></div>
-  <% if (demoCode) { %><div class="alert alert--info">Учебная версия: код вместо SMS показан здесь: <b><%= demoCode %></b></div><% } %>
+  <div class="field"><label for="code">Код из письма</label><input id="code" name="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" autofocus class="otp-input"></div>
+  <% if (demoCode) { %><div class="alert alert--info">Учебная версия: код вместо письма показан здесь: <b><%= demoCode %></b></div><% } %>
   <% if (error) { %><div class="alert alert--error" role="alert"><%= error %></div><% } %>
   <div class="actions"><button class="btn btn--lg" type="submit">Подтвердить</button>
     <button class="link-button" type="submit" formaction="/transfers/interbank/<%= transfer.id %>/cancel">Отменить</button></div>
