@@ -11,6 +11,7 @@ import * as deposits from '../controllers/depositController.js';
 import * as admin from '../controllers/adminController.js';
 import * as loans from '../controllers/loanController.js';
 import * as staffLoans from '../controllers/staffLoanController.js';
+import * as cards from '../controllers/cardController.js';
 
 const router = Router();
 
@@ -66,6 +67,15 @@ router.post('/loans/:id/repay-partial', requireAuth, loans.repayPartial);
 router.get('/staff/loans', requirePermission('loan.review'), staffLoans.queue);
 router.get('/staff/loans/:id', requirePermission('loan.review'), staffLoans.review);
 router.post('/staff/loans/:id', requirePermission('loan.review'), staffLoans.decide);
+
+router.get('/cards', requireAuth, cards.index);
+router.get('/cards/new', requireAuth, cards.showNew);
+router.post('/cards', requireAuth, cards.create);
+router.get('/cards/:id', requireAuth, cards.show);
+router.post('/cards/:id/block', requireAuth, cards.block);
+router.post('/cards/:id/close', requireAuth, cards.close);
+router.post('/cards/:id/limits', requireAuth, cards.limits);
+router.post('/cards/:id/purchase', requireAuth, cards.purchase);
 
 router.get('/cabinet', requireAuth, cabinet.cabinet);
 router.get('/workplace', requireStaff, cabinet.workplace);

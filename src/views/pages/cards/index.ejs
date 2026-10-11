@@ -1,0 +1,15 @@
+<%- include('../../partials/header', { title }) %>
+<nav class="crumbs" aria-label="Навигационная цепочка"><a href="/cabinet">Главная</a> &nbsp;›&nbsp; <a href="/accounts">Счета и карты</a> &nbsp;›&nbsp; Карты</nav>
+<h1>Мои карты</h1>
+<section class="card-row">
+  <% cards.forEach((c) => { %>
+    <a class="bank-card bank-card--<%= c.system %><%= c.status === 'blocked' ? ' bank-card--blocked' : '' %>" href="/cards/<%= c.id %>" aria-label="Карта <%= systems[c.system] %> с номером, оканчивающимся на <%= c.last4 %>">
+      <span class="bank-card__top"><span class="bank-card__bank"><img src="/img/emblem.png" alt="" width="30" height="30">ТалерБанк</span><span class="bank-card__system"><%= systems[c.system] %></span></span>
+      <span class="bank-card__number">•••• •••• •••• <%= c.last4 %></span>
+      <span class="bank-card__bottom"><span><%= c.holder %></span><span><%= c.expires %></span></span>
+      <% if (c.status === 'blocked') { %><span class="bank-card__stamp">Заблокирована</span><% } %>
+    </a>
+  <% }) %>
+  <a class="bank-card bank-card--new" href="/cards/new"><span>Выпустить карту</span></a>
+</section>
+<%- include('../../partials/footer') %>

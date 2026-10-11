@@ -1,0 +1,60 @@
+<%- include('../../partials/header', { title }) %>
+<nav class="crumbs" aria-label="Навигационная цепочка"><a href="/cabinet">Главная</a> &nbsp;›&nbsp; <a href="/cards">Карты</a> &nbsp;›&nbsp; *<%= card.last4 %></nav>
+<% if (secret) { %>
+<div class="alert alert--info" role="status">
+  <b>Сохраните данные карты, больше они показаны не будут.</b><br>
+  Номер: <b><%= secret.number.replace(/(.{4})/g, '$1 ').trim() %></b>, срок <%= card.expires %>, CVV <b><%= secret.cvv %></b>
+</div>
+<% } %>
+<section class="row">
+  <div class="grow">
+    <div class="bank-card bank-card--<%= card.system %><%= card.status === 'blocked' ? ' bank-card--blocked' : '' %>">
+      <span class="bank-card__top"><span class="bank-card__bank"><img src="/img/emblem.png" alt="" width="30" height="30">ТалерБанк</span><span class="bank-card__system"><%= systems[card.system] %></span></span>
+      <span class="bank-card__number">•••• •••• •••• <%= card.last4 %></span>
+      <span class="bank-card__bottom"><span><%= card.holder %></span><span><%= card.expires %></span></span>
+      <% if (card.status === 'blocked') { %><span class="bank-card__stamp">Заблокирована</span><% } %>
+    </div>
+  </div>
+  <div class="tile grow-2">
+    <div class="muted2">Счёт карты</div>
+    <div class="account__title"><%= card.account_title %></div>
+    <div class="account__iban mb14"><%= formatIban(card.iban) %></div>
+    <div class="actions">
+      <form method="post" action="/cards/<%= card.id %>/block"><input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <% if (card.status === 'active') { %><button class="btn btn--ghost text-bad" type="submit" name="action" value="block">Заблокировать</button>
+        <% } else { %><button class="btn" type="submit" name="action" value="unblock">Разблокировать</button><% } %></form>
+      <form method="post" action="/cards/<%= card.id %>/close"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="link-button" type="submit">Закрыть карту</button></form>
+    </div>
+  </div>
+</section>
+<section class="row">
+  <form class="tile form grow" method="post" action="/cards/<%= card.id %>/limits" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <h2>Лимиты</h2>
+    <% const lim = (n, label, v) => `<div class="field${errors[n] ? ' field--error' : ''}"><label for="${n}">${label}</label><input id="${n}" name="${n}" inputmode="decimal" value="${esc(form[n] ?? formatAmount(v))}">${errors[n] ? `<span class="field__error">${esc(errors[n])}</span>` : ''}</div>`; %>
+    <%- lim('perOp', 'На одну операцию, ' + card.currency, card.per_op_limit) %>
+    <%- lim('daily', 'В сутки, ' + card.currency, card.daily_limit) %>
+    <%- lim('monthly', 'В месяц, ' + card.currency, card.monthly_limit) %>
+    <label class="check"><input type="checkbox" name="online"<%= (form.online !== undefined ? form.online === 'on' : card.online_enabled) ? ' checked' : '' %>> Разрешить оплату в интернете</label>
+    <div><button class="btn btn--ghost" type="submit">Сохранить</button></div>
+  </form>
+  <form class="tile form grow" method="post" action="/cards/<%= card.id %>/purchase" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <h2>Оплатить картой</h2>
+    <p class="muted2 m0 small">Учебная имитация терминала: проверяются статус, лимиты и разрешение интернет-платежей.</p>
+    <% if (purchaseError) { %><div class="alert alert--error" role="alert"><%= purchaseError %></div><% } %>
+    <div class="field"><label for="place">Где</label><input id="place" name="place" value="<%= form.place || 'Магазин «Евроопт»' %>"></div>
+    <div class="field"><label for="amount">Сумма, <%= card.currency %></label><input id="amount" name="amount" inputmode="decimal" value="<%= form.amount || '' %>"></div>
+    <label class="check"><input type="checkbox" name="online"> Оплата в интернете</label>
+    <div><button class="btn" type="submit">Оплатить</button></div>
+  </form>
+</section>
+<section class="tile">
+  <h2 class="mb10">Операции по карте</h2>
+  <% if (!operations.length) { %><p class="muted m0">Операций пока нет.</p><% } %>
+  <% operations.forEach((o) => { %>
+    <div class="account"><div><div class="account__title"><%= o.place || 'Покупка' %></div><div class="account__iban"><%= String(o.bank_date).slice(0, 10) %><%= o.online ? ', интернет' : '' %></div></div>
+      <div class="amount">−<%= formatAmount(o.amount) %> <small><%= card.currency %></small></div></div>
+  <% }) %>
+</section>
+<%- include('../../partials/footer') %>
