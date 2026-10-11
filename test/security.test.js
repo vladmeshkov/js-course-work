@@ -195,3 +195,55 @@ describe('уведомления', () => {
     expect(loan.id).toBeTruthy();
   });
 });
+
+describe('обязательная 2FA для сотрудников', () => {
+  async function staffAgent(login) {
+    const hash = await hashPassword('Parol2026');
+    const id = await userModel.create(pool, { login, passwordHash: hash, roleCode: 'operator' });
+    const agent = request.agent(app);
+    const token = tokenOf(await agent.get('/login'));
+    await agent.post('/login').type('form').send({ _csrf: token, login, password: 'Parol2026' });
+    return { agent, id };
+  }
+  const setRequired = (v) => pool.query("UPDATE settings SET value = $1 WHERE key = 'security.require_2fa_staff'", [v]);
+
+  it('сотрудника без 2FA отправляют на настройку, остальные страницы закрыты', async () => {
+    await setRequired('1');
+    try {
+      const { agent } = await staffAgent(`st${Date.now()}`);
+      const res = await agent.get('/workplace');
+      expect(res.status).toBe(302);
+      expect(res.headers.location).toBe('/security/2fa/setup');
+      expect((await agent.get('/security/2fa/setup')).status).toBe(200);
+      expect((await agent.get('/admin/users')).status).toBe(302);
+    } finally { await setRequired('0'); }
+  });
+
+  it('после включения 2FA сотрудник работает, отключить её уже нельзя', async () => {
+    await setRequired('1');
+    try {
+      const login = `st${Date.now()}b`;
+      const { agent, id } = await staffAgent(login);
+      const user = await userModel.findById(id);
+      const setup = await twoFactor.beginSetup(user);
+      await twoFactor.confirmSetup(user, setup.secret, totp(setup.secret));
+      expect((await agent.get('/workplace')).status).toBe(200);
+      const fresh = await userModel.findById(id);
+      await expect(twoFactor.disable(fresh, 'Parol2026', totp(setup.secret, Date.now() + 30000))).rejects.toThrow(/обязательна/);
+      expect((await agent.get('/security')).text).toContain('отключить её нельзя');
+    } finally { await setRequired('0'); }
+  });
+
+  it('клиентов требование не касается, при выключенной настройке сотрудники входят как раньше', async () => {
+    await setRequired('1');
+    try {
+      const c = await clientWithPassword();
+      const agent = request.agent(app);
+      const loginToken = tokenOf(await agent.get('/login'));
+      await agent.post('/login').type('form').send({ _csrf: loginToken, login: c.login, password: 'Parol2026' });
+      expect((await agent.get('/cabinet')).status).toBe(200);
+    } finally { await setRequired('0'); }
+    const { agent } = await staffAgent(`st${Date.now()}c`);
+    expect((await agent.get('/workplace')).status).toBe(200);
+  });
+});

@@ -16,6 +16,7 @@
     <div class="mt10"><a class="btn" href="/security/2fa/setup">Включить</a></div>
   <% } else { %>
     <p class="muted2 small">Неиспользованных резервных кодов: <%= left %></p>
+    <% if (locked) { %><div class="alert alert--info mt10">Для сотрудников банка двухфакторная защита обязательна, отключить её нельзя.</div><% } else { %>
     <form class="form w420" method="post" action="/security/2fa/disable" novalidate>
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <h2>Отключить</h2>
@@ -23,6 +24,7 @@
       <div class="field<%= errors.code ? ' field--error' : '' %>"><label for="code">Код из приложения</label><input id="code" name="code" autocomplete="one-time-code" maxlength="12"><% if (errors.code) { %><span class="field__error"><%= errors.code %></span><% } %></div>
       <div><button class="btn btn--ghost text-bad" type="submit">Отключить защиту</button></div>
     </form>
+    <% } %>
   <% } %>
 </section>
 <%- include('../../partials/footer') %>

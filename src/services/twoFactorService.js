@@ -5,6 +5,7 @@ import { query, withTransaction } from '../db/pool.js';
 import { decrypt, encrypt, lookupHash } from '../lib/crypto.js';
 import { AppError, BusinessError, ValidationError } from '../lib/errors.js';
 import { generateSecret, otpauthUrl, verify } from '../lib/totp.js';
+import * as settingsModel from '../models/settingsModel.js';
 import * as userModel from '../models/userModel.js';
 import * as auditService from './auditService.js';
 import * as notificationService from './notificationService.js';
@@ -93,6 +94,9 @@ export async function recoveryLeft(userId) {
 export async function disable(user, password, code) {
   const fresh = await userModel.findById(user.id);
   if (!fresh.totp_enabled) throw new BusinessError('Двухфакторная защита не включена');
+  if (fresh.role_code !== 'client' && (await settingsModel.getNumber('security.require_2fa_staff')) === 1) {
+    throw new BusinessError('Для сотрудников банка двухфакторная защита обязательна, отключить её нельзя');
+  }
   if (!(await bcrypt.compare(String(password ?? ''), fresh.password_hash))) throw new ValidationError({ password: 'Неверный пароль' });
   if (!(await verifyLogin(user.id, code))) throw new ValidationError({ code: 'Неверный код' });
   await withTransaction(async (db) => {

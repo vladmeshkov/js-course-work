@@ -9,6 +9,7 @@ import * as ratesService from './ratesService.js';
  * Здесь описано, как показывать каждую настройку и как проверять новое значение.
  */
 const META = {
+  'security.require_2fa_staff': { group: 'Безопасность', label: 'Обязательная 2FA для сотрудников (1 да, 0 нет)', unit: '', max: 1 },
   'transfer.daily_limit': { group: 'Переводы', label: 'Суточный лимит переводов клиентам', unit: 'BYN', money: true },
   'transfer.otp_threshold': { group: 'Переводы', label: 'Сумма перевода, с которой нужен код', unit: 'BYN', money: true },
   'transfer.fee_percent': { group: 'Переводы', label: 'Комиссия за перевод клиенту банка', unit: '%', max: 20 },

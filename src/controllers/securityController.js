@@ -1,12 +1,14 @@
 import { AppError, ValidationError } from '../lib/errors.js';
+import * as settingsModel from '../models/settingsModel.js';
 import * as notificationService from '../services/notificationService.js';
 import * as twoFactorService from '../services/twoFactorService.js';
 
 export async function show(req, res) {
   const codes = req.session.recoveryCodes ?? null;
   delete req.session.recoveryCodes;
+  const locked = req.user.role_code !== 'client' && (await settingsModel.getNumber('security.require_2fa_staff')) === 1;
   res.render('pages/security/index', {
-    title: 'Безопасность', recoveryCodes: codes, left: req.user.totp_enabled ? await twoFactorService.recoveryLeft(req.user.id) : 0, errors: {}
+    title: 'Безопасность', locked, recoveryCodes: codes, left: req.user.totp_enabled ? await twoFactorService.recoveryLeft(req.user.id) : 0, errors: {}
   });
 }
 
@@ -45,7 +47,7 @@ export async function disable(req, res) {
     res.redirect('/security');
   } catch (error) {
     if (error instanceof ValidationError) {
-      return res.status(422).render('pages/security/index', { title: 'Безопасность', recoveryCodes: null, left: await twoFactorService.recoveryLeft(req.user.id), errors: error.fields });
+      return res.status(422).render('pages/security/index', { title: 'Безопасность', locked: false, recoveryCodes: null, left: await twoFactorService.recoveryLeft(req.user.id), errors: error.fields });
     }
     if (error instanceof AppError && error.status < 500) {
       req.flash('error', error.message);

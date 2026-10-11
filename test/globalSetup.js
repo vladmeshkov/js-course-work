@@ -13,5 +13,6 @@ export default async function setup() {
   // фиксированные курсы для тестов: API Нацбанка недоступен
   const { refreshRates } = await import('../src/services/ratesService.js');
   await refreshRates(() => Promise.reject(new Error('offline')));
+  await appPool.query("UPDATE settings SET value = '0' WHERE key = 'security.require_2fa_staff'");
   await appPool.end();
 }

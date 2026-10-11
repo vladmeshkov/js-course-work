@@ -5,7 +5,7 @@ import helmet from 'helmet';
 import { sessionMiddleware } from './middleware/session.js';
 import { csrf } from './middleware/csrf.js';
 import { flash } from './middleware/flash.js';
-import { loadUser } from './middleware/auth.js';
+import { loadUser, enforceStaff2fa } from './middleware/auth.js';
 import { notFound, errorHandler } from './middleware/errorHandler.js';
 import { formatAmount } from './lib/money.js';
 import { formatIban } from './lib/iban.js';
@@ -41,6 +41,7 @@ export function createApp() {
   app.use(flash);
   app.use(csrf);
   app.use(loadUser);
+  app.use(enforceStaff2fa);
 
   app.use(routes);
   app.use(notFound);
