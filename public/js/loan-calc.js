@@ -76,8 +76,8 @@
     if (inc > 0) {
       var share = Math.round(first / 100 / inc * 100);
       ratio.textContent = share + '% дохода уйдёт на платёж. ' + (share <= 40 ? 'Это в пределах нормы банка.' : 'Банк одобряет, если не больше 40%.');
-      ratio.className = 'receipt__ratio ' + (share <= 40 ? 'is-ok' : 'is-bad');
-    } else { ratio.textContent = 'Укажите доход, чтобы оценить нагрузку.'; ratio.className = 'receipt__ratio'; }
+      ratio.className = 'talon__ratio ' + (share <= 40 ? 'is-ok' : 'is-bad');
+    } else { ratio.textContent = 'Укажите доход, чтобы оценить нагрузку.'; ratio.className = 'talon__ratio'; }
     summary.hidden = false;
     summary.appendChild(fact('Первый платёж', money(data.rows[0].total) + ' BYN'));
     summary.appendChild(fact('Всего выплат', money(data.total) + ' BYN'));

@@ -1,7 +1,10 @@
 <%- include('../../partials/header', { title }) %>
 <nav class="crumbs" aria-label="Навигационная цепочка"><a href="/payments">Платежи и переводы</a> &nbsp;›&nbsp; <a href="/payments/catalog">Оплата услуг</a> &nbsp;›&nbsp; <%= provider.name %></nav>
-<h1><%= provider.name %></h1>
-<form class="tile form w640" method="post" action="/payments/pay" novalidate>
+<section class="pay-banner">
+  <div><h1><%= provider.name %></h1><div class="muted2"><%= provider.requisite_hint || provider.requisite_label %></div></div>
+  <img src="/img/3d/<%= icon %>.png" alt="">
+</section>
+<form class="panel form w720" method="post" action="/payments/pay" novalidate>
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
   <input type="hidden" name="providerId" value="<%= provider.id %>">
   <% if (errors.common) { %><div class="alert alert--error" role="alert"><%= errors.common %></div><% } %>

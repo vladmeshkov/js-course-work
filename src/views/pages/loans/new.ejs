@@ -51,25 +51,25 @@
       </div>
     </form>
   </div>
-  <aside class="receipt" aria-live="polite">
-    <div class="receipt__edge receipt__edge--top"></div>
-    <div class="receipt__body">
-      <div class="receipt__head"><img src="/img/emblem.png" alt="" width="30" height="30"><span>Предварительный расчёт</span></div>
+  <aside class="talon" aria-live="polite">
+    <div class="talon__edge talon__edge--top"></div>
+    <div class="talon__body">
+      <div class="talon__head"><img src="/img/emblem.png" alt="" width="30" height="30"><span>Предварительный расчёт</span></div>
       <div>
         <div class="muted" id="loan-pmt-label">Платёж в месяц</div>
-        <div class="receipt__sum"><span id="loan-pmt">—</span> <small>BYN</small></div>
+        <div class="talon__sum"><span id="loan-pmt">—</span> <small>BYN</small></div>
       </div>
-      <div class="receipt__cut"></div>
-      <div class="receipt__rows">
+      <div class="talon__cut"></div>
+      <div class="talon__rows">
         <div><span class="muted">Ставка</span><b><%= rateTxt %>% годовых</b></div>
         <div><span class="muted">Переплата</span><b id="loan-over">—</b></div>
         <div><span class="muted">Всего к возврату</span><b id="loan-total">—</b></div>
       </div>
-      <p class="receipt__ratio" id="loan-ratio"></p>
+      <p class="talon__ratio" id="loan-ratio"></p>
       <button class="btn btn--lg" type="submit" form="loan-form">Отправить заявку</button>
-      <div class="receipt__fine">Если заявку одобрит скоринг, договор подписывается кодом на следующем шаге.</div>
+      <div class="talon__fine">Если заявку одобрит скоринг, договор подписывается кодом на следующем шаге.</div>
     </div>
-    <div class="receipt__edge receipt__edge--bottom"></div>
+    <div class="talon__edge talon__edge--bottom"></div>
   </aside>
 </section>
 <section class="panel loan__schedule" aria-live="polite">

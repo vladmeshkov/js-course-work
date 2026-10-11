@@ -50,7 +50,7 @@ async function renderPay(req, res, { form = {}, errors = {}, status = 200 } = {}
   if (!provider) throw new NotFoundError();
   const client = await clientModel.findByUserId(req.user.id);
   const accounts = (await accountService.listForClient(client.id)).filter((a) => a.currency === 'BYN' && ['current', 'savings'].includes(a.kind));
-  res.status(status).render('pages/payments/pay', { title: provider.name, provider, accounts, form, errors });
+  res.status(status).render('pages/payments/pay', { title: provider.name, provider, icon: iconFor(provider.category_name), accounts, form, errors });
 }
 
 export async function showPay(req, res) {

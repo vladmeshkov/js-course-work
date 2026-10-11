@@ -474,24 +474,24 @@ html.dark .metric{box-shadow:inset 0 0 0 1px rgba(255,255,255,.045)}
 .seg span{display:block;padding:13px 22px;font-size:16px;font-weight:600;color:var(--accentText);background:var(--surface);cursor:pointer}
 .seg input:checked + span{background:var(--accentText);color:var(--surface)}
 .seg input:focus-visible + span{outline:3px solid var(--accent);outline-offset:-3px}
-.receipt{flex:4 1 360px;min-width:0;filter:drop-shadow(0 18px 28px rgba(12,27,42,.12))}
-.receipt__edge{height:12px}
-.receipt__edge--top{background:radial-gradient(circle at 8px 12px,var(--bg) 6px,var(--surface) 6.5px) 0 0/16px 12px repeat-x}
-.receipt__edge--bottom{background:radial-gradient(circle at 8px 0,var(--bg) 6px,var(--surface) 6.5px) 0 0/16px 12px repeat-x}
-.receipt__body{background:var(--surface);padding:20px 32px 22px;display:flex;flex-direction:column;gap:16px;overflow:hidden}
-.receipt__head{display:flex;align-items:center;gap:10px;color:var(--muted);font-weight:500}
-.receipt__sum{font-size:clamp(38px,4vw,54px);font-weight:700;letter-spacing:-2px;line-height:1.05;margin-top:2px}
-.receipt__sum small{font-size:.38em;letter-spacing:0;color:var(--accentText)}
-.receipt__cut{position:relative;margin:0 -32px;border-top:2px dashed var(--line);height:0}
-.receipt__cut::before,.receipt__cut::after{content:"";position:absolute;top:-13px;width:24px;height:24px;border-radius:50%;background:var(--bg)}
-.receipt__cut::before{left:-12px}
-.receipt__cut::after{right:-12px}
-.receipt__rows{display:flex;flex-direction:column;gap:12px;font-size:17px}
-.receipt__rows div{display:flex;justify-content:space-between;gap:12px}
-.receipt__ratio{margin:0;font-size:15px;line-height:1.45;font-weight:500;min-height:22px;color:var(--muted)}
-.receipt__ratio.is-ok{color:#1B7A3E}
-.receipt__ratio.is-bad{color:#B4233C}
-.receipt__fine{font-size:13px;line-height:1.4;color:var(--muted2)}
+.talon{flex:4 1 360px;min-width:0;filter:drop-shadow(0 18px 28px rgba(12,27,42,.12))}
+.talon__edge{height:12px}
+.talon__edge--top{background:radial-gradient(circle at 8px 12px,var(--bg) 6px,var(--surface) 6.5px) 0 0/16px 12px repeat-x}
+.talon__edge--bottom{background:radial-gradient(circle at 8px 0,var(--bg) 6px,var(--surface) 6.5px) 0 0/16px 12px repeat-x}
+.talon__body{background:var(--surface);padding:20px 32px 22px;display:flex;flex-direction:column;gap:16px;overflow:hidden}
+.talon__head{display:flex;align-items:center;gap:10px;color:var(--muted);font-weight:500}
+.talon__sum{font-size:clamp(38px,4vw,54px);font-weight:700;letter-spacing:-2px;line-height:1.05;margin-top:2px}
+.talon__sum small{font-size:.38em;letter-spacing:0;color:var(--accentText)}
+.talon__cut{position:relative;margin:0 -32px;border-top:2px dashed var(--line);height:0}
+.talon__cut::before,.talon__cut::after{content:"";position:absolute;top:-13px;width:24px;height:24px;border-radius:50%;background:var(--bg)}
+.talon__cut::before{left:-12px}
+.talon__cut::after{right:-12px}
+.talon__rows{display:flex;flex-direction:column;gap:12px;font-size:17px}
+.talon__rows div{display:flex;justify-content:space-between;gap:12px}
+.talon__ratio{margin:0;font-size:15px;line-height:1.45;font-weight:500;min-height:22px;color:var(--muted)}
+.talon__ratio.is-ok{color:#1B7A3E}
+.talon__ratio.is-bad{color:#B4233C}
+.talon__fine{font-size:13px;line-height:1.4;color:var(--muted2)}
 .loan__schedule{margin-top:28px}
 .loan__schedule-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px}
 .loan__schedule-head h2{font-size:28px;margin:0}
@@ -526,3 +526,10 @@ html.dark .cat-tile img,html.dark .pay-banner img{mix-blend-mode:normal;border-r
 .pay-search__row select{flex:0 1 170px;font-size:16px}
 .cat-tile__hint{max-width:17ch}
 .cat-tile img{width:min(240px,55%)}
+.pay-done{display:flex;justify-content:center}
+.pay-done .talon{flex:0 1 520px}
+.talon__head{display:flex;align-items:center;gap:10px;color:var(--muted);font-weight:500}
+.talon__ok{color:#1E7A3C;font-weight:600}
+dl.talon__rows{margin:0}
+.talon__rows dd{margin:0;font-weight:600;text-align:right}
+.panel.form.w720{padding:34px}
