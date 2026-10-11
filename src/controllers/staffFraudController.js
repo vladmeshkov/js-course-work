@@ -16,7 +16,7 @@ export async function decide(req, res) {
   const id = Number(req.params.id);
   try {
     await transferService.reviewHeldTransfer(req.user.id, id, { approve: req.body.decision === 'approve', comment: req.body.comment });
-    req.flash('success', req.body.decision === 'approve' ? 'Перевод проведён' : 'Перевод отклонён, деньги разблокированы');
+    req.flash('success', req.body.decision === 'approve' ? 'Перевод одобрен' : 'Перевод отклонён, деньги разблокированы');
     res.redirect('/staff/fraud');
   } catch (error) {
     if (error instanceof ValidationError) {

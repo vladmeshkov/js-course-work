@@ -6,6 +6,7 @@ import { createTransfer, confirm, cancel, processClearing, registerIncoming, ban
 import { closeDay } from '../src/services/eodService.js';
 import { trialBalance } from '../src/services/ledgerService.js';
 import * as userModel from '../src/models/userModel.js';
+import { queue as fraudQueue, review as fraudReview } from '../src/services/fraudService.js';
 import { createClientWithAccount, getAccount, closePool } from './helpers.js';
 
 afterAll(closePool);
@@ -118,3 +119,56 @@ describe('межбанковские переводы', () => {
     expect(lookupHash('x')).toBeTruthy();
   });
 });
+
+describe('антифрод для переводов в другие банки', () => {
+  const officer = async () => (await pool.query('SELECT id FROM users LIMIT 1')).rows[0].id;
+  const heldTransfer = async () => {
+    const c = await createClientWithAccount(2000000);
+    // крупная сумма новому получателю новым клиентом: 40 + 30 + 20 баллов, это выше порога задержки
+    const r = await createTransfer(c.userId, { fromAccountId: c.accountId, iban: extIban('DRZH', c.accountId), name: 'Иван Петров', amount: 400000, purpose: 'Покупка' });
+    expect(r.transfer.risk_decision).toBe('review');
+    const t = await confirm(c.userId, r.transfer.id, r.otpCode);
+    return { c, t };
+  };
+
+  it('мелкий перевод проходит без задержки', async () => {
+    const c = await createClientWithAccount(100000);
+    const r = await createTransfer(c.userId, { fromAccountId: c.accountId, iban: extIban('DRZH', c.accountId), name: 'Иван Петров', amount: 2000 });
+    expect(r.transfer.risk_decision).toBe('allow');
+    expect((await confirm(c.userId, r.transfer.id, r.otpCode)).status).toBe('queued');
+  });
+
+  it('подозрительный перевод задерживается: деньги зарезервированы, случай в очереди, клиринг его не отправляет', async () => {
+    const { c, t } = await heldTransfer();
+    expect(t.status).toBe('review');
+    const { rows: [h] } = await pool.query("SELECT amount, status FROM holds WHERE id = $1", [t.hold_id]);
+    expect(h).toMatchObject({ amount: 400000 + t.fee, status: 'active' });
+    const fraudCase = (await fraudQueue()).find((x) => x.interbank_id === t.id);
+    expect(fraudCase).toMatchObject({ interbank: true, status: 'open' });
+    expect(fraudCase.score).toBeGreaterThanOrEqual(60);
+    await clear();
+    expect((await getAccount(c.accountId)).balance).toBe(2000000);
+    expect((await pool.query('SELECT status FROM interbank_transfers WHERE id = $1', [t.id])).rows[0].status).toBe('review');
+  });
+
+  it('специалист одобряет: платёж встаёт в очередь клиринга и уходит при закрытии дня', async () => {
+    const { c, t } = await heldTransfer();
+    const fraudCase = (await fraudQueue()).find((x) => x.interbank_id === t.id);
+    await fraudReview(await officer(), fraudCase.id, { approve: true }, async () => { throw new Error('не должно вызываться'); });
+    expect((await pool.query('SELECT status FROM interbank_transfers WHERE id = $1', [t.id])).rows[0].status).toBe('queued');
+    await clear();
+    expect((await getAccount(c.accountId)).balance).toBeLessThan(2000000 - 400000);
+  });
+
+  it('специалист отклоняет: резерв снимается, причина записывается', async () => {
+    const { c, t } = await heldTransfer();
+    const fraudCase = (await fraudQueue()).find((x) => x.interbank_id === t.id);
+    await expect(fraudReview(await officer(), fraudCase.id, { approve: false, comment: '' }, null)).rejects.toMatchObject({ fields: { comment: expect.any(String) } });
+    await fraudReview(await officer(), fraudCase.id, { approve: false, comment: 'Подозрение на мошенничество' }, null);
+    const { rows: [row] } = await pool.query('SELECT status, reject_reason FROM interbank_transfers WHERE id = $1', [t.id]);
+    expect(row).toMatchObject({ status: 'rejected', reject_reason: 'Подозрение на мошенничество' });
+    expect((await pool.query('SELECT status FROM holds WHERE id = $1', [t.hold_id])).rows[0].status).toBe('released');
+    expect((await getAccount(c.accountId)).balance).toBe(2000000);
+  });
+});
+

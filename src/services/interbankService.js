@@ -9,6 +9,7 @@ import { ensureInternalAccount } from './accountService.js';
 import * as auditService from './auditService.js';
 import * as ledgerService from './ledgerService.js';
 import { notify, notifyAccountOwner, money } from './notificationService.js';
+import * as fraudService from './fraudService.js';
 import * as otpService from './otpService.js';
 
 /*
@@ -70,10 +71,14 @@ export async function createTransfer(userId, input) {
   const held = await accountModel.heldAmount(pool, from.id);
   if (from.balance - held - from.min_balance < input.amount + fee) throw new BusinessError('Недостаточно средств с учётом комиссии', 'insufficient_funds');
 
+  // риск оценивается сразу, решение (задержка на проверку) применяется после подтверждения кодом
+  const risk = await fraudService.evaluateInterbank({ userId, clientId: client.id, counterpartyIban: iban, amountByn: input.amount });
   const { rows: [transfer] } = await query(
-    `INSERT INTO interbank_transfers (user_id, account_id, direction, bank_code, counterparty_name, counterparty_iban, amount, fee, purpose, status, expires_at)
-     VALUES ($1, $2, 'out', $3, $4, $5, $6, $7, $8, 'pending_otp', now() + interval '10 minutes') RETURNING *`,
-    [userId, from.id, bank.code, name, iban, input.amount, fee, String(input.purpose ?? '').trim().slice(0, 140)]);
+    `INSERT INTO interbank_transfers (user_id, account_id, direction, bank_code, counterparty_name, counterparty_iban, amount, fee, purpose, status, expires_at,
+                                      risk_score, risk_reasons, risk_decision, risk_special)
+     VALUES ($1, $2, 'out', $3, $4, $5, $6, $7, $8, 'pending_otp', now() + interval '10 minutes', $9, $10, $11, $12) RETURNING *`,
+    [userId, from.id, bank.code, name, iban, input.amount, fee, String(input.purpose ?? '').trim().slice(0, 140),
+      risk.score, JSON.stringify(risk.reasons), risk.decision, risk.special]);
   const otpCode = await otpService.issue(userId, `interbank:${transfer.id}`);
   return { transfer, otpCode, bank };
 }
@@ -99,10 +104,20 @@ export async function confirm(userId, id, code) {
     const held = await accountModel.heldAmount(db, account.id);
     if (account.balance - held - account.min_balance < locked.amount + locked.fee) throw new BusinessError('Недостаточно средств с учётом комиссии', 'insufficient_funds');
     const { rows: [hold] } = await db.query('INSERT INTO holds (account_id, amount) VALUES ($1, $2) RETURNING id', [account.id, locked.amount + locked.fee]);
+    const risk = { score: locked.risk_score, reasons: locked.risk_reasons, decision: locked.risk_decision, special: locked.risk_special };
+    if (risk.decision === 'review') {
+      // подозрительный платёж: деньги зарезервированы, решение принимает специалист по мониторингу
+      await db.query("UPDATE interbank_transfers SET status = 'review', hold_id = $2 WHERE id = $1", [id, hold.id]);
+      await fraudService.recordInterbankCase(db, locked, risk);
+      await notify(userId, { type: 'transfer', title: 'Перевод на проверке', body: `Перевод ${money(locked.amount)} получателю ${locked.counterparty_name} задержан для проверки. Деньги на счёте зарезервированы.`, link: '/transfers/interbank' }, db);
+      await auditService.log({ userId, action: 'interbank.held', entity: 'interbank', entityId: id, details: { score: risk.score } }, db);
+      return { ...locked, status: 'review', hold_id: hold.id };
+    }
+    if (risk.special) await fraudService.recordInterbankCase(db, locked, risk);
     await db.query("UPDATE interbank_transfers SET status = 'queued', hold_id = $2 WHERE id = $1", [id, hold.id]);
     await notify(userId, { type: 'transfer', title: 'Перевод в другой банк принят', body: `${money(locked.amount)} получателю ${locked.counterparty_name}. Отправится при закрытии операционного дня.`, link: '/transfers/interbank' }, db);
     await auditService.log({ userId, action: 'interbank.queued', entity: 'interbank', entityId: id, details: { amount: locked.amount } }, db);
-    return { ...locked, status: 'queued' };
+    return { ...locked, status: 'queued', hold_id: hold.id };
   });
 }
 

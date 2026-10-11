@@ -3,6 +3,7 @@
 <h1>Случай № <%= fraudCase.id %></h1>
 <section class="tile">
   <dl class="facts">
+    <div><dt>Вид перевода</dt><dd><%= fraudCase.interbank ? 'В другой банк, получатель ' + fraudCase.counterparty_name : 'Клиенту банка' %></dd></div>
     <div><dt>Клиент</dt><dd><%= fraudCase.login %></dd></div>
     <div><dt>Сумма</dt><dd><%= formatAmount(fraudCase.amount) %> <%= fraudCase.currency %></dd></div>
     <div><dt>Со счёта</dt><dd><%= formatIban(fraudCase.from_iban) %></dd></div>
@@ -18,7 +19,7 @@
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
   <h2>Решение</h2>
   <div class="field<%= errors.comment ? ' field--error' : '' %>"><label for="comment">Комментарий (обязателен при отказе)</label><input id="comment" name="comment"><% if (errors.comment) { %><span class="field__error"><%= errors.comment %></span><% } %></div>
-  <div class="actions"><button class="btn" type="submit" name="decision" value="approve">Провести перевод</button><button class="btn btn--ghost" type="submit" name="decision" value="reject">Отклонить</button></div>
+  <div class="actions"><button class="btn" type="submit" name="decision" value="approve"><%= fraudCase.interbank ? 'Одобрить перевод' : 'Провести перевод' %></button><button class="btn btn--ghost" type="submit" name="decision" value="reject">Отклонить</button></div>
 </form>
-<% } else { %><div class="alert alert--info">Случай рассмотрен: <%= fraudCase.status === 'approved' ? 'перевод проведён' : 'перевод отклонён' %>.</div><% } %>
+<% } else { %><div class="alert alert--info">Случай рассмотрен: <%= fraudCase.status === 'approved' ? (fraudCase.interbank ? 'перевод принят в клиринг' : 'перевод проведён') : 'перевод отклонён' %>.</div><% } %>
 <%- include('../../partials/footer') %>

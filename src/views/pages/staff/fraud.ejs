@@ -4,7 +4,7 @@
   <h2 class="mb10">Очередь на проверку</h2>
   <% if (!cases.length) { %><p class="muted m0">Задержанных переводов нет.</p><% } %>
   <% cases.forEach((c) => { %>
-    <a class="account" href="/staff/fraud/<%= c.id %>"><div><div class="account__title"><%= c.login %>: <%= formatAmount(c.amount) %> <%= c.currency %></div><div class="account__iban">случай № <%= c.id %>, риск <%= c.score %> баллов<%= c.special_control ? ', особый контроль' : '' %></div></div><span class="link">Рассмотреть &nbsp;→</span></a>
+    <a class="account" href="/staff/fraud/<%= c.id %>"><div><div class="account__title"><%= c.login %>: <%= formatAmount(c.amount) %> <%= c.currency %><%= c.interbank ? ' (в другой банк)' : '' %></div><div class="account__iban">случай № <%= c.id %>, риск <%= c.score %> баллов<%= c.special_control ? ', особый контроль' : '' %></div></div><span class="link">Рассмотреть &nbsp;→</span></a>
   <% }) %>
 </section>
 <section class="tile">

@@ -22,7 +22,7 @@
 </form>
 <section class="tile">
   <h2 class="mb10">Мои переводы в другие банки</h2>
-  <% const names = { pending_otp: 'ждёт подтверждения', queued: 'в очереди клиринга', sent: 'отправлен', rejected: 'отклонён', cancelled: 'отменён' }; %>
+  <% const names = { pending_otp: 'ждёт подтверждения', review: 'на проверке в банке', queued: 'в очереди клиринга', sent: 'отправлен', rejected: 'отклонён', cancelled: 'отменён' }; %>
   <% if (!history.length) { %><p class="muted m0">Переводов пока нет.</p><% } %>
   <% history.forEach((t) => { %>
     <div class="account">
