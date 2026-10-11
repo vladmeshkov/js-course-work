@@ -4,7 +4,7 @@
   <div class="muted2"><%= account.title %></div>
   <div class="balance-big"><%= formatAmount(account.balance) %> <small class="muted unit"><%= account.currency %></small></div>
   <div class="account__iban iban-line"><%= formatIban(account.iban) %></div>
-  <a class="btn" href="/transfers/new?kind=client&from=<%= account.id %>">Перевести</a>
+  <div class="actions"><a class="btn" href="/transfers/new?kind=client&from=<%= account.id %>">Перевести</a><a class="btn btn--ghost" href="/accounts/<%= account.id %>/statement">Выписка</a><a class="link" href="/accounts/<%= account.id %>/certificate.pdf">Справка об остатке</a></div>
 </section>
 <section class="tile">
   <h2 class="mb10">Операции</h2>

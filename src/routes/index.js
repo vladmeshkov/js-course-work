@@ -13,6 +13,7 @@ import * as loans from '../controllers/loanController.js';
 import * as staffLoans from '../controllers/staffLoanController.js';
 import * as cards from '../controllers/cardController.js';
 import * as payments from '../controllers/paymentController.js';
+import * as documents from '../controllers/documentController.js';
 import * as staffFraud from '../controllers/staffFraudController.js';
 
 const router = Router();
@@ -40,11 +41,15 @@ router.get('/payments/catalog/:id', requireAuth, payments.category);
 router.get('/payments/pay/:providerId', requireAuth, payments.showPay);
 router.post('/payments/pay', requireAuth, payments.pay);
 router.get('/payments/:id/receipt', requireAuth, payments.receipt);
+router.get('/payments/:id/receipt.pdf', requireAuth, documents.receiptPdf);
 router.post('/payments/templates/:id/delete', requireAuth, payments.deleteTemplate);
 router.post('/payments/templates/:id/autopay', requireAuth, payments.createAutopay);
 router.post('/payments/autopay/:id/cancel', requireAuth, payments.cancelAutopay);
 router.get('/accounts', requireAuth, accounts.list);
 router.get('/accounts/:id', requireAuth, accounts.show);
+router.get('/accounts/:id/statement', requireAuth, documents.statementPage);
+router.get('/accounts/:id/statement.pdf', requireAuth, documents.statementPdf);
+router.get('/accounts/:id/certificate.pdf', requireAuth, documents.certificatePdf);
 
 router.get('/transfers/new', requireAuth, transfers.showForm);
 router.post('/transfers', requireAuth, transfers.submit);

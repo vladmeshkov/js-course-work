@@ -6,13 +6,13 @@
   <dl class="facts">
     <div><dt>Получатель</dt><dd><%= r.provider_name %></dd></div>
     <div><dt>Категория</dt><dd><%= r.category_name %></dd></div>
-    <div><dt>Реквизит</dt><dd><%= r.requisite %></dd></div>
+    <div><dt><%= r.requisite_label %></dt><dd><%= r.requisite %></dd></div>
     <div><dt>Со счёта</dt><dd><%= formatIban(r.iban) %></dd></div>
     <div><dt>Сумма</dt><dd><%= formatAmount(r.amount) %> BYN</dd></div>
     <div><dt>Комиссия</dt><dd><%= formatAmount(r.fee) %> BYN</dd></div>
   </dl>
   <div class="receipt__total">Списано <b><%= formatAmount(r.amount + r.fee) %> BYN</b></div>
-  <div class="actions no-print"><button class="btn" type="button" data-print>Распечатать</button><a class="btn btn--ghost" href="/payments">Ещё платёж</a></div>
+  <div class="actions no-print"><button class="btn" type="button" data-print>Распечатать</button><a class="btn btn--ghost" href="/payments/<%= r.id %>/receipt.pdf">PDF</a><a class="link" href="/payments">Ещё платёж</a></div>
 </section>
 <script src="/js/print.js" defer></script>
 <%- include('../../partials/footer') %>

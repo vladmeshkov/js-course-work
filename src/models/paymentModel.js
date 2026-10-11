@@ -48,7 +48,7 @@ export async function recent(clientId, limit = 10) {
 
 export async function receipt(id, clientId) {
   const { rows } = await query(
-    `SELECT pay.*, pr.name AS provider_name, c.name AS category_name, a.iban
+    `SELECT pay.*, pr.name AS provider_name, pr.requisite_label, c.name AS category_name, a.iban
      FROM payments pay JOIN payment_providers pr ON pr.id = pay.provider_id JOIN payment_categories c ON c.id = pr.category_id
      JOIN accounts a ON a.id = pay.from_account_id WHERE pay.id = $1 AND pay.client_id = $2`, [id, clientId]);
   return rows[0];

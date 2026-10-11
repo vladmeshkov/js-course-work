@@ -1,0 +1,27 @@
+<%- include('../../partials/header', { title }) %>
+<nav class="crumbs" aria-label="Навигационная цепочка"><a href="/cabinet">Главная</a> &nbsp;›&nbsp; <a href="/accounts">Счета и карты</a> &nbsp;›&nbsp; <a href="/accounts/<%= statement.account.id %>"><%= statement.account.title %></a> &nbsp;›&nbsp; Выписка</nav>
+<h1>Выписка по счёту</h1>
+<form class="tile search" method="get" action="/accounts/<%= statement.account.id %>/statement">
+  <label class="muted2" for="from">С</label><input id="from" name="from" type="date" value="<%= statement.from %>">
+  <label class="muted2" for="to">По</label><input id="to" name="to" type="date" value="<%= statement.to %>">
+  <button class="btn" type="submit">Показать</button>
+  <a class="btn btn--ghost" href="/accounts/<%= statement.account.id %>/statement.pdf?from=<%= statement.from %>&to=<%= statement.to %>">Скачать PDF</a>
+  <% if (errors.from) { %><span class="field__error"><%= errors.from %></span><% } %>
+</form>
+<section class="tile">
+  <dl class="facts">
+    <div><dt>Счёт</dt><dd><%= formatIban(statement.account.iban) %></dd></div>
+    <div><dt>Входящий остаток</dt><dd><%= formatAmount(statement.opening) %> <%= statement.account.currency %></dd></div>
+    <div><dt>Поступления</dt><dd class="text-good"><%= formatAmount(statement.credit) %></dd></div>
+    <div><dt>Списания</dt><dd><%= formatAmount(statement.debit) %></dd></div>
+    <div><dt>Исходящий остаток</dt><dd><%= formatAmount(statement.closing) %> <%= statement.account.currency %></dd></div>
+  </dl>
+  <div class="scroll-x"><table class="table">
+    <thead><tr><th>Дата</th><th>Операция</th><th>Сумма</th><th>Остаток</th></tr></thead>
+    <tbody>
+      <% statement.operations.forEach((o) => { %><tr><td><%= o.date %></td><td><%= o.description %></td><td class="<%= o.amount > 0 ? 'text-good' : '' %>"><%= o.amount > 0 ? '+' : '' %><%= formatAmount(o.amount) %></td><td><%= formatAmount(o.balance) %></td></tr><% }) %>
+    </tbody>
+  </table></div>
+  <% if (!statement.operations.length) { %><p class="muted m0">За выбранный период операций не было.</p><% } %>
+</section>
+<%- include('../../partials/footer') %>
