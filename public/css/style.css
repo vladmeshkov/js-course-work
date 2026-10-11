@@ -607,3 +607,34 @@ html.dark .stmt__mark--in{background:#17331F}
 .stmt__amt{font-size:18px;font-weight:600;white-space:nowrap}
 .stmt__empty{padding:36px 0;text-align:center;font-size:17px;color:var(--muted2)}
 .chips a.chip{display:inline-block}
+
+/* Очередь заявок и анкета сотрудника */
+.q-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px}
+.stubs{display:flex;flex-wrap:wrap;gap:14px}
+.stub{flex:1 1 230px;max-width:300px;display:flex;flex-direction:column;gap:6px;padding:16px 18px;background:var(--surface);border:2px solid transparent;border-radius:14px;transition:transform .2s,box-shadow .2s,border-color .2s}
+.stub:hover{transform:translateY(-3px);border-color:var(--accent);box-shadow:0 14px 26px var(--shadow)}
+.stub__top{display:flex;justify-content:space-between;gap:8px;font-size:13px}
+.stub__st{color:var(--accentText)}
+.stub__name{font-size:18px;font-weight:600}
+.stub__sum{font-size:26px;font-weight:700;letter-spacing:-.5px}
+.stub__sum small{font-size:.5em;color:var(--muted2);letter-spacing:0}
+.stub__meta{font-size:14px;color:var(--muted2)}
+.review{display:flex;flex-wrap:wrap;gap:36px;align-items:flex-start}
+.paper{flex:8 1 560px;min-width:0;position:relative;background:var(--surface);border-radius:8px;box-shadow:0 22px 40px var(--shadow);padding:40px 48px 120px}
+.paper__head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px;padding-bottom:18px;border-bottom:2px solid var(--ink)}
+.paper__head h1{margin:0;font-size:28px;letter-spacing:-.5px}
+.paper__sec{margin-top:26px}
+.paper__sec h3{margin:0 0 8px;font-size:18px;color:var(--accentText)}
+.dots{display:flex;align-items:baseline;gap:10px;padding:7px 0;font-size:17px}
+.dots i{flex:1;min-width:16px;border-bottom:1.5px dotted var(--muted2);transform:translateY(-4px)}
+.dots b{text-align:right}
+.paper__stamp{position:absolute;right:44px;bottom:36px;transform:rotate(-9deg);border:4px solid;border-radius:10px;padding:6px 20px;font-size:30px;font-weight:700;letter-spacing:3px}
+.paper__stamp--ok{color:#1E7B45}
+.paper__stamp--bad{color:#B4233C}
+.review__side{flex:4 1 340px;min-width:0;display:flex;flex-direction:column;gap:28px}
+.review__side h2{font-size:24px;margin:0 0 6px}
+.check-row{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:10px 0;font-size:17px;border-bottom:1px solid var(--line)}
+.check-row small{display:block;font-size:13px;color:var(--muted2)}
+.check-row b{white-space:nowrap}
+.btn--danger{border-color:#B4233C;color:#B4233C}
+textarea{padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;background:var(--fld);font-family:inherit;font-size:16px;color:var(--ink);resize:vertical}

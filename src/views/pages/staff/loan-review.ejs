@@ -1,28 +1,41 @@
 <%- include('../../partials/header', { title }) %>
-<nav class="crumbs" aria-label="Навигационная цепочка"><a href="/staff/loans">Заявки на кредит</a> &nbsp;›&nbsp; № <%= application.id %></nav>
-<h1>Заявка № <%= application.id %></h1>
-<section class="tile">
-  <h2 class="mb6"><%= application.last_name %> <%= application.first_name %> <%= application.patronymic || '' %></h2>
-  <div class="muted2">Дата рождения <%= String(application.birth_date).slice(0, 10) %></div>
-  <dl class="facts">
-    <div><dt>Кредит</dt><dd><%= application.product_name %></dd></div>
-    <div><dt>Сумма и срок</dt><dd><%= formatAmount(application.amount) %> BYN, <%= application.term_months %> мес.</dd></div>
-    <div><dt>Доход в месяц</dt><dd><%= formatAmount(application.income) %> BYN</dd></div>
-    <div><dt>Платежи по другим кредитам</dt><dd><%= formatAmount(application.obligations) %> BYN</dd></div>
-    <div><dt>Стаж</dt><dd><%= application.experience_months %> мес.</dd></div>
-    <div><dt>Иждивенцы</dt><dd><%= application.dependents %></dd></div>
-    <div><dt>Первый платёж</dt><dd><%= formatAmount(application.first_payment) %> BYN</dd></div>
-    <div><dt>Долговая нагрузка</dt><dd><%= String(Number(application.dti_percent)).replace('.', ',') %>%</dd></div>
-    <div><dt>Скоринговый балл</dt><dd><%= application.score %> из 100</dd></div>
-  </dl>
-  <% application.scoring_notes.forEach((n) => { %><div class="account"><div class="account__title"><%= n.factor %></div><div><span class="muted2"><%= n.text %></span> &nbsp; <b><%= n.points %></b></div></div><% }) %>
+<%
+  const a = application;
+  const dmy = (v) => String(v).slice(0, 10).split('-').reverse().join('.');
+  const pct = (v) => String(Number(v)).replace('.', ',') + '%';
+  const sections = [
+    ['Заёмщик', [['ФИО', a.last_name + ' ' + a.first_name + ' ' + (a.patronymic || '')], ['Дата рождения', dmy(a.birth_date)]]],
+    ['Кредит', [['Продукт', a.product_name], ['Сумма', formatAmount(a.amount) + ' BYN'], ['Срок', a.term_months + ' мес.'], ['Первый платёж', formatAmount(a.first_payment) + ' BYN']]],
+    ['Доходы и обязательства', [['Доход в месяц', formatAmount(a.income) + ' BYN'], ['Платежи по другим кредитам', formatAmount(a.obligations) + ' BYN'], ['Стаж', a.experience_months + ' мес.'], ['Иждивенцы', String(a.dependents)], ['Долговая нагрузка', pct(a.dti_percent)]]]
+  ];
+  const stamp = a.status === 'approved' || a.status === 'signed' ? ['ОДОБРЕНО', 'ok'] : a.status === 'rejected' ? ['ОТКАЗ', 'bad'] : null;
+%>
+<nav class="crumbs" aria-label="Навигационная цепочка"><a href="/staff/loans">Заявки на кредит</a> &nbsp;›&nbsp; № <%= a.id %></nav>
+<section class="review">
+  <article class="paper" aria-label="Анкета заёмщика">
+    <div class="paper__head"><h1>Анкета заёмщика</h1><span class="muted">№ <%= a.id %></span></div>
+    <% sections.forEach((sec) => { %>
+      <div class="paper__sec">
+        <h3><%= sec[0] %></h3>
+        <% sec[1].forEach((r) => { %><div class="dots"><span class="muted"><%= r[0] %></span><i></i><b><%= r[1] %></b></div><% }) %>
+      </div>
+    <% }) %>
+    <% if (stamp) { %><div class="paper__stamp paper__stamp--<%= stamp[1] %>"><%= stamp[0] %></div><% } %>
+  </article>
+  <aside class="review__side">
+    <div>
+      <h2>Проверки</h2>
+      <div class="check-row"><span>Скоринговый балл</span><b><%= a.score %> из 100</b></div>
+      <% a.scoring_notes.forEach((n) => { %><div class="check-row"><span><%= n.factor %><small><%= n.text %></small></span><b><%= n.points %></b></div><% }) %>
+    </div>
+    <% if (a.status === 'manual_review') { %>
+    <form class="panel form" method="post" action="/staff/loans/<%= a.id %>">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <h2>Решение</h2>
+      <div class="field<%= errors.comment ? ' field--error' : '' %>"><label for="comment">Комментарий (обязателен при отказе)</label><textarea id="comment" name="comment" rows="3"></textarea><% if (errors.comment) { %><span class="field__error"><%= errors.comment %></span><% } %></div>
+      <div class="actions actions--tight"><button class="btn" type="submit" name="decision" value="approve">Одобрить</button><button class="btn btn--ghost btn--danger" type="submit" name="decision" value="reject">Отказать</button></div>
+    </form>
+    <% } else { %><div class="alert alert--info">Заявка уже рассмотрена.</div><% } %>
+  </aside>
 </section>
-<% if (application.status === 'manual_review') { %>
-<form class="tile form w720" method="post" action="/staff/loans/<%= application.id %>">
-  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-  <h2>Решение</h2>
-  <div class="field<%= errors.comment ? ' field--error' : '' %>"><label for="comment">Комментарий (обязателен при отказе)</label><input id="comment" name="comment"><% if (errors.comment) { %><span class="field__error"><%= errors.comment %></span><% } %></div>
-  <div class="actions actions--tight"><button class="btn" type="submit" name="decision" value="approve">Одобрить</button><button class="btn btn--ghost" type="submit" name="decision" value="reject">Отказать</button></div>
-</form>
-<% } else { %><div class="alert alert--info">Заявка уже рассмотрена.</div><% } %>
 <%- include('../../partials/footer') %>
