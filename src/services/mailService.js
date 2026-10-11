@@ -1,4 +1,3 @@
-import nodemailer from 'nodemailer';
 import { query } from '../db/pool.js';
 import { config } from '../config/index.js';
 
@@ -17,8 +16,10 @@ export function setTransport(t) { transport = t; }
 
 export const enabled = () => Boolean(transport || config.mail.host);
 
-function getTransport() {
+/** Библиотека nodemailer подключается только при включённой почте, поэтому без SMTP_HOST она серверу не нужна. */
+async function getTransport() {
   if (!transport) {
+    const { default: nodemailer } = await import('nodemailer');
     transport = nodemailer.createTransport({
       host: config.mail.host, port: config.mail.port, secure: config.mail.secure,
       auth: config.mail.user ? { user: config.mail.user, pass: config.mail.pass } : undefined
@@ -44,7 +45,7 @@ const wrap = (title, text) => `<!doctype html><html lang="ru"><body style="font-
 const escapeHtml = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 
 async function deliver({ to, subject, body }) {
-  await getTransport().sendMail({
+  await (await getTransport()).sendMail({
     from: config.mail.from, to, subject,
     text: `${subject}\n\n${body}\n\nТалерБанк`,
     html: wrap(escapeHtml(subject), escapeHtml(body))
