@@ -54,8 +54,8 @@ const ROW = 20;
 const WIDTH = 250;
 
 /** Рисует таблицу; возвращает идентификатор и высоту. */
-function drawTable(page, name, x, y, muted) {
-  const rows = tables.get(name);
+function drawTable(page, name, x, y, muted, rowsOverride) {
+  const rows = rowsOverride ?? tables.get(name);
   const h = 28 + rows.length * ROW;
   const id = page.shape({
     value: name,
@@ -104,6 +104,33 @@ function modulePage(title, names) {
   return page;
 }
 
+/** Общая схема для записки: главные сущности, у каждой ключи и несколько ключевых полей. */
+function corePage() {
+  const grid = [
+    ['roles', 'users', 'clients', 'audit_log', 'currencies'],
+    ['accounts', 'documents', 'postings', 'transfer_intents', 'fraud_cases'],
+    ['deposit_products', 'deposits', 'cards', 'payments', 'payment_providers'],
+    ['loan_products', 'loan_applications', 'loans', 'interbank_transfers']
+  ];
+  const chosen = new Set(grid.flat());
+  const page = new Page('Основные сущности (для записки)', { width: 1800, height: 1300 });
+  const ids = new Map();
+  grid.forEach((line, r) => line.forEach((name, c) => {
+    const rows = tables.get(name);
+    const key = (col) => pkSet.has(`${name}.${col.name}`) || (fkMap.has(`${name}.${col.name}`) && chosen.has(fkMap.get(`${name}.${col.name}`).ref_table));
+    const keys = rows.filter(key);
+    const rest = rows.filter((col) => !key(col) && !/^(created_at|updated_at)$/.test(col.name)).slice(0, 3);
+    const t = drawTable(page, name, 40 + c * (WIDTH + 80), 40 + r * 270, false, [...keys, ...rest]);
+    ids.set(name, t.id);
+  }));
+  for (const [from, to] of unique) {
+    if (ids.has(from) && ids.has(to)) {
+      page.edge({ source: ids.get(from), target: ids.get(to), style: 'edgeStyle=entityRelationEdgeStyle;fontSize=12;html=1;endArrow=ERmandOne;startArrow=ERmany;endFill=0;startFill=0;' });
+    }
+  }
+  return page;
+}
+
 const byModule = new Map();
 for (const name of tables.keys()) {
   const m = moduleOf.get(name) ?? 'Прочее';
@@ -114,5 +141,5 @@ const pages = [...byModule.entries()].map(([m, names]) => modulePage(m, names));
 // общая схема: все таблицы, связи только между ними
 const overview = modulePage('Вся схема', [...tables.keys()]);
 mkdirSync(path.join(root, 'docs/diagrams'), { recursive: true });
-writeFileSync(path.join(root, 'docs/diagrams/er.drawio'), file([overview, ...pages]));
-console.log(`ER-диаграмма: ${tables.size} таблиц, ${unique.length} связей, страниц: ${pages.length + 1}. Файл docs/diagrams/er.drawio`);
+writeFileSync(path.join(root, 'docs/diagrams/er.drawio'), file([corePage(), overview, ...pages]));
+console.log(`ER-диаграмма: ${tables.size} таблиц, ${unique.length} связей, страниц: ${pages.length + 2}. Файл docs/diagrams/er.drawio`);
