@@ -1,0 +1,193 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1720" height="1211" viewBox="0 0 1720 1211" font-family="Times New Roman, serif">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<path d="M280,88 L390,88" fill="none" stroke="#000" stroke-width="1"/><text x="286" y="82" font-size="12" text-anchor="start">1</text><text x="384" y="82" font-size="12" text-anchor="end">0..*</text>
+<path d="M620,88 L730,88" fill="none" stroke="#000" stroke-width="1"/><text x="626" y="82" font-size="12" text-anchor="start">1</text><text x="724" y="82" font-size="12" text-anchor="end">0..1</text>
+<path d="M857,247 L857,357" fill="none" stroke="#000" stroke-width="1"/><polygon points="857,247 851,257 857,267 863,257" fill="#fff" stroke="#000"/><text x="869" y="285" font-size="12" text-anchor="start">1</text><text x="864" y="351" font-size="12" text-anchor="start">0..*</text>
+<path d="M758,247 L758,285 L515,285 L515,357" fill="none" stroke="#000" stroke-width="1"/><polygon points="758,247 752,257 758,267 764,257" fill="#fff" stroke="#000"/><text x="770" y="285" font-size="12" text-anchor="start">1</text><text x="522" y="351" font-size="12" text-anchor="start">0..*</text>
+<path d="M960,158 L1185,158 L1185,357" fill="none" stroke="#000" stroke-width="1"/><polygon points="960,158 970,164 980,158 970,152" fill="#fff" stroke="#000"/><text x="988" y="152" font-size="12" text-anchor="start">1</text><text x="1192" y="351" font-size="12" text-anchor="start">0..*</text>
+<path d="M320,395 L390,395" fill="none" stroke="#000" stroke-width="1"/><text x="326" y="389" font-size="12" text-anchor="start">1</text><text x="384" y="389" font-size="12" text-anchor="end">0..*</text>
+<path d="M1300,395 L1410,395" fill="none" stroke="#000" stroke-width="1"/><text x="1306" y="389" font-size="12" text-anchor="start">0..*</text><text x="1404" y="389" font-size="12" text-anchor="end">1</text>
+<path d="M505,571 L505,681" fill="none" stroke="#000" stroke-width="1"/><text x="512" y="587" font-size="12" text-anchor="start">1</text><text x="512" y="675" font-size="12" text-anchor="start">0..1</text>
+<path d="M390,719 L220,719" fill="none" stroke="#000" stroke-width="1"/><polyline points="231,714 220,719 231,724" fill="none" stroke="#000"/>
+<path d="M960,395 L1070,395" fill="none" stroke="#000" stroke-width="1"/><text x="966" y="389" font-size="12" text-anchor="start">1</text><text x="1064" y="389" font-size="12" text-anchor="end">0..*</text>
+<path d="M730,528 L685,528 L685,760 L620,760" fill="none" stroke="#000" stroke-width="1"/><text x="724" y="522" font-size="12" text-anchor="end">1</text><text x="626" y="754" font-size="12" text-anchor="start">0..*</text>
+<path d="M845,571 L845,681" fill="none" stroke="#000" stroke-width="1"/><text x="852" y="587" font-size="12" text-anchor="start">1</text><text x="852" y="675" font-size="12" text-anchor="start">0..*</text>
+<path d="M919,571 L919,601 L1151,601 L1151,681" fill="none" stroke="#000" stroke-width="1"/><text x="926" y="587" font-size="12" text-anchor="start">1</text><text x="1158" y="675" font-size="12" text-anchor="start">0..*</text>
+<path d="M949,571 L949,626 L1498,626 L1498,681" fill="none" stroke="#000" stroke-width="1"/><text x="956" y="587" font-size="12" text-anchor="start">1</text><text x="1505" y="675" font-size="12" text-anchor="start">0..*</text>
+<path d="M730,556 L705,556 L705,1061 L730,1061" fill="none" stroke="#000" stroke-width="1"/><text x="724" y="550" font-size="12" text-anchor="end">1</text><text x="724" y="1055" font-size="12" text-anchor="end">0..*</text>
+<path d="M1070,1026 L980,1026" fill="none" stroke="#000" stroke-width="1"/><polygon points="1070,1026 1060,1020 1050,1026 1060,1032" fill="#000" stroke="#000"/><text x="1042" y="1020" font-size="12" text-anchor="end">1</text><text x="986" y="1020" font-size="12" text-anchor="start">1..*</text>
+<path d="M1162,988 L1162,844" fill="none" stroke="#000" stroke-width="1"/><text x="1169" y="982" font-size="12" text-anchor="start">1</text><text x="1169" y="860" font-size="12" text-anchor="start">0..*</text>
+<path d="M1254,988 L1254,948 L1510,948 L1510,878" fill="none" stroke="#000" stroke-width="1"/><text x="1261" y="982" font-size="12" text-anchor="start">1</text><text x="1517" y="894" font-size="12" text-anchor="start">0..*</text>
+<rect x="50" y="50" width="230" height="112" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="165" y="68" font-size="14" font-weight="bold" text-anchor="middle">Role</text>
+<line x1="50" y1="78" x2="280" y2="78" stroke="#000"/>
+<text x="58" y="93" font-size="12">- id: number</text>
+<text x="58" y="110" font-size="12">- code: string</text>
+<text x="58" y="127" font-size="12">- name: string</text>
+<line x1="50" y1="137" x2="280" y2="137" stroke="#000"/>
+<text x="58" y="152" font-size="12">+ hasPermission(code): boolean</text>
+<rect x="390" y="50" width="230" height="180" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="505" y="68" font-size="14" font-weight="bold" text-anchor="middle">User</text>
+<line x1="390" y1="78" x2="620" y2="78" stroke="#000"/>
+<text x="398" y="93" font-size="12">- id: number</text>
+<text x="398" y="110" font-size="12">- login: string</text>
+<text x="398" y="127" font-size="12">- passwordHash: string</text>
+<text x="398" y="144" font-size="12">- status: string</text>
+<text x="398" y="161" font-size="12">- failedAttempts: number</text>
+<line x1="390" y1="171" x2="620" y2="171" stroke="#000"/>
+<text x="398" y="186" font-size="12">+ authenticate(password): boolean</text>
+<text x="398" y="203" font-size="12">+ block(): void</text>
+<text x="398" y="220" font-size="12">+ changeRole(role): void</text>
+<rect x="730" y="50" width="230" height="197" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="845" y="68" font-size="14" font-weight="bold" text-anchor="middle">Client</text>
+<line x1="730" y1="78" x2="960" y2="78" stroke="#000"/>
+<text x="738" y="93" font-size="12">- id: number</text>
+<text x="738" y="110" font-size="12">- lastName: string</text>
+<text x="738" y="127" font-size="12">- firstName: string</text>
+<text x="738" y="144" font-size="12">- patronymic: string</text>
+<text x="738" y="161" font-size="12">- birthDate: Date</text>
+<text x="738" y="178" font-size="12">- kycStatus: string</text>
+<line x1="730" y1="188" x2="960" y2="188" stroke="#000"/>
+<text x="738" y="203" font-size="12">+ verify(operator): void</text>
+<text x="738" y="220" font-size="12">+ reject(comment): void</text>
+<text x="738" y="237" font-size="12">+ getFullName(): string</text>
+<rect x="50" y="357" width="270" height="146" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="185" y="375" font-size="14" font-weight="bold" text-anchor="middle">LoanProduct</text>
+<line x1="50" y1="385" x2="320" y2="385" stroke="#000"/>
+<text x="58" y="400" font-size="12">- id: number</text>
+<text x="58" y="417" font-size="12">- name: string</text>
+<text x="58" y="434" font-size="12">- ratePercent: number</text>
+<text x="58" y="451" font-size="12">- minAmount: number</text>
+<text x="58" y="468" font-size="12">- maxAmount: number</text>
+<line x1="50" y1="478" x2="320" y2="478" stroke="#000"/>
+<text x="58" y="493" font-size="12">+ buildSchedule(amount, term): Installment[]</text>
+<rect x="390" y="357" width="250" height="214" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="515" y="375" font-size="14" font-weight="bold" text-anchor="middle">LoanApplication</text>
+<line x1="390" y1="385" x2="640" y2="385" stroke="#000"/>
+<text x="398" y="400" font-size="12">- id: number</text>
+<text x="398" y="417" font-size="12">- amount: number</text>
+<text x="398" y="434" font-size="12">- termMonths: number</text>
+<text x="398" y="451" font-size="12">- scheduleType: ScheduleType</text>
+<text x="398" y="468" font-size="12">- score: number</text>
+<text x="398" y="485" font-size="12">- pdPercent: number</text>
+<text x="398" y="502" font-size="12">- status: string</text>
+<line x1="390" y1="512" x2="640" y2="512" stroke="#000"/>
+<text x="398" y="527" font-size="12">+ assess(): Decision</text>
+<text x="398" y="544" font-size="12">+ approve(): void</text>
+<text x="398" y="561" font-size="12">+ reject(comment): void</text>
+<rect x="730" y="357" width="230" height="214" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="845" y="375" font-size="14" font-weight="bold" text-anchor="middle">Account</text>
+<line x1="730" y1="385" x2="960" y2="385" stroke="#000"/>
+<text x="738" y="400" font-size="12">- id: number</text>
+<text x="738" y="417" font-size="12">- iban: string</text>
+<text x="738" y="434" font-size="12">- kind: string</text>
+<text x="738" y="451" font-size="12">- currency: string</text>
+<text x="738" y="468" font-size="12">- balance: number</text>
+<text x="738" y="485" font-size="12">- status: string</text>
+<line x1="730" y1="495" x2="960" y2="495" stroke="#000"/>
+<text x="738" y="510" font-size="12">+ open(): void</text>
+<text x="738" y="527" font-size="12">+ close(): void</text>
+<text x="738" y="544" font-size="12">+ freeze(reason): void</text>
+<text x="738" y="561" font-size="12">+ getBalance(): number</text>
+<rect x="1070" y="357" width="230" height="197" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="1185" y="375" font-size="14" font-weight="bold" text-anchor="middle">Deposit</text>
+<line x1="1070" y1="385" x2="1300" y2="385" stroke="#000"/>
+<text x="1078" y="400" font-size="12">- id: number</text>
+<text x="1078" y="417" font-size="12">- amount: number</text>
+<text x="1078" y="434" font-size="12">- ratePercent: number</text>
+<text x="1078" y="451" font-size="12">- openedDate: Date</text>
+<text x="1078" y="468" font-size="12">- maturityDate: Date</text>
+<text x="1078" y="485" font-size="12">- status: string</text>
+<line x1="1070" y1="495" x2="1300" y2="495" stroke="#000"/>
+<text x="1078" y="510" font-size="12">+ accrueInterest(): number</text>
+<text x="1078" y="527" font-size="12">+ quoteEarlyClose(): number</text>
+<text x="1078" y="544" font-size="12">+ closeEarly(): number</text>
+<rect x="1410" y="357" width="250" height="163" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="1535" y="375" font-size="14" font-weight="bold" text-anchor="middle">DepositProduct</text>
+<line x1="1410" y1="385" x2="1660" y2="385" stroke="#000"/>
+<text x="1418" y="400" font-size="12">- id: number</text>
+<text x="1418" y="417" font-size="12">- name: string</text>
+<text x="1418" y="434" font-size="12">- currency: string</text>
+<text x="1418" y="451" font-size="12">- termMonths: number</text>
+<text x="1418" y="468" font-size="12">- ratePercent: number</text>
+<text x="1418" y="485" font-size="12">- capitalization: boolean</text>
+<line x1="1410" y1="495" x2="1660" y2="495" stroke="#000"/>
+<text x="1418" y="510" font-size="12">+ calculateIncome(amount): number</text>
+<rect x="390" y="681" width="230" height="197" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="505" y="699" font-size="14" font-weight="bold" text-anchor="middle">Loan</text>
+<line x1="390" y1="709" x2="620" y2="709" stroke="#000"/>
+<text x="398" y="724" font-size="12">- id: number</text>
+<text x="398" y="741" font-size="12">- amount: number</text>
+<text x="398" y="758" font-size="12">- ratePercent: number</text>
+<text x="398" y="775" font-size="12">- termMonths: number</text>
+<text x="398" y="792" font-size="12">- principalBalance: number</text>
+<text x="398" y="809" font-size="12">- status: string</text>
+<line x1="390" y1="819" x2="620" y2="819" stroke="#000"/>
+<text x="398" y="834" font-size="12">+ repayPartial(amount, mode): void</text>
+<text x="398" y="851" font-size="12">+ repayFull(): void</text>
+<text x="398" y="868" font-size="12">+ accruePenalty(): number</text>
+<rect x="50" y="681" width="170" height="82" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="135" y="696" font-size="12" text-anchor="middle">«enumeration»</text>
+<text x="135" y="714" font-size="14" font-weight="bold" text-anchor="middle">ScheduleType</text>
+<line x1="50" y1="721" x2="220" y2="721" stroke="#000"/>
+<text x="58" y="736" font-size="12">annuity</text>
+<text x="58" y="753" font-size="12">differentiated</text>
+<rect x="730" y="681" width="230" height="197" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="845" y="699" font-size="14" font-weight="bold" text-anchor="middle">Card</text>
+<line x1="730" y1="709" x2="960" y2="709" stroke="#000"/>
+<text x="738" y="724" font-size="12">- id: number</text>
+<text x="738" y="741" font-size="12">- system: string</text>
+<text x="738" y="758" font-size="12">- numberEnc: string</text>
+<text x="738" y="775" font-size="12">- last4: string</text>
+<text x="738" y="792" font-size="12">- dailyLimit: number</text>
+<text x="738" y="809" font-size="12">- status: string</text>
+<line x1="730" y1="819" x2="960" y2="819" stroke="#000"/>
+<text x="738" y="834" font-size="12">+ block(): void</text>
+<text x="738" y="851" font-size="12">+ updateLimits(limits): void</text>
+<text x="738" y="868" font-size="12">+ purchase(amount): void</text>
+<rect x="1070" y="681" width="230" height="163" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="1185" y="699" font-size="14" font-weight="bold" text-anchor="middle">Payment</text>
+<line x1="1070" y1="709" x2="1300" y2="709" stroke="#000"/>
+<text x="1078" y="724" font-size="12">- id: number</text>
+<text x="1078" y="741" font-size="12">- requisite: string</text>
+<text x="1078" y="758" font-size="12">- amount: number</text>
+<text x="1078" y="775" font-size="12">- fee: number</text>
+<text x="1078" y="792" font-size="12">- source: string</text>
+<line x1="1070" y1="802" x2="1300" y2="802" stroke="#000"/>
+<text x="1078" y="817" font-size="12">+ execute(): void</text>
+<text x="1078" y="834" font-size="12">+ getReceipt(): Receipt</text>
+<rect x="1410" y="681" width="250" height="197" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="1535" y="699" font-size="14" font-weight="bold" text-anchor="middle">TransferRequest</text>
+<line x1="1410" y1="709" x2="1660" y2="709" stroke="#000"/>
+<text x="1418" y="724" font-size="12">- id: string</text>
+<text x="1418" y="741" font-size="12">- kind: string</text>
+<text x="1418" y="758" font-size="12">- amount: number</text>
+<text x="1418" y="775" font-size="12">- amountByn: number</text>
+<text x="1418" y="792" font-size="12">- fee: number</text>
+<text x="1418" y="809" font-size="12">- status: string</text>
+<line x1="1410" y1="819" x2="1660" y2="819" stroke="#000"/>
+<text x="1418" y="834" font-size="12">+ confirm(code): void</text>
+<text x="1418" y="851" font-size="12">+ cancel(): void</text>
+<text x="1418" y="868" font-size="12">+ evaluateRisk(): Risk</text>
+<rect x="1070" y="988" width="230" height="163" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="1185" y="1006" font-size="14" font-weight="bold" text-anchor="middle">Document</text>
+<line x1="1070" y1="1016" x2="1300" y2="1016" stroke="#000"/>
+<text x="1078" y="1031" font-size="12">- id: number</text>
+<text x="1078" y="1048" font-size="12">- type: string</text>
+<text x="1078" y="1065" font-size="12">- status: string</text>
+<text x="1078" y="1082" font-size="12">- idempotencyKey: string</text>
+<text x="1078" y="1099" font-size="12">- bankDate: Date</text>
+<line x1="1070" y1="1109" x2="1300" y2="1109" stroke="#000"/>
+<text x="1078" y="1124" font-size="12">+ post(entries): void</text>
+<text x="1078" y="1141" font-size="12">+ reverse(): void</text>
+<rect x="730" y="988" width="250" height="146" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="855" y="1006" font-size="14" font-weight="bold" text-anchor="middle">Posting</text>
+<line x1="730" y1="1016" x2="980" y2="1016" stroke="#000"/>
+<text x="738" y="1031" font-size="12">- id: number</text>
+<text x="738" y="1048" font-size="12">- debitAccount: Account</text>
+<text x="738" y="1065" font-size="12">- creditAccount: Account</text>
+<text x="738" y="1082" font-size="12">- amount: number</text>
+<text x="738" y="1099" font-size="12">- bankDate: Date</text>
+<line x1="730" y1="1109" x2="980" y2="1109" stroke="#000"/>
+<text x="738" y="1124" font-size="12">+ getAmount(): number</text>
+</svg>

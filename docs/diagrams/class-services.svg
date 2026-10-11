@@ -1,0 +1,154 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1380" height="1340" viewBox="0 0 1380 1340" font-family="Times New Roman, serif">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<rect x="56" y="60" width="1288" height="147" fill="#fafafa" stroke="#666" stroke-dasharray="6 4"/>
+<rect x="56" y="38" width="202" height="22" fill="#fafafa" stroke="#666"/>
+<text x="66" y="53" font-size="13" font-weight="bold">Закрытие операционного дня</text>
+<rect x="56" y="297" width="1288" height="198" fill="#fafafa" stroke="#666" stroke-dasharray="6 4"/>
+<rect x="56" y="275" width="153" height="22" fill="#fafafa" stroke="#666"/>
+<text x="66" y="290" font-size="13" font-weight="bold">Банковские продукты</text>
+<rect x="56" y="585" width="1288" height="164" fill="#fafafa" stroke="#666" stroke-dasharray="6 4"/>
+<rect x="56" y="563" width="209" height="22" fill="#fafafa" stroke="#666"/>
+<text x="66" y="578" font-size="13" font-weight="bold">Переводы и принятие решений</text>
+<rect x="56" y="839" width="1288" height="164" fill="#fafafa" stroke="#666" stroke-dasharray="6 4"/>
+<rect x="56" y="817" width="153" height="22" fill="#fafafa" stroke="#666"/>
+<text x="66" y="832" font-size="13" font-weight="bold">Учёт и безопасность</text>
+<rect x="56" y="1093" width="1288" height="147" fill="#fafafa" stroke="#666" stroke-dasharray="6 4"/>
+<rect x="56" y="1071" width="153" height="22" fill="#fafafa" stroke="#666"/>
+<text x="66" y="1086" font-size="13" font-weight="bold">Уведомления и аудит</text>
+<path d="M460,183 L460,241 L255,241 L255,321" fill="none" stroke="#000" stroke-width="1" stroke-dasharray="6 4"/><polyline points="250,310 255,321 260,310" fill="none" stroke="#000"/>
+<path d="M535,183 L535,241 L535,241 L535,321" fill="none" stroke="#000" stroke-width="1" stroke-dasharray="6 4"/><polyline points="530,310 535,321 540,310" fill="none" stroke="#000"/>
+<path d="M610,183 L610,241 L1195,241 L1195,321" fill="none" stroke="#000" stroke-width="1" stroke-dasharray="6 4"/><polyline points="1190,310 1195,321 1200,310" fill="none" stroke="#000"/>
+<path d="M1195,471 L1195,609" fill="none" stroke="#000" stroke-width="1" stroke-dasharray="6 4"/><polyline points="1190,598 1195,609 1200,598" fill="none" stroke="#000"/>
+<path d="M330,659 L410,659" fill="none" stroke="#000" stroke-width="1" stroke-dasharray="6 4"/><polyline points="399,664 410,659 399,654" fill="none" stroke="#000"/>
+<path d="M740,667 L660,659" fill="none" stroke="#000" stroke-width="1" stroke-dasharray="6 4"/><polyline points="671.4429276874149,655.119354958181 660,659 670.4478904972049,665.069726860281" fill="none" stroke="#000"/>
+<path d="M230,708 L230,863" fill="none" stroke="#000" stroke-width="1" stroke-dasharray="6 4"/><polyline points="225,852 230,863 235,852" fill="none" stroke="#000"/>
+<path d="M293,708 L293,769 L765,769 L765,863" fill="none" stroke="#000" stroke-width="1" stroke-dasharray="6 4"/><polyline points="760,852 765,863 770,852" fill="none" stroke="#000"/>
+<path d="M865,725 L865,797 L293,797 L293,863" fill="none" stroke="#000" stroke-width="1" stroke-dasharray="6 4"/><polyline points="288,852 293,863 298,852" fill="none" stroke="#000"/>
+<path d="M915,725 L915,863" fill="none" stroke="#000" stroke-width="1" stroke-dasharray="6 4"/><polyline points="910,852 915,863 920,852" fill="none" stroke="#000"/>
+<path d="M330,1158 L410,1167" fill="none" stroke="#000" stroke-width="1" stroke-dasharray="6 4"/><polyline points="398.50998165691385,1170.7389140770474 410,1167 399.62792938759253,1160.8016009154594" fill="none" stroke="#000"/>
+<rect x="410" y="84" width="250" height="99" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="535" y="99" font-size="12" text-anchor="middle">«service»</text>
+<text x="535" y="117" font-size="14" font-weight="bold" text-anchor="middle">EodService</text>
+<line x1="410" y1="124" x2="660" y2="124" stroke="#000"/>
+<line x1="410" y1="124" x2="660" y2="124" stroke="#000"/>
+<text x="418" y="139" font-size="12">+ closeDay()</text>
+<text x="418" y="156" font-size="12">+ advanceDays()</text>
+<text x="418" y="173" font-size="12">+ currentBankDate()</text>
+<rect x="80" y="321" width="250" height="116" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="205" y="336" font-size="12" text-anchor="middle">«service»</text>
+<text x="205" y="354" font-size="14" font-weight="bold" text-anchor="middle">DepositService</text>
+<line x1="80" y1="361" x2="330" y2="361" stroke="#000"/>
+<line x1="80" y1="361" x2="330" y2="361" stroke="#000"/>
+<text x="88" y="376" font-size="12">+ openDeposit()</text>
+<text x="88" y="393" font-size="12">+ closeEarly()</text>
+<text x="88" y="410" font-size="12">+ processDeposits()</text>
+<text x="88" y="427" font-size="12">+ projectIncome()</text>
+<rect x="410" y="321" width="250" height="99" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="535" y="336" font-size="12" text-anchor="middle">«service»</text>
+<text x="535" y="354" font-size="14" font-weight="bold" text-anchor="middle">PaymentService</text>
+<line x1="410" y1="361" x2="660" y2="361" stroke="#000"/>
+<line x1="410" y1="361" x2="660" y2="361" stroke="#000"/>
+<text x="418" y="376" font-size="12">+ pay()</text>
+<text x="418" y="393" font-size="12">+ createAutopayment()</text>
+<text x="418" y="410" font-size="12">+ processAutopayments()</text>
+<rect x="740" y="321" width="250" height="116" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="865" y="336" font-size="12" text-anchor="middle">«service»</text>
+<text x="865" y="354" font-size="14" font-weight="bold" text-anchor="middle">CardService</text>
+<line x1="740" y1="361" x2="990" y2="361" stroke="#000"/>
+<line x1="740" y1="361" x2="990" y2="361" stroke="#000"/>
+<text x="748" y="376" font-size="12">+ issueCard()</text>
+<text x="748" y="393" font-size="12">+ setBlocked()</text>
+<text x="748" y="410" font-size="12">+ updateLimits()</text>
+<text x="748" y="427" font-size="12">+ purchase()</text>
+<rect x="1070" y="321" width="250" height="150" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="1195" y="336" font-size="12" text-anchor="middle">«service»</text>
+<text x="1195" y="354" font-size="14" font-weight="bold" text-anchor="middle">LoanService</text>
+<line x1="1070" y1="361" x2="1320" y2="361" stroke="#000"/>
+<line x1="1070" y1="361" x2="1320" y2="361" stroke="#000"/>
+<text x="1078" y="376" font-size="12">+ apply()</text>
+<text x="1078" y="393" font-size="12">+ decide()</text>
+<text x="1078" y="410" font-size="12">+ sign()</text>
+<text x="1078" y="427" font-size="12">+ repayPartial()</text>
+<text x="1078" y="444" font-size="12">+ repayFull()</text>
+<text x="1078" y="461" font-size="12">+ processLoans()</text>
+<rect x="80" y="609" width="250" height="99" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="205" y="624" font-size="12" text-anchor="middle">«service»</text>
+<text x="205" y="642" font-size="14" font-weight="bold" text-anchor="middle">TransferService</text>
+<line x1="80" y1="649" x2="330" y2="649" stroke="#000"/>
+<line x1="80" y1="649" x2="330" y2="649" stroke="#000"/>
+<text x="88" y="664" font-size="12">+ createTransfer()</text>
+<text x="88" y="681" font-size="12">+ confirmTransfer()</text>
+<text x="88" y="698" font-size="12">+ reviewHeldTransfer()</text>
+<rect x="410" y="609" width="250" height="99" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="535" y="624" font-size="12" text-anchor="middle">«service»</text>
+<text x="535" y="642" font-size="14" font-weight="bold" text-anchor="middle">FraudService</text>
+<line x1="410" y1="649" x2="660" y2="649" stroke="#000"/>
+<line x1="410" y1="649" x2="660" y2="649" stroke="#000"/>
+<text x="418" y="664" font-size="12">+ evaluate()</text>
+<text x="418" y="681" font-size="12">+ evaluateInterbank()</text>
+<text x="418" y="698" font-size="12">+ review()</text>
+<rect x="740" y="609" width="250" height="116" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="865" y="624" font-size="12" text-anchor="middle">«service»</text>
+<text x="865" y="642" font-size="14" font-weight="bold" text-anchor="middle">InterbankService</text>
+<line x1="740" y1="649" x2="990" y2="649" stroke="#000"/>
+<line x1="740" y1="649" x2="990" y2="649" stroke="#000"/>
+<text x="748" y="664" font-size="12">+ createTransfer()</text>
+<text x="748" y="681" font-size="12">+ confirm()</text>
+<text x="748" y="698" font-size="12">+ cancel()</text>
+<text x="748" y="715" font-size="12">+ processClearing()</text>
+<rect x="1070" y="609" width="250" height="99" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="1195" y="624" font-size="12" text-anchor="middle">«service»</text>
+<text x="1195" y="642" font-size="14" font-weight="bold" text-anchor="middle">ScoringService</text>
+<line x1="1070" y1="649" x2="1320" y2="649" stroke="#000"/>
+<line x1="1070" y1="649" x2="1320" y2="649" stroke="#000"/>
+<text x="1078" y="664" font-size="12">+ assess()</text>
+<text x="1078" y="681" font-size="12">+ trainAndActivate()</text>
+<text x="1078" y="698" font-size="12">+ activeModel()</text>
+<rect x="80" y="863" width="250" height="116" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="205" y="878" font-size="12" text-anchor="middle">«service»</text>
+<text x="205" y="896" font-size="14" font-weight="bold" text-anchor="middle">LedgerService</text>
+<line x1="80" y1="903" x2="330" y2="903" stroke="#000"/>
+<line x1="80" y1="903" x2="330" y2="903" stroke="#000"/>
+<text x="88" y="918" font-size="12">+ post()</text>
+<text x="88" y="935" font-size="12">+ reverse()</text>
+<text x="88" y="952" font-size="12">+ balanceFromPostings()</text>
+<text x="88" y="969" font-size="12">+ trialBalance()</text>
+<rect x="410" y="863" width="250" height="99" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="535" y="878" font-size="12" text-anchor="middle">«service»</text>
+<text x="535" y="896" font-size="14" font-weight="bold" text-anchor="middle">AccountService</text>
+<line x1="410" y1="903" x2="660" y2="903" stroke="#000"/>
+<line x1="410" y1="903" x2="660" y2="903" stroke="#000"/>
+<text x="418" y="918" font-size="12">+ openForUser()</text>
+<text x="418" y="935" font-size="12">+ closeForUser()</text>
+<text x="418" y="952" font-size="12">+ setFrozen()</text>
+<rect x="740" y="863" width="250" height="82" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="865" y="878" font-size="12" text-anchor="middle">«service»</text>
+<text x="865" y="896" font-size="14" font-weight="bold" text-anchor="middle">OtpService</text>
+<line x1="740" y1="903" x2="990" y2="903" stroke="#000"/>
+<line x1="740" y1="903" x2="990" y2="903" stroke="#000"/>
+<text x="748" y="918" font-size="12">+ issue()</text>
+<text x="748" y="935" font-size="12">+ verify()</text>
+<rect x="80" y="1117" width="250" height="82" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="205" y="1132" font-size="12" text-anchor="middle">«service»</text>
+<text x="205" y="1150" font-size="14" font-weight="bold" text-anchor="middle">NotificationService</text>
+<line x1="80" y1="1157" x2="330" y2="1157" stroke="#000"/>
+<line x1="80" y1="1157" x2="330" y2="1157" stroke="#000"/>
+<text x="88" y="1172" font-size="12">+ notify()</text>
+<text x="88" y="1189" font-size="12">+ unreadCount()</text>
+<rect x="410" y="1117" width="250" height="99" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="535" y="1132" font-size="12" text-anchor="middle">«service»</text>
+<text x="535" y="1150" font-size="14" font-weight="bold" text-anchor="middle">MailService</text>
+<line x1="410" y1="1157" x2="660" y2="1157" stroke="#000"/>
+<line x1="410" y1="1157" x2="660" y2="1157" stroke="#000"/>
+<text x="418" y="1172" font-size="12">+ sendCode()</text>
+<text x="418" y="1189" font-size="12">+ enqueue()</text>
+<text x="418" y="1206" font-size="12">+ processOutbox()</text>
+<rect x="740" y="1117" width="250" height="82" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="865" y="1132" font-size="12" text-anchor="middle">«service»</text>
+<text x="865" y="1150" font-size="14" font-weight="bold" text-anchor="middle">AuditService</text>
+<line x1="740" y1="1157" x2="990" y2="1157" stroke="#000"/>
+<line x1="740" y1="1157" x2="990" y2="1157" stroke="#000"/>
+<text x="748" y="1172" font-size="12">+ log()</text>
+<text x="748" y="1189" font-size="12">+ latest()</text>
+<text x="56" y="1280" font-size="13" text-anchor="start" font-style="italic">Вклады, платежи, кредиты, карты и переводы проводят деньги через LedgerService; эти зависимости опущены для наглядности.</text>
+</svg>
