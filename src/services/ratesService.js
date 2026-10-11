@@ -2,10 +2,10 @@ import { pool } from '../db/pool.js';
 import { roundMinor } from '../lib/money.js';
 import { BusinessError } from '../lib/errors.js';
 
-const FOREIGN = ['USD', 'EUR', 'RUB'];
+const FOREIGN = ['USD', 'EUR', 'RUB', 'CNY'];
 
 // Курсы по умолчанию, если API Нацбанка недоступен (учебные значения)
-const FALLBACK = { USD: { rate: 3.275, scale: 1 }, EUR: { rate: 3.812, scale: 1 }, RUB: { rate: 3.59, scale: 100 } };
+const FALLBACK = { USD: { rate: 3.275, scale: 1 }, EUR: { rate: 3.812, scale: 1 }, RUB: { rate: 3.59, scale: 100 }, CNY: { rate: 4.6, scale: 10 } };
 
 /**
  * Загружает официальные курсы с api.nbrb.by. Если API недоступен, записывает запасные значения.

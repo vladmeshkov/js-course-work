@@ -127,7 +127,7 @@ export async function restoreBackup(req, res) {
 
 export async function showReports(req, res) {
   const { from, to } = req.query;
-  const currency = ['BYN', 'USD', 'EUR', 'RUB'].includes(req.query.currency) ? req.query.currency : 'BYN';
+  const currency = ['BYN', 'USD', 'EUR', 'RUB', 'CNY'].includes(req.query.currency) ? req.query.currency : 'BYN';
   let errors = {};
   let trial;
   try {

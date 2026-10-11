@@ -22,7 +22,7 @@ import { refreshRates } from '../services/ratesService.js';
 
 await migrate();
 await withTransaction(async (db) => {
-  for (const currency of ['BYN', 'USD', 'EUR', 'RUB']) {
+  for (const currency of ['BYN', 'USD', 'EUR', 'RUB', 'CNY']) {
     for (const purpose of ['cash', 'income', 'expense', 'correspondent', 'conversion']) {
       await ensureInternalAccount(db, purpose, currency);
     }

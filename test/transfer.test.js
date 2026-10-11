@@ -27,6 +27,7 @@ describe('курсы и конвертация', () => {
         { Cur_Abbreviation: 'USD', Cur_Scale: 1, Cur_OfficialRate: 3.3 },
         { Cur_Abbreviation: 'EUR', Cur_Scale: 1, Cur_OfficialRate: 3.9 },
         { Cur_Abbreviation: 'RUB', Cur_Scale: 100, Cur_OfficialRate: 3.6 },
+        { Cur_Abbreviation: 'CNY', Cur_Scale: 10, Cur_OfficialRate: 4.7 },
         { Cur_Abbreviation: 'PLN', Cur_Scale: 10, Cur_OfficialRate: 8 }
       ]
     });

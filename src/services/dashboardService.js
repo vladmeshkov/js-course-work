@@ -49,6 +49,6 @@ export async function forClient(userId) {
     nextPayment: nextPayment ? { dueDate: String(nextPayment.due_date).slice(0, 10), total: Number(nextPayment.total), overdue: nextPayment.status === 'overdue' } : null,
     maxDepositRate: Number(maxDeposit.rate),
     minLoanRate: Number(minLoan.rate),
-    rates: (await settingsService.spreads()).filter((r) => r.rate !== null).sort((a, b) => ['USD', 'EUR', 'RUB'].indexOf(a.currency) - ['USD', 'EUR', 'RUB'].indexOf(b.currency))
+    rates: (await settingsService.spreads()).filter((r) => r.rate !== null).sort((a, b) => ['USD', 'EUR', 'RUB', 'CNY'].indexOf(a.currency) - ['USD', 'EUR', 'RUB', 'CNY'].indexOf(b.currency))
   };
 }

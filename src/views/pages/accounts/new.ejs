@@ -5,7 +5,7 @@
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
   <% if (errors.common) { %><div class="alert alert--error" role="alert"><%= errors.common %></div><% } %>
   <div class="field<%= errors.currency ? ' field--error' : '' %>"><label for="currency">Валюта</label>
-    <select id="currency" name="currency"><% [['BYN', 'Белорусский рубль'], ['USD', 'Доллар США'], ['EUR', 'Евро'], ['RUB', 'Российский рубль']].forEach(([c, n]) => { %><option value="<%= c %>"<%= form.currency === c ? ' selected' : '' %>><%= c %>, <%= n %></option><% }) %></select>
+    <select id="currency" name="currency"><% [['BYN', 'Белорусский рубль'], ['USD', 'Доллар США'], ['EUR', 'Евро'], ['RUB', 'Российский рубль'], ['CNY', 'Китайский юань']].forEach(([c, n]) => { %><option value="<%= c %>"<%= form.currency === c ? ' selected' : '' %>><%= c %>, <%= n %></option><% }) %></select>
     <% if (errors.currency) { %><span class="field__error"><%= errors.currency %></span><% } %></div>
   <div class="field<%= errors.kind ? ' field--error' : '' %>"><label for="kind">Вид счёта</label>
     <select id="kind" name="kind"><option value="current"<%= form.kind !== 'savings' ? ' selected' : '' %>>Текущий: платежи, переводы, карты</option><option value="savings"<%= form.kind === 'savings' ? ' selected' : '' %>>Накопительный</option></select>

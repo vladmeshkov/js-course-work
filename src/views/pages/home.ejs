@@ -1,15 +1,18 @@
 <%- include('../partials/header', { title }) %>
-<section class="hero">
-  <div class="hero__text">
-    <h1>Ваши финансы под надёжной защитой</h1>
-    <p>Счета, переводы, вклады и кредиты в одном кабинете.</p>
-    <a class="btn" href="/register">Стать клиентом</a>
-    <a class="link hero__login" href="/login">Войти</a>
+<section class="duo duo--hero">
+  <div class="hero-dark">
+    <h1>Откройте счёт, не выходя из дома</h1>
+    <p>Нужны паспорт и номер телефона. Деньги и карта доступны сразу после проверки анкеты.</p>
+    <div class="actions">
+      <a class="btn btn--lg" href="/register">Стать клиентом</a>
+      <a class="btn btn--lg btn--outline-light" href="/deposits">Посмотреть вклады</a>
+    </div>
+    <img class="hero-dark__coin" src="/img/coin-cut.png" alt="Объёмная монета ТалерБанка на металлической подставке" width="350" height="407">
+  </div>
+  <div class="prod-col">
+    <a class="prod-tile" href="/deposits"><span class="prod-tile__name">Вклады</span><span class="prod-tile__row"><span class="prod-tile__hint">Рассчитайте доход за минуту</span><span class="prod-tile__rate prod-tile__rate--accent"><%= String(maxDepositRate).replace('.', ',') %>%</span></span></a>
+    <a class="prod-tile prod-tile--accent" href="/loans"><span class="prod-tile__name">Кредиты</span><span class="prod-tile__row"><span class="prod-tile__hint">Платёж и график до заявки</span><span class="prod-tile__rate"><%= String(minLoanRate).replace('.', ',') %>%</span></span></a>
   </div>
 </section>
-<section class="tiles">
-  <a class="tile-link" href="/deposits"><h3>Вклады</h3><span class="muted">Стабильный доход, проценты ежедневно</span></a>
-  <a class="tile-link" href="/loans"><h3>Кредиты</h3><span class="muted">Калькулятор и решение по заявке онлайн</span></a>
-  <a class="tile-link" href="/rates"><h3>Курсы валют</h3><span class="muted">Курсы Нацбанка и банка на сегодня</span></a>
-</section>
+<%- include('../partials/rates-block', { rates }) %>
 <%- include('../partials/footer') %>

@@ -38,6 +38,7 @@
       </div>
     </div>
   </div>
+  <% if (!user) { %><div class="guest-strip"><div class="guest-strip__in">Вы в гостевом режиме. Доступны курсы валют и калькуляторы. Для платежей и переводов <a href="/login">войдите в кабинет</a>.</div></div><% } %>
 </header>
 <main id="content" class="page">
 <% if (flash) { %><div class="alert alert--<%= flash.type %>" role="status"><%= flash.message %></div><% } %>

@@ -3,7 +3,7 @@
 <form class="tile search" method="get" action="/admin/reports">
   <label class="muted2" for="from">С</label><input id="from" name="from" type="date" value="<%= trial.from %>">
   <label class="muted2" for="to">По</label><input id="to" name="to" type="date" value="<%= trial.to %>">
-  <select name="currency" aria-label="Валюта"><% ['BYN', 'USD', 'EUR', 'RUB'].forEach((c) => { %><option<%= c === currency ? ' selected' : '' %>><%= c %></option><% }) %></select>
+  <select name="currency" aria-label="Валюта"><% ['BYN', 'USD', 'EUR', 'RUB', 'CNY'].forEach((c) => { %><option<%= c === currency ? ' selected' : '' %>><%= c %></option><% }) %></select>
   <button class="btn" type="submit">Показать</button>
   <a class="btn btn--ghost" href="/admin/reports/trial.csv?from=<%= trial.from %>&to=<%= trial.to %>&currency=<%= currency %>">Скачать CSV</a>
   <% if (errors.from) { %><span class="field__error"><%= errors.from %></span><% } %>

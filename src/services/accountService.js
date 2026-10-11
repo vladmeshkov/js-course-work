@@ -101,7 +101,7 @@ export async function openForUser(userId, { kind, currency }) {
   if (!client || client.kyc_status !== 'verified') throw new BusinessError('Счета открываются после проверки анкеты сотрудником банка');
   const errors = {};
   if (!CLIENT_KINDS[kind]) errors.kind = 'Выберите вид счёта';
-  if (!['BYN', 'USD', 'EUR', 'RUB'].includes(currency)) errors.currency = 'Выберите валюту';
+  if (!['BYN', 'USD', 'EUR', 'RUB', 'CNY'].includes(currency)) errors.currency = 'Выберите валюту';
   if (Object.keys(errors).length) throw new ValidationError(errors);
   if ((await accountModel.listByClient(client.id)).filter((a) => ['current', 'savings'].includes(a.kind)).length >= 10) {
     throw new BusinessError('Достигнуто предельное число счетов');

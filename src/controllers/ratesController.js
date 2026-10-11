@@ -1,12 +1,11 @@
 import { parseAmount } from '../lib/money.js';
 import * as ratesService from '../services/ratesService.js';
-import * as settingsService from '../services/settingsService.js';
+import { ratesView } from './homeController.js';
 
-const CURRENCIES = ['BYN', 'USD', 'EUR', 'RUB'];
+const CURRENCIES = ['BYN', 'USD', 'EUR', 'RUB', 'CNY'];
 
 export async function index(req, res) {
-  const spreads = await settingsService.spreads();
-  res.render('pages/rates', { title: 'Курсы валют', spreads, currencies: CURRENCIES });
+  res.render('pages/rates', { title: 'Курсы валют', rates: await ratesView() });
 }
 
 /** JSON для конвертера на странице курсов. */

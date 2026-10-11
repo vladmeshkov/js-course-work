@@ -1,25 +1,5 @@
 <%- include('../partials/header', { title }) %>
+<nav class="crumbs" aria-label="Навигационная цепочка"><a href="/">Главная</a> &nbsp;›&nbsp; Курсы валют</nav>
 <h1>Курсы валют</h1>
-<section class="tile">
-  <div class="scroll-x"><table class="table table--num">
-    <thead><tr><th>Валюта</th><th>Курс Нацбанка</th><th>Банк покупает</th><th>Банк продаёт</th></tr></thead>
-    <tbody>
-      <% spreads.forEach((s) => { const unit = s.rate === null ? null : s.rate / s.scale; %>
-        <tr><td><b><%= s.currency %></b><% if (s.scale > 1) { %> <span class="muted2">за <%= s.scale %></span><% } %></td>
-          <td><%= s.rate === null ? '—' : String(s.rate).replace('.', ',') %></td>
-          <td><%= unit === null ? '—' : (unit * s.scale * (1 - s.buy_percent / 100)).toFixed(4).replace('.', ',') %></td>
-          <td><%= unit === null ? '—' : (unit * s.scale * (1 + s.sell_percent / 100)).toFixed(4).replace('.', ',') %></td></tr>
-      <% }) %>
-    </tbody>
-  </table></div>
-  <p class="muted2 small mt10 m0">Курсы в BYN. Курс Нацбанка берётся с сайта nbrb.by, курсы банка отличаются на спред.</p>
-</section>
-<form class="tile search" id="converter" aria-live="polite">
-  <input id="conv-amount" value="100" inputmode="decimal" aria-label="Сумма">
-  <select id="conv-from" aria-label="Из валюты"><% currencies.forEach((c) => { %><option<%= c === 'USD' ? ' selected' : '' %>><%= c %></option><% }) %></select>
-  <span class="muted2">в</span>
-  <select id="conv-to" aria-label="В валюту"><% currencies.forEach((c) => { %><option<%= c === 'BYN' ? ' selected' : '' %>><%= c %></option><% }) %></select>
-  <output id="conv-result" class="amount">—</output>
-</form>
-<script src="/js/rates-convert.js" defer></script>
+<%- include('../partials/rates-block', { rates }) %>
 <%- include('../partials/footer') %>

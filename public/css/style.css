@@ -328,3 +328,53 @@ html.dark .metric{box-shadow:inset 0 0 0 1px rgba(255,255,255,.045)}
   @keyframes slide{from{left:-40%}to{left:100%}}
   @keyframes pop{0%{transform:scale(.4)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
 }
+
+/* Макеты Claude Design: общие элементы */
+.panel{background:var(--surface);border-radius:24px;padding:32px;display:flex;flex-direction:column;gap:18px}
+.duo{display:flex;flex-wrap:wrap;gap:16px;align-items:stretch}
+.duo > .panel{flex:1 1 420px;min-width:0}
+.duo > .rates{flex:1.25 1 480px}
+.duo h2{font-size:30px}
+.duo--hero{align-items:stretch}
+.hero-dark{flex:1.7 1 420px;min-width:0;min-height:460px;border-radius:24px;color:#fff;padding:44px;position:relative;overflow:hidden;display:flex;flex-direction:column;gap:18px;background:radial-gradient(560px 440px at 82% 92%,var(--glow),transparent 68%),linear-gradient(165deg,var(--d1),var(--d2))}
+.hero-dark h1{font-size:clamp(34px,4.2vw,58px);line-height:1.05;letter-spacing:-1.5px;max-width:13ch;text-wrap:balance;position:relative;z-index:1}
+.hero-dark p{margin:0;font-size:19px;line-height:1.45;color:#D3DAE2;max-width:30ch;position:relative;z-index:1}
+.hero-dark .actions{margin-top:8px;position:relative;z-index:1}
+.hero-dark__coin{position:absolute;right:-10px;bottom:-40px;width:min(350px,50%);height:auto;pointer-events:none;-webkit-mask-image:linear-gradient(to bottom,#000 78%,transparent);mask-image:linear-gradient(to bottom,#000 78%,transparent)}
+.btn--outline-light{background:transparent;border-color:rgba(255,255,255,.5);color:#fff;font-weight:600}
+.btn--outline-light:hover{background:rgba(255,255,255,.12);border-color:#fff}
+.prod-col{flex:1 1 300px;min-width:0;display:flex;flex-direction:column;gap:16px}
+.prod-tile{flex:1;border-radius:24px;background:var(--surface);padding:30px;display:flex;flex-direction:column;justify-content:space-between;gap:12px;min-height:200px;transition:transform .2s}
+.prod-tile:hover{transform:translateY(-3px)}
+.prod-tile--accent{background:var(--accent);color:var(--onAccent)}
+.prod-tile__name{font-size:30px;font-weight:700;letter-spacing:-.5px}
+.prod-tile__row{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+.prod-tile__hint{font-size:16px;max-width:18ch;color:var(--muted)}
+.prod-tile--accent .prod-tile__hint{color:inherit}
+.prod-tile__rate{font-size:48px;font-weight:700;letter-spacing:-2px;line-height:1}
+.prod-tile__rate--accent{color:var(--accentText)}
+.flag{border-radius:6px;display:block;box-shadow:0 0 0 1px rgba(28,33,40,.14);flex:0 0 auto}
+.conv__form{display:flex;flex-direction:column;gap:14px;flex:1}
+.conv__box{background:var(--bg);border-radius:18px;padding:16px 20px}
+.conv__line{display:flex;align-items:center;gap:14px;margin-top:4px}
+.conv__input{flex:1;min-width:0;border:0;background:transparent;font-size:30px;font-weight:700;color:var(--ink);padding:0}
+.conv__input:focus{outline:none}
+.conv__box:focus-within{box-shadow:0 0 0 2px var(--accent)}
+.conv__unit{font-size:18px;font-weight:600;color:var(--muted)}
+.cur-pills{display:flex;flex-wrap:wrap;gap:8px}
+.cur-pill{display:flex;align-items:center;gap:10px;padding:8px 18px 8px 10px;border-radius:999px;border:2px solid transparent;background:var(--bg);font-size:16px;font-weight:700;color:var(--ink);cursor:pointer;transition:border-color .15s,background .15s}
+.cur-pill[aria-checked="true"]{border-color:var(--accent);background:var(--surface)}
+.conv__result{background:var(--accent);color:var(--onAccent);border-radius:18px;padding:18px 22px;margin-top:auto}
+.conv__sum{font-size:42px;font-weight:700;letter-spacing:-1.5px;line-height:1.1}
+.conv__cur{font-size:.45em;letter-spacing:0}
+.rate-row{display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:12px 16px;border-radius:18px;background:var(--bg)}
+.rate-row__sym{width:44px;height:44px;border-radius:50%;background:var(--accent);color:var(--onAccent);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700}
+.rate-row__name{flex:1 1 110px;min-width:0;display:flex;flex-direction:column}
+.rate-row__name b{font-size:19px}
+.rate-row__vals{display:flex;gap:8px}
+.rate-row__val{min-width:92px;padding:8px 12px;border-radius:12px;background:var(--surface);text-align:right;display:flex;flex-direction:column}
+.rate-row__val b{font-size:18px}
+.guest-strip{background:var(--soft)}
+.guest-strip__in{max-width:1280px;margin:0 auto;padding:10px 40px;font-size:15px}
+.guest-strip a{color:var(--accentText);font-weight:600;border-bottom:1.5px solid var(--accentText)}
+@media (max-width:640px){.guest-strip__in{padding-left:16px;padding-right:16px}.hero-dark{padding:28px 22px}.hero-dark__coin{opacity:.5}}
