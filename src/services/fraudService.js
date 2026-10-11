@@ -2,6 +2,7 @@ import { query, withTransaction } from '../db/pool.js';
 import { AppError, BusinessError, ValidationError } from '../lib/errors.js';
 import * as settingsModel from '../models/settingsModel.js';
 import * as auditService from './auditService.js';
+import { notify } from './notificationService.js';
 
 /*
  * Антифрод. Набор правил даёт баллы риска, сумма баллов определяет решение:
@@ -104,6 +105,7 @@ export async function review(officerId, caseId, { approve, comment }, executeInt
     await withTransaction(async (db) => {
       await db.query("UPDATE holds SET status = 'released', closed_at = now() WHERE intent_id = $1 AND status = 'active'", [fraudCase.intent_id]);
       await db.query("UPDATE transfer_intents SET status = 'rejected' WHERE id = $1", [fraudCase.intent_id]);
+      await notify(fraudCase.user_id, { type: 'transfer', title: 'Перевод отклонён', body: `Банк не провёл перевод. Причина: ${String(comment).trim()}. Деньги разблокированы.`, link: '/accounts' }, db);
     });
   }
   await query(

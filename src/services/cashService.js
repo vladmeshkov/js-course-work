@@ -4,6 +4,7 @@ import { isValidIban } from '../lib/iban.js';
 import * as accountModel from '../models/accountModel.js';
 import { ensureInternalAccount } from './accountService.js';
 import * as auditService from './auditService.js';
+import { notifyAccountOwner, money } from './notificationService.js';
 import * as ledgerService from './ledgerService.js';
 
 /**
@@ -30,6 +31,7 @@ export async function cashOperation(operatorId, { iban, amount, direction }) {
       initiatedBy: operatorId, entries: [entry]
     }, db);
     await auditService.log({ userId: operatorId, action: `cash.${direction}`, entity: 'account', entityId: account.id, details: { amount, currency: account.currency } }, db);
+    await notifyAccountOwner(account.id, { type: 'account', title: direction === 'in' ? 'Взнос наличных' : 'Выдача наличных', body: money(amount, account.currency), link: `/accounts/${account.id}` }, db);
     return { documentId, account };
   });
 }

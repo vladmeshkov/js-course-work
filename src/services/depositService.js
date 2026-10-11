@@ -7,6 +7,7 @@ import * as clientModel from '../models/clientModel.js';
 import * as depositModel from '../models/depositModel.js';
 import { BALANCE_CODES, ensureInternalAccount } from './accountService.js';
 import * as auditService from './auditService.js';
+import { notify, money } from './notificationService.js';
 import * as ledgerService from './ledgerService.js';
 import { buildIban } from '../lib/iban.js';
 import { config } from '../config/index.js';
@@ -70,6 +71,7 @@ export async function openDeposit(userId, { productId, sourceAccountId, amount }
       type: 'deposit_open', description: `Открытие вклада «${product.name}»`, initiatedBy: userId,
       entries: [{ debit: source.id, credit: account.id, amount, currency: product.currency }]
     }, db);
+    await notify(userId, { type: 'deposit', title: 'Вклад открыт', body: `«${product.name}», ${money(amount, product.currency)} до ${deposit.maturity_date}`, link: `/deposits/${deposit.id}` }, db);
     await auditService.log({ userId, action: 'deposit.open', entity: 'deposit', entityId: deposit.id, details: { amount, product: product.name } }, db);
     return deposit;
   });
@@ -107,6 +109,7 @@ export async function processDeposits(db, date) {
         }, db);
         total += interest;
         payouts += 1;
+        await notify(deposit.user_id, { type: 'deposit', title: 'Начислены проценты по вкладу', body: money(interest, deposit.currency), link: `/deposits/${deposit.id}` }, db);
       }
       paidUntil = eventDate;
       periods += 1;
@@ -118,6 +121,7 @@ export async function processDeposits(db, date) {
         }, db);
         await depositModel.closeAccount(db, deposit.account_id);
         await depositModel.close(db, deposit.id, 'closed', eventDate, total);
+        await notify(deposit.user_id, { type: 'deposit', title: 'Вклад закрыт по окончании срока', body: `Возвращено ${money(body, deposit.currency)} на текущий счёт`, link: `/deposits/${deposit.id}` }, db);
         matured += 1;
         break;
       }
@@ -185,6 +189,7 @@ export async function closeEarly(userId, depositId) {
     }
     await depositModel.closeAccount(db, locked.account_id);
     await depositModel.close(db, locked.id, 'early_closed', today, quote.demandInterest);
+    await notify(userId, { type: 'deposit', title: 'Вклад закрыт досрочно', body: `Возвращено ${money(final, locked.currency)}`, link: '/deposits' }, db);
     await auditService.log({ userId, action: 'deposit.close_early', entity: 'deposit', entityId: locked.id, details: { payout: final } }, db);
     return { ...quote, payout: final };
   });

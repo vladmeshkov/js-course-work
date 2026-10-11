@@ -100,7 +100,7 @@ export async function schedule(loanId, db = { query }) {
 }
 
 export async function lockActiveLoans(db) {
-  const { rows } = await db.query("SELECT * FROM loans WHERE status = 'active' ORDER BY id FOR UPDATE");
+  const { rows } = await db.query("SELECT l.*, (SELECT user_id FROM clients c WHERE c.id = l.client_id) AS user_id FROM loans l WHERE l.status = 'active' ORDER BY l.id FOR UPDATE OF l");
   return rows;
 }
 

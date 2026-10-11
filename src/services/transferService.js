@@ -12,6 +12,7 @@ import * as ledgerService from './ledgerService.js';
 import * as otpService from './otpService.js';
 import * as ratesService from './ratesService.js';
 import * as fraudService from './fraudService.js';
+import { notify, notifyAccountOwner, money } from './notificationService.js';
 
 /*
  * Конвейер перевода:
@@ -79,6 +80,7 @@ export async function createTransfer(userId, input) {
       await db.query('INSERT INTO holds (account_id, amount, intent_id) VALUES ($1, $2, $3)', [from.id, input.amount + fee, intent.id]);
       await fraudService.recordCase(db, intent, risk);
       await auditService.log({ userId, action: 'transfer.held', entity: 'transfer', entityId: intent.id, details: { score: risk.score } }, db);
+      await notify(userId, { type: 'transfer', title: 'Перевод на проверке', body: `Перевод ${money(input.amount, from.currency)} задержан для проверки. Деньги на счёте зарезервированы.`, link: `/accounts/${from.id}` }, db);
     });
     return { intent: { ...intent, status: 'review' }, executed: false, review: true };
   }
@@ -126,6 +128,7 @@ export async function executeIntent(userId, intentId) {
     const from = await accountModel.findById(intent.from_account_id, db);
     const to = await accountModel.findById(intent.to_account_id, db);
     const entries = [];
+    let received = intent.amount;
     if (from.currency === to.currency) {
       entries.push({ debit: from.id, credit: to.id, amount: intent.amount, currency: from.currency });
     } else {
@@ -134,6 +137,7 @@ export async function executeIntent(userId, intentId) {
       if (target <= 0) throw new BusinessError('Сумма слишком мала для конвертации');
       const convFrom = await ensureInternalAccount(db, 'conversion', from.currency);
       const convTo = await ensureInternalAccount(db, 'conversion', to.currency);
+      received = target;
       entries.push({ debit: from.id, credit: convFrom.id, amount: intent.amount, currency: from.currency });
       entries.push({ debit: convTo.id, credit: to.id, amount: target, currency: to.currency });
     }
@@ -148,6 +152,8 @@ export async function executeIntent(userId, intentId) {
       description, initiatedBy: userId, idempotencyKey: `transfer:${intent.id}`, entries
     }, db);
     await transferModel.markConfirmed(db, intent.id, documentId);
+    await notify(userId, { type: 'transfer', title: 'Перевод выполнен', body: `Списано ${money(intent.amount + intent.fee, from.currency)}. ${description}`, link: `/accounts/${from.id}` }, db);
+    if (intent.kind === 'client') await notifyAccountOwner(to.id, { type: 'transfer', title: 'Поступил перевод', body: `${money(received, to.currency)}. ${description}`, link: `/accounts/${to.id}` }, db);
     await auditService.log({ userId, action: 'transfer.done', entity: 'transfer', entityId: intent.id, details: { kind: intent.kind, amount: intent.amount, currency: from.currency } }, db);
     return { documentId, duplicate: false, intent };
   });

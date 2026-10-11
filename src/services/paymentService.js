@@ -7,6 +7,7 @@ import * as clientModel from '../models/clientModel.js';
 import * as paymentModel from '../models/paymentModel.js';
 import { ensureInternalAccount } from './accountService.js';
 import * as auditService from './auditService.js';
+import { notify, money } from './notificationService.js';
 import * as ledgerService from './ledgerService.js';
 
 /*
@@ -61,6 +62,7 @@ export async function executePayment(db, { client, userId, providerId, fromAccou
     type: 'payment', description: `Оплата: ${provider.name}, ${provider.requisite_label.toLowerCase()} ${req}`, initiatedBy: userId, entries
   }, db);
   const payment = await paymentModel.insertPayment(db, { clientId: client.id, providerId: provider.id, fromAccountId: from.id, amount, fee, requisite: req, documentId, source });
+  if (source === 'autopay') await notify(userId, { type: 'payment', title: 'Выполнен автоплатёж', body: `${provider.name}: ${money(amount)}`, link: `/payments/${payment.id}/receipt` }, db);
   await auditService.log({ userId, action: 'payment.done', entity: 'payment', entityId: payment.id, details: { provider: provider.name, amount, source } }, db);
   return payment;
 }
@@ -157,6 +159,7 @@ export async function processAutopayments(db, date) {
       await paymentModel.saveAutopayment(db, a.id, {
         fail_count: fails, last_result: error.message, next_date: addDays(date, 1), active: fails < MAX_FAILS
       });
+      await notify(a.user_id, { type: 'payment', title: 'Автоплатёж не выполнен', body: `${error.message}. Попробуем завтра, всего попыток: ${MAX_FAILS}.`, link: '/payments' }, db);
       stats.failed += 1;
     }
   }

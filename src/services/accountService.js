@@ -5,6 +5,7 @@ import { BusinessError, ValidationError } from '../lib/errors.js';
 import * as clientModel from '../models/clientModel.js';
 import * as accountModel from '../models/accountModel.js';
 import * as auditService from './auditService.js';
+import { notifyAccountOwner } from './notificationService.js';
 
 /** Коды балансовых счетов (первые 4 символа номера счёта в IBAN). */
 export const BALANCE_CODES = {
@@ -84,6 +85,7 @@ export async function setFrozen(operatorId, accountId, frozen, reason) {
     if (account.status === 'closed') throw new BusinessError('Счёт закрыт');
     await accountModel.setStatus(db, accountId, frozen ? 'frozen' : 'open');
     await auditService.log({ userId: operatorId, action: frozen ? 'account.freeze' : 'account.unfreeze', entity: 'account', entityId: accountId, details: { reason: String(reason ?? '').trim() } }, db);
+    await notifyAccountOwner(accountId, { type: 'account', title: frozen ? 'Счёт заблокирован' : 'Счёт разблокирован', body: frozen ? `Основание: ${String(reason).trim()}` : 'Операции по счёту снова доступны.', link: `/accounts/${accountId}` }, db);
   });
 }
 

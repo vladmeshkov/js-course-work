@@ -13,6 +13,7 @@ import * as loanModel from '../models/loanModel.js';
 import * as settingsModel from '../models/settingsModel.js';
 import { BALANCE_CODES, ensureInternalAccount } from './accountService.js';
 import * as auditService from './auditService.js';
+import { notify, money } from './notificationService.js';
 import * as ledgerService from './ledgerService.js';
 import * as otpService from './otpService.js';
 
@@ -116,6 +117,8 @@ export async function apply(userId, input) {
       experienceMonths: input.experienceMonths, dependents: input.dependents, firstPayment: first.total,
       dti: result.dti, score: result.score, notes: result.notes, status, comment
     });
+    const texts = { approved: ['Кредит одобрен', 'Подпишите договор, чтобы получить деньги.'], manual_review: ['Заявка на рассмотрении', 'Её проверит кредитный специалист.'], rejected: ['Отказ по заявке на кредит', comment ?? ''] }[status];
+    await notify(userId, { type: 'loan', title: texts[0], body: `Заявка № ${application.id}, ${money(input.amount)}. ${texts[1]}`, link: `/loans/applications/${application.id}` }, db);
     await auditService.log({ userId, action: 'loan.apply', entity: 'loan_application', entityId: application.id, details: { status, score: result.score } }, db);
     return application;
   });
@@ -129,6 +132,7 @@ export function decide(officerId, applicationId, { approve, comment }) {
     if (application.status !== 'manual_review') throw new BusinessError('Заявка уже рассмотрена');
     if (!approve && !String(comment ?? '').trim()) throw new ValidationError({ comment: 'Укажите причину отказа' });
     await loanModel.decideApplication(db, applicationId, { status: approve ? 'approved' : 'rejected', comment: String(comment ?? '').trim() || null, userId: officerId });
+    await notify((await db.query('SELECT user_id FROM clients WHERE id = $1', [application.client_id])).rows[0].user_id, { type: 'loan', title: approve ? 'Кредит одобрен' : 'Отказ по заявке на кредит', body: approve ? `Заявка № ${applicationId}. Подпишите договор, чтобы получить деньги.` : `Заявка № ${applicationId}. Причина: ${String(comment).trim()}`, link: `/loans/applications/${applicationId}` }, db);
     await auditService.log({ userId: officerId, action: approve ? 'loan.approve' : 'loan.reject', entity: 'loan_application', entityId: applicationId }, db);
   });
 }
@@ -175,6 +179,7 @@ export async function sign(userId, applicationId, code) {
       entries: [{ debit: account.id, credit: locked.target_account_id, amount: locked.amount, currency: 'BYN' }]
     }, db);
     await loanModel.setApplicationStatus(db, locked.id, 'signed');
+    await notify(userId, { type: 'loan', title: 'Кредит выдан', body: `${money(locked.amount)} зачислено на счёт. Первый платёж ${money(rows[0].total)} ${rows[0].dueDate}.`, link: `/loans/${loan.id}` }, db);
     await auditService.log({ userId, action: 'loan.issue', entity: 'loan', entityId: loan.id, details: { amount: locked.amount } }, db);
     return loan;
   });
@@ -249,8 +254,12 @@ export async function processLoans(db, date) {
         loan.principal_balance -= row.principal;
         paidLast = due;
         stats.paid += 1;
+        await notify(loan.user_id, { type: 'loan', title: 'Списан платёж по кредиту', body: `Договор № ${loan.id}: ${money(total)}${penalty ? `, в том числе пеня ${money(penalty)}` : ''}`, link: `/loans/${loan.id}` }, db);
       } else {
         await loanModel.markInstallment(db, row.id, { status: 'overdue', penalty, penalty_from: date });
+        if (row.status === 'planned') {
+          await notify(loan.user_id, { type: 'loan', title: 'Просрочен платёж по кредиту', body: `Договор № ${loan.id}: на счёте не хватило ${money(total)}. Пополните счёт, начисляется пеня.`, link: `/loans/${loan.id}` }, db);
+        }
         stats.overdue += 1;
       }
     }
@@ -286,6 +295,7 @@ export async function repayFull(userId, loanId) {
     await loanModel.cancelPlanned(db, loan.id);
     await loanModel.updateLoan(db, loan.id, { principal_balance: 0, status: 'closed', closed_date: today, last_paid_date: today });
     await db.query("UPDATE accounts SET status = 'closed', closed_at = now() WHERE id = $1", [loan.account_id]);
+    await notify(userId, { type: 'loan', title: 'Кредит погашен', body: `Договор № ${loan.id}: списано ${money(q.total)}`, link: '/loans' }, db);
     await auditService.log({ userId, action: 'loan.payoff', entity: 'loan', entityId: loan.id, details: { total: q.total } }, db);
     return q;
   });
@@ -329,7 +339,25 @@ export async function repayPartial(userId, loanId, { amount, mode }) {
     await loanModel.deletePlanned(db, loan.id);
     await loanModel.insertInstallments(db, loan.id, rows);
     await loanModel.updateLoan(db, loan.id, { principal_balance: newBalance, last_paid_date: today });
+    await notify(userId, { type: 'loan', title: 'Досрочный платёж принят', body: `Договор № ${loan.id}: остаток долга ${money(newBalance)}, график пересчитан`, link: `/loans/${loan.id}` }, db);
     await auditService.log({ userId, action: 'loan.partial', entity: 'loan', entityId: loan.id, details: { amount, mode } }, db);
     return { paid: amount + accrued, accrued, newBalance, installments: rows.length };
   });
+}
+
+/**
+ * Напоминания о предстоящих платежах: за 3 дня до даты платежа, один раз по каждому платежу.
+ * @returns {Promise<number>} сколько напоминаний отправлено
+ */
+export async function sendReminders(db, date) {
+  const { rows } = await db.query(
+    `SELECT s.id, s.loan_id, s.due_date, s.principal, s.interest, c.user_id
+     FROM loan_schedule s JOIN loans l ON l.id = s.loan_id JOIN clients c ON c.id = l.client_id
+     WHERE s.status = 'planned' AND NOT s.reminded AND l.status = 'active' AND s.due_date > $1 AND s.due_date <= $2::date + 3
+     ORDER BY s.id`, [date, date]);
+  for (const r of rows) {
+    await notify(r.user_id, { type: 'loan', title: 'Скоро платёж по кредиту', body: `Договор № ${r.loan_id}: ${money(r.principal + r.interest)} до ${String(r.due_date).slice(0, 10)}. Проверьте остаток на счёте.`, link: `/loans/${r.loan_id}` }, db);
+    await db.query('UPDATE loan_schedule SET reminded = true WHERE id = $1', [r.id]);
+  }
+  return rows.length;
 }

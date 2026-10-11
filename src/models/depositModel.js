@@ -43,7 +43,7 @@ export async function findForClient(id, clientId, db = { query }) {
 
 export async function lockActiveDue(db, bankDate) {
   const { rows } = await db.query(
-    `SELECT * FROM deposits WHERE status = 'active' AND paid_until < $1 ORDER BY id FOR UPDATE`,
+    `SELECT d.*, (SELECT user_id FROM clients c WHERE c.id = d.client_id) AS user_id FROM deposits d WHERE d.status = 'active' AND d.paid_until < $1 ORDER BY d.id FOR UPDATE OF d`,
     [bankDate]
   );
   return rows;

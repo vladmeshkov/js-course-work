@@ -1,6 +1,7 @@
 import { ForbiddenError } from '../lib/errors.js';
 import * as userModel from '../models/userModel.js';
 import { navFor } from '../lib/navigation.js';
+import * as notificationService from '../services/notificationService.js';
 
 /** Загружает пользователя сессии и кладёт его в req.user и в шаблоны. */
 export async function loadUser(req, res, next) {
@@ -11,6 +12,7 @@ export async function loadUser(req, res, next) {
     else delete req.session.userId;
   }
   res.locals.user = req.user;
+  res.locals.unread = req.user ? await notificationService.unreadCount(req.user.id) : 0;
   res.locals.nav = navFor(req.user);
   res.locals.can = (permission) => Boolean(req.user?.permissions.includes(permission));
   res.locals.currentPath = req.path;

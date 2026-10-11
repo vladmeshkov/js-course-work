@@ -3,7 +3,7 @@ import { query } from '../db/pool.js';
 /** @typedef {{id:number, login:string, password_hash:string, role_code:string, role_name:string, status:string, failed_attempts:number, locked_until:Date|null}} UserRow */
 
 const SELECT_USER = `
-  SELECT u.id, u.login, u.password_hash, u.status, u.failed_attempts, u.locked_until,
+  SELECT u.id, u.login, u.password_hash, u.status, u.failed_attempts, u.locked_until, u.totp_enabled, u.totp_secret_enc, u.totp_last_step,
          r.code AS role_code, r.name AS role_name,
          COALESCE(ARRAY(SELECT permission_code FROM role_permissions rp WHERE rp.role_id = r.id), '{}') AS permissions
   FROM users u JOIN roles r ON r.id = u.role_id`;

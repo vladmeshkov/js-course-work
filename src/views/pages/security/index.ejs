@@ -1,0 +1,28 @@
+<%- include('../../partials/header', { title }) %>
+<h1>Безопасность</h1>
+<% if (recoveryCodes) { %>
+<section class="tile tile--soft">
+  <h2 class="mb10">Резервные коды</h2>
+  <p class="m0 mb10">Сохраните их в надёжном месте. Каждый код подходит один раз, если не будет доступа к приложению. Больше они показаны не будут.</p>
+  <div class="codes"><% recoveryCodes.forEach((c) => { %><span><%= c %></span><% }) %></div>
+</section>
+<% } %>
+<section class="tile">
+  <div class="between">
+    <div><h2>Двухфакторная защита</h2><p class="muted m0">При входе кроме пароля нужен код из приложения-аутентификатора (Google Authenticator, Яндекс Ключ, Aegis и др.).</p></div>
+    <span class="<%= user.totp_enabled ? 'text-good' : 'muted2' %>"><b><%= user.totp_enabled ? 'Включена' : 'Выключена' %></b></span>
+  </div>
+  <% if (!user.totp_enabled) { %>
+    <div class="mt10"><a class="btn" href="/security/2fa/setup">Включить</a></div>
+  <% } else { %>
+    <p class="muted2 small">Неиспользованных резервных кодов: <%= left %></p>
+    <form class="form w420" method="post" action="/security/2fa/disable" novalidate>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <h2>Отключить</h2>
+      <div class="field<%= errors.password ? ' field--error' : '' %>"><label for="password">Пароль</label><input id="password" name="password" type="password" autocomplete="current-password"><% if (errors.password) { %><span class="field__error"><%= errors.password %></span><% } %></div>
+      <div class="field<%= errors.code ? ' field--error' : '' %>"><label for="code">Код из приложения</label><input id="code" name="code" autocomplete="one-time-code" maxlength="12"><% if (errors.code) { %><span class="field__error"><%= errors.code %></span><% } %></div>
+      <div><button class="btn btn--ghost text-bad" type="submit">Отключить защиту</button></div>
+    </form>
+  <% } %>
+</section>
+<%- include('../../partials/footer') %>

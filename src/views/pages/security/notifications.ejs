@@ -1,0 +1,12 @@
+<%- include('../../partials/header', { title }) %>
+<h1>Уведомления</h1>
+<section class="tile">
+  <% if (!items.length) { %><p class="muted m0">Уведомлений пока нет.</p><% } %>
+  <% items.forEach((n) => { %>
+    <div class="note<%= n.read_at ? '' : ' note--new' %>">
+      <div class="note__head"><b><% if (n.link) { %><a class="link" href="<%= n.link %>"><%= n.title %></a><% } else { %><%= n.title %><% } %></b><span class="muted2 small"><%= new Date(n.created_at).toISOString().slice(0, 16).replace('T', ' ') %></span></div>
+      <% if (n.body) { %><div class="muted"><%= n.body %></div><% } %>
+    </div>
+  <% }) %>
+</section>
+<%- include('../../partials/footer') %>

@@ -195,3 +195,16 @@ a.account:hover .account__title{color:var(--accentText)}
 .setting__input span{min-width:48px}
 .table--num td:nth-child(n+3),.table--num th:nth-child(n+3){text-align:right}
 .row--total td{font-weight:700;border-top:2px solid var(--ink)}
+
+/* Уведомления и двухфакторная защита */
+.bell{position:relative;display:inline-flex;align-items:center;gap:6px}
+.bell__count{min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--accent);color:var(--onAccent);font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
+.note{padding:14px 0;border-top:1px solid var(--line)}
+.note:first-child{border-top:0}
+.note--new{border-left:4px solid var(--accent);padding-left:14px}
+.note__head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px}
+.codes{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;font-size:19px;font-weight:600;letter-spacing:1px}
+.codes span{background:#fff;border-radius:10px;padding:10px 14px}
+.qr{width:220px;height:220px;background:#fff;border-radius:12px}
+.qr svg{display:block;width:100%;height:100%}
+.secret{font-size:20px;font-weight:600;letter-spacing:2px;margin:0;overflow-wrap:anywhere}

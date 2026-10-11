@@ -1,0 +1,12 @@
+<%- include('../../partials/header', { title }) %>
+<section class="tile form w640">
+  <h1>Код подтверждения</h1>
+  <p class="muted m0">Введите шестизначный код из приложения-аутентификатора. Если телефона нет под рукой, введите резервный код.</p>
+  <form class="form" method="post" action="/login/2fa">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="field"><label for="code">Код</label><input id="code" name="code" autocomplete="one-time-code" inputmode="text" maxlength="12" autofocus class="otp-input"></div>
+    <% if (error) { %><div class="alert alert--error" role="alert"><%= error %></div><% } %>
+    <div class="actions"><button class="btn btn--lg" type="submit">Войти</button><a class="link" href="/login">Начать заново</a></div>
+  </form>
+</section>
+<%- include('../../partials/footer') %>

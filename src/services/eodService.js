@@ -27,11 +27,12 @@ export function closeDay(userId) {
     const deposits = await depositService.processDeposits(db, date);
     const loans = await loanService.processLoans(db, date);
     const autopayments = await paymentService.processAutopayments(db, date);
+    const reminders = await loanService.sendReminders(db, date);
 
     for (const row of await ledgerService.trialBalance(db)) {
       if (!row.ok) throw new BusinessError(`Нарушена двойная запись в валюте ${row.currency}: день не закрыт`);
     }
-    await auditService.log({ userId, action: 'eod.close_day', details: { date, deposits, loans, autopayments } }, db);
+    await auditService.log({ userId, action: 'eod.close_day', details: { date, deposits, loans, autopayments, reminders } }, db);
     return { date, deposits, loans, autopayments };
   });
 }

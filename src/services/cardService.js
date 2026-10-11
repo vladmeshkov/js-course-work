@@ -10,6 +10,7 @@ import * as cardModel from '../models/cardModel.js';
 import * as clientModel from '../models/clientModel.js';
 import { ensureInternalAccount } from './accountService.js';
 import * as auditService from './auditService.js';
+import { notify, money } from './notificationService.js';
 import * as ledgerService from './ledgerService.js';
 
 /*
@@ -101,6 +102,7 @@ export function setBlocked(userId, cardId, blocked) {
     if (card.status === 'closed') throw new BusinessError('Карта закрыта');
     await cardModel.setStatus(db, card.id, blocked ? 'blocked' : 'active');
     await auditService.log({ userId, action: blocked ? 'card.block' : 'card.unblock', entity: 'card', entityId: card.id }, db);
+    await notify(userId, { type: 'card', title: blocked ? 'Карта заблокирована' : 'Карта разблокирована', body: `Карта *${card.last4}`, link: `/cards/${card.id}` }, db);
   });
 }
 
@@ -165,6 +167,7 @@ export function purchase(userId, cardId, { amount, online, place }) {
       entries: [{ debit: account.id, credit: merchants.id, amount, currency: account.currency }]
     }, db);
     await cardModel.insertOperation(db, { cardId: card.id, documentId, amount, online: Boolean(online), place: String(place ?? '').slice(0, 60) });
+    await notify(userId, { type: 'card', title: 'Оплата картой', body: `*${card.last4}: ${money(amount, account.currency)}, ${String(place || 'магазин').slice(0, 60)}`, link: `/cards/${card.id}` }, db);
     return { documentId };
   });
 }
