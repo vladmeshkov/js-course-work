@@ -126,7 +126,7 @@ describe('перевод через веб-форму', () => {
 
     const { res: formPage, token: formToken } = await pageWithToken(agent, '/transfers/new?kind=client');
     expect(formPage.status).toBe(200);
-    expect(formPage.text).toContain('Номер счёта получателя');
+    expect(formPage.text).toContain('Номер счёта (IBAN)');
 
     const iban = (await getAccount(b.accountId)).iban;
     const bad = await agent.post('/transfers').type('form').send({ _csrf: formToken, kind: 'client', fromAccountId: a.accountId, toIban: iban, amount: 'abc' });
