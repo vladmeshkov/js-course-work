@@ -3,6 +3,7 @@ import { parseAmount } from '../lib/money.js';
 import * as accountService from '../services/accountService.js';
 import * as cashService from '../services/cashService.js';
 import * as kycService from '../services/kycService.js';
+import * as interbankService from '../services/interbankService.js';
 
 export async function kycQueue(req, res) {
   res.render('pages/staff/kyc', { title: 'Анкеты клиентов', clients: await kycService.queue() });
@@ -67,4 +68,23 @@ export async function freeze(req, res) {
     else throw error;
   }
   res.redirect(`/staff/accounts?q=${encodeURIComponent(req.body.q ?? '')}`);
+}
+
+export async function showIncoming(req, res) {
+  res.render('pages/staff/incoming', { title: 'Входящие платежи', banks: await interbankService.banks(), form: {}, errors: {} });
+}
+
+export async function incoming(req, res) {
+  try {
+    const amount = parseAmount(req.body.amount);
+    if (amount === null) throw new ValidationError({ amount: 'Введите сумму, например 150,00' });
+    await interbankService.registerIncoming(req.user.id, { iban: req.body.iban, bankCode: req.body.bankCode, name: req.body.name, amount, purpose: req.body.purpose });
+    req.flash('success', 'Платёж зачислен на счёт клиента');
+    res.redirect('/staff/incoming');
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      return res.status(422).render('pages/staff/incoming', { title: 'Входящие платежи', banks: await interbankService.banks(), form: req.body, errors: error.fields });
+    }
+    throw error;
+  }
 }

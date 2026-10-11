@@ -4,6 +4,7 @@
 <div class="chips" role="tablist">
   <a class="chip" role="tab" aria-selected="<%= kind === 'client' %>" href="/transfers/new?kind=client">Клиенту банка</a>
   <a class="chip" role="tab" aria-selected="<%= kind === 'own' %>" href="/transfers/new?kind=own">Между своими счетами</a>
+  <a class="chip" role="tab" aria-selected="false" href="/transfers/interbank">В другой банк</a>
 </div>
 <form class="tile form w720" method="post" action="/transfers" novalidate>
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">

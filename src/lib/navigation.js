@@ -22,6 +22,7 @@ export function navFor(user) {
   const items = [...STAFF];
   if (user.permissions.includes('kyc.review')) items.push({ label: 'Анкеты', href: '/staff/kyc' });
   if (user.permissions.includes('cash.operate')) items.push({ label: 'Касса', href: '/staff/cash' });
+  if (user.permissions.includes('cash.operate')) items.push({ label: 'Входящие', href: '/staff/incoming' });
   if (user.permissions.includes('account.freeze')) items.push({ label: 'Счета клиентов', href: '/staff/accounts' });
   if (user.permissions.includes('loan.review')) items.push({ label: 'Заявки на кредит', href: '/staff/loans' });
   if (user.permissions.includes('fraud.review')) items.push({ label: 'Антифрод', href: '/staff/fraud' });
@@ -30,6 +31,7 @@ export function navFor(user) {
   if (user.permissions.includes('users.manage')) items.push({ label: 'Пользователи', href: '/admin/users' });
   if (user.permissions.includes('audit.view')) items.push({ label: 'Журнал', href: '/admin/audit' });
   if (user.permissions.includes('backup.manage')) items.push({ label: 'Резервные копии', href: '/admin/backups' });
+  if (user.permissions.includes('eod.run')) items.push({ label: 'Клиринг', href: '/admin/clearing' });
   if (user.permissions.includes('eod.run')) items.push({ label: 'Опердень', href: '/admin/eod' });
   return items;
 }

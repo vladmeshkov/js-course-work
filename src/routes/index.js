@@ -15,6 +15,7 @@ import * as cards from '../controllers/cardController.js';
 import * as payments from '../controllers/paymentController.js';
 import * as documents from '../controllers/documentController.js';
 import * as security from '../controllers/securityController.js';
+import * as interbank from '../controllers/interbankController.js';
 import * as rates from '../controllers/ratesController.js';
 import * as operator from '../controllers/operatorController.js';
 import * as staffFraud from '../controllers/staffFraudController.js';
@@ -62,6 +63,11 @@ router.get('/accounts/:id/statement', requireAuth, documents.statementPage);
 router.get('/accounts/:id/statement.pdf', requireAuth, documents.statementPdf);
 router.get('/accounts/:id/certificate.pdf', requireAuth, documents.certificatePdf);
 
+router.get('/transfers/interbank', requireAuth, interbank.showForm);
+router.post('/transfers/interbank', requireAuth, interbank.create);
+router.get('/transfers/interbank/:id/confirm', requireAuth, interbank.showConfirm);
+router.post('/transfers/interbank/:id/confirm', requireAuth, interbank.confirm);
+router.post('/transfers/interbank/:id/cancel', requireAuth, interbank.cancel);
 router.get('/transfers/new', requireAuth, transfers.showForm);
 router.post('/transfers', requireAuth, transfers.submit);
 router.get('/transfers/:id/confirm', requireAuth, transfers.showConfirm);
@@ -90,6 +96,7 @@ router.post('/admin/backups', requirePermission('backup.manage'), admin.createBa
 router.post('/admin/backups/restore', requirePermission('backup.manage'), admin.restoreBackup);
 router.get('/admin/reports', requirePermission('reports.view'), admin.showReports);
 router.get('/admin/reports/trial.csv', requirePermission('reports.view'), admin.trialCsv);
+router.get('/admin/clearing', requirePermission('eod.run'), admin.showClearing);
 router.get('/admin/eod', requirePermission('eod.run'), admin.showEod);
 router.post('/admin/eod', requirePermission('eod.run'), admin.runEod);
 
@@ -122,6 +129,8 @@ router.get('/staff/kyc/:id', requirePermission('kyc.review'), operator.kycShow);
 router.post('/staff/kyc/:id', requirePermission('kyc.review'), operator.kycDecide);
 router.get('/staff/cash', requirePermission('cash.operate'), operator.showCash);
 router.post('/staff/cash', requirePermission('cash.operate'), operator.cash);
+router.get('/staff/incoming', requirePermission('cash.operate'), operator.showIncoming);
+router.post('/staff/incoming', requirePermission('cash.operate'), operator.incoming);
 router.get('/staff/accounts', requirePermission('account.freeze'), operator.accounts);
 router.post('/staff/accounts/:id/freeze', requirePermission('account.freeze'), operator.freeze);
 

@@ -2,6 +2,7 @@ import { pool } from '../db/pool.js';
 import { AppError, ValidationError } from '../lib/errors.js';
 import * as backupService from '../services/backupService.js';
 import * as reportService from '../services/reportService.js';
+import * as interbankService from '../services/interbankService.js';
 import * as adminService from '../services/adminService.js';
 import * as eodService from '../services/eodService.js';
 import * as ledgerService from '../services/ledgerService.js';
@@ -144,4 +145,8 @@ export async function showReports(req, res) {
 export async function trialCsv(req, res) {
   const report = await reportService.trialBalance({ from: req.query.from, to: req.query.to, currency: req.query.currency });
   res.type('text/csv; charset=utf-8').set('Content-Disposition', `attachment; filename="osv-${report.to}.csv"`).send(reportService.trialBalanceCsv(report));
+}
+
+export async function showClearing(req, res) {
+  res.render('pages/admin/clearing', { title: 'Клиринг', ...(await interbankService.clearingOverview()) });
 }

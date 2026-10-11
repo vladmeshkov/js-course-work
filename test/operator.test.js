@@ -71,7 +71,7 @@ describe('операционист', () => {
     const agent = request.agent(app);
     const token = /name="_csrf" value="([0-9a-f]+)"/.exec((await agent.get('/login')).text)[1];
     await agent.post('/login').type('form').send({ _csrf: token, login: op.login, password: 'Parol2026' });
-    for (const url of ['/staff/kyc', '/staff/cash', '/staff/accounts?q=client', '/workplace']) expect((await agent.get(url)).status, url).toBe(200);
+    for (const url of ['/staff/kyc', '/staff/cash', '/staff/incoming', '/staff/accounts?q=client', '/workplace']) expect((await agent.get(url)).status, url).toBe(200);
     expect((await agent.get('/admin/users')).status).toBe(403);
     expect((await agent.get('/staff/loans')).status).toBe(403);
   });
