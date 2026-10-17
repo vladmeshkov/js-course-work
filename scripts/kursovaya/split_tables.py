@@ -100,6 +100,8 @@ def apply(src, dst, splits, tagged):
             set_row_flags(tr, False)
         set_row_flags(header, True)
         keep_with_next(header)
+        if data:
+            keep_with_next(data[0])        # в начале каждой части минимум две строки данных
         chunks = [data[bounds[ci]:bounds[ci + 1]] for ci in range(len(starts))]
         anchor = tbl
         for ci in range(1, len(chunks)):
@@ -108,7 +110,9 @@ def apply(src, dst, splits, tagged):
                 new_tbl.remove(tr)
             new_tbl.append(copy.deepcopy(header))
             for tr in chunks[ci]:
-                new_tbl.append(tr)          # строка переносится из исходной таблицы
+                new_tbl.append(tr)
+            if len(chunks[ci]) > 1:
+                keep_with_next(chunks[ci][0])          # строка переносится из исходной таблицы
             cont = make_continuation(cap_p, number)
             anchor.addnext(cont)
             cont.addnext(new_tbl)
@@ -116,7 +120,7 @@ def apply(src, dst, splits, tagged):
         if tagged:
             for ci, chunk in enumerate(chunks):
                 for k, tr in enumerate(chunk):
-                    tag_row(tr, f'@@T{idx}R{bounds[ci] + k}')
+                    tag_row(tr, f'@@T{idx}R{bounds[ci] + k}@@')
     d.save(dst)
     return [i for i, _, _ in infos], {i: len(list(t.findall(qn('w:tr')))) for i, t, _ in infos}
 
@@ -126,17 +130,54 @@ def render_pages(path, outdir):
     pdf = os.path.join(outdir, os.path.basename(path).replace('.docx', '.pdf'))
     html = pdf.replace('.pdf', '.html')
     subprocess.run(['pdftotext', '-bbox', pdf, html], check=True)
-    pages, page = {}, 0
+    # слова страницы склеиваются: pdftotext иногда режет белую метку на два слова
+    texts, page = {}, 0
     for line in open(html, encoding='utf-8'):
         if '<page ' in line:
             page += 1
-        for m in re.finditer(r'@@T(\d+)R(\d+)', line):
-            pages[(int(m.group(1)), int(m.group(2)))] = page
+            texts[page] = []
+        m = re.search(r'<word[^>]*>(.*?)</word>', line)
+        if m:
+            texts[page].append(m.group(1))
+    pages = {}
+    for pg, words in texts.items():
+        for m in re.finditer(r'@@T(\d+)R(\d+)@@', ''.join(words)):
+            pages[(int(m.group(1)), int(m.group(2)))] = pg
     return pages
+
+
+def unsplit_doc(d):
+    """Склеивает таблицы, уже разрезанные «Продолжением», обратно (чтобы скрипт можно было запускать повторно)."""
+    body = d.element.body
+    for tbl in [e for e in body if e.tag == qn('w:tbl')]:
+        prev = tbl.getprevious()
+        if prev is None or prev.tag != qn('w:p'):
+            continue
+        text = ''.join(t.text or '' for t in prev.iter(qn('w:t')))
+        if not text.strip().startswith('Продолжение таблицы'):
+            continue
+        before = prev.getprevious()
+        while before is not None and before.tag != qn('w:tbl'):
+            before = before.getprevious()
+        if before is None:
+            continue
+        for tr in tbl.findall(qn('w:tr'))[1:]:
+            before.append(tr)
+        body.remove(prev)
+        body.remove(tbl)
+
+
+def prepare(src, dst):
+    d = docx.Document(src)
+    unsplit_doc(d)
+    d.save(dst)
 
 
 def main(src, dst):
     tmp = tempfile.mkdtemp(prefix='split_tables_')
+    flat = os.path.join(tmp, 'flat.docx')
+    prepare(src, flat)
+    src = flat
     work = os.path.join(tmp, 'work.docx')
     ids, _ = apply(src, work, {}, False)
     d = docx.Document(src)

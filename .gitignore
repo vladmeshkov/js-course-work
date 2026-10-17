@@ -3,3 +3,4 @@ node_modules/
 backups/
 coverage/
 *.log
+docs/kursovaya/zapiska-obedinennaya.*
