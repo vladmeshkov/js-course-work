@@ -78,11 +78,11 @@ def tag_row(tr, tag):
     for name in ('w:sz', 'w:szCs'):
         sz = OxmlElement(name); sz.set(qn('w:val'), '2'); rPr.append(sz)
     r.append(rPr)
-    t = OxmlElement('w:t'); t.text = tag; r.append(t)
+    t = OxmlElement('w:t'); t.text = ' ' + tag; t.set('{http://www.w3.org/XML/1998/namespace}space', 'preserve'); r.append(t)
     p.append(r)
 
 
-def apply(src, dst, splits, tagged):
+def apply(src, dst, splits, tagged, for_lo=False):
     d = docx.Document(src)
     body = d.element.body
     infos = []
@@ -120,7 +120,13 @@ def apply(src, dst, splits, tagged):
         if tagged:
             for ci, chunk in enumerate(chunks):
                 for k, tr in enumerate(chunk):
-                    tag_row(tr, f'@@T{idx}R{bounds[ci] + k}@@')
+                    tag_row(tr, f'@@T{idx:02d}R{bounds[ci] + k:03d}')
+    if for_lo:
+        # LibreOffice теряет строки таблицы при сочетании «строка не разрывается» и «не отрывать от следующей»:
+        # в копии для измерения и PDF абзацы таблиц без «не отрывать от следующей» (в docx для Word она остаётся)
+        for tbl in [e for e in body if e.tag == qn('w:tbl')]:
+            for kn in list(tbl.iter(qn('w:keepNext'))):
+                kn.getparent().remove(kn)
     d.save(dst)
     return [i for i, _, _ in infos], {i: len(list(t.findall(qn('w:tr')))) for i, t, _ in infos}
 
@@ -141,9 +147,12 @@ def render_pages(path, outdir):
             texts[page].append(m.group(1))
     pages = {}
     for pg, words in texts.items():
-        for m in re.finditer(r'@@T(\d+)R(\d+)@@', ''.join(words)):
+        for m in re.finditer(r'@@T(\d\d)R(\d\d\d)', ''.join(words)):
             pages[(int(m.group(1)), int(m.group(2)))] = pg
     return pages
+
+
+LAST_SPLITS = {}      # разбивка таблиц последнего запуска main (индекс таблицы -> номера строк начала частей)
 
 
 def unsplit_doc(d):
@@ -173,7 +182,7 @@ def prepare(src, dst):
     d.save(dst)
 
 
-def main(src, dst):
+def main(src, dst, lo_copy=None):
     tmp = tempfile.mkdtemp(prefix='split_tables_')
     flat = os.path.join(tmp, 'flat.docx')
     prepare(src, flat)
@@ -187,7 +196,7 @@ def main(src, dst):
             counts[idx] = len(tbl.findall(qn('w:tr'))) - 1
     splits, seen = {}, []
     for it in range(25):
-        apply(src, work, splits, True)
+        apply(src, work, splits, True, for_lo=True)
         pages = render_pages(work, tmp)
         new = {}
         for idx, n in counts.items():
@@ -205,7 +214,10 @@ def main(src, dst):
         seen.append(copy.deepcopy(new))
         splits = new
     apply(src, dst, splits, False)
+    if lo_copy:
+        apply(src, lo_copy, splits, False, for_lo=True)
     shutil.rmtree(tmp, ignore_errors=True)
+    LAST_SPLITS.clear(); LAST_SPLITS.update(splits)
     print('готово:', dst, 'таблиц с подписью:', len(counts), 'разрезано:', sum(1 for v in splits.values() if len(v) > 1))
 
 

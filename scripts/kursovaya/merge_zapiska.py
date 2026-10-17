@@ -141,7 +141,7 @@ class Maker:
                         z = OxmlElement(name); z.set(qn('w:val'), '28'); rpr.append(z)
         return t
 
-    def convert(self, path):
+    def convert(self, path, scales=None):
         """Приводит элементы раздела к оформлению черновика."""
         flat = tempfile.mktemp(suffix='.docx')
         split_tables.prepare(path, flat)
@@ -167,10 +167,46 @@ class Maker:
                 else:
                     out.append(self.par(self.body_ppr, text))
         os.remove(flat)
+        apply_scales(out, scales or {})
         return out
 
 
-def normalize(mk, els):
+EMU_CM = 360000
+NS_WP = '{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}'
+
+
+def figure_number(els, i):
+    """Номер рисунка по подписи, которая идёт следом за абзацем с картинкой."""
+    for e in els[i + 1:i + 4]:
+        m = re.match(r'\s*Рисунок 1\.(\d+)\s', text_of(e))
+        if m:
+            return int(m.group(1))
+    return None
+
+
+def picture_height_cm(el):
+    return int(next(el.iter(NS_WP + 'extent')).get('cy')) / EMU_CM
+
+
+def apply_scales(els, scales):
+    """Уменьшает рисунок (множитель <= 1), чтобы он поместился на странице."""
+    for i, e in enumerate(els):
+        if e.tag == qn('w:p') and e.find('.//' + qn('w:drawing')) is not None:
+            n = figure_number(els, i)
+            k = scales.get(n)
+            if not k:
+                continue
+            for ext in e.iter(NS_WP + 'extent'):
+                ext.set('cx', str(round(int(ext.get('cx')) * k))); ext.set('cy', str(round(int(ext.get('cy')) * k)))
+            for ext in e.iter('{http://schemas.openxmlformats.org/drawingml/2006/main}ext'):
+                if ext.get('cx'):
+                    ext.set('cx', str(round(int(ext.get('cx')) * k))); ext.set('cy', str(round(int(ext.get('cy')) * k)))
+
+
+used_landscape = [False]
+
+
+def normalize(mk, els, moves=None):
     """Пустые строки как в черновике: вокруг заголовков, рисунков и таблиц."""
     def kind(el):
         if el.tag == qn('w:tbl'):
@@ -194,8 +230,25 @@ def normalize(mk, els):
     def wide(el):
         return any(int(x.get('cx')) > 6480000 for x in el.iter('{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}extent'))
     items = [(kind(e), e) for e in els if kind(e) != 'blank']
+    for n, k in (moves or {}).items():      # рисунок n сдвигается ниже на k абзацев или таблиц
+        cap = next((i for i, (kk, e) in enumerate(items) if kk == 'figcap' and text_of(e).strip().startswith(f'Рисунок 1.{n} ')), None)
+        if cap is None or items[cap - 1][0] != 'pic':
+            continue
+        block = items[cap - 1:cap + 1]
+        rest = items[cap + 1:]
+        del items[cap - 1:]
+        pos = 0
+        for _ in range(k):
+            if pos < len(rest) and rest[pos][0] == 'p':
+                pos += 1
+            elif pos + 1 < len(rest) and rest[pos][0] == 'tcap' and rest[pos + 1][0] == 'tbl':
+                pos += 2
+            else:
+                break
+        items += rest[:pos] + block + rest[pos:]
     out = []
     pending_landscape = False
+    used_landscape[0] = False
     def blank():
         if out and kind(out[-1]) != 'blank':
             out.append(mk.par(None))
@@ -203,6 +256,7 @@ def normalize(mk, els):
         if k == 'pic' and wide(e):
             out.append(mk.sect_par(False))      # всё до рисунка – книжный раздел
             pending_landscape = True
+            used_landscape[0] = True
         elif k in ('h', 'pic', 'tcap'):
             blank()
         out.append(e)
@@ -216,13 +270,28 @@ def normalize(mk, els):
     return out
 
 
-def main(draft_path, out_path):
+def assemble_raw(draft_path, scales=None, moves=None):
+    """Собирает общий документ без разрезания таблиц; возвращает путь к временному файлу."""
+    scales = scales or {}
+    moves = moves or {}
     draft = docx.Document(draft_path)
     # таблица функциональных требований становится 1.7 (перед ней вставляются таблицы 1.5 и 1.6)
     mk = Maker(draft)
     replace_in_runs(draft, 'таблице 1.5', 'таблице 1.7')
     replace_in_runs(draft, 'Таблица 1.5 –', 'Таблица 1.7 –')
     body = draft.element.body
+
+    # диаграммы вариантов использования из 1.3 убираются: одна диаграмма приведена в 1.5
+    first = find_par(body, 'Функциональность программного средства для разных категорий пользователей')
+    last = find_par(body, 'Спецификация функциональных требований приведена')
+    el = first
+    while el is not last:
+        nxt = el.getnext()
+        body.remove(el)
+        el = nxt
+    import build_15
+    uc_no = build_15.FIRST + build_15.layout()['order'].index('uc')
+    last.addprevious(mk.par(mk.body_ppr, f'Функциональность программного средства для разных категорий пользователей представлена диаграммой вариантов использования, приведённой в подразделе 1.5 (рисунок 1.{uc_no}).'))
 
     # дополнение к 1.3: перед ним стоит жёлтая служебная пометка (она не переносится)
     flat = tempfile.mktemp(suffix='.docx')
@@ -245,18 +314,78 @@ def main(draft_path, out_path):
     parts = [normalize(mk, part) for part in parts]
     for el in reversed(parts[0]):
         anchor_a.addnext(el)
-    new = normalize(mk, mk.convert(os.path.join(KURS, 'razdel-1.4.docx')) + mk.convert(os.path.join(KURS, 'razdel-1.5.docx')))
+    new = normalize(mk, mk.convert(os.path.join(KURS, 'razdel-1.4.docx'), scales) + mk.convert(os.path.join(KURS, 'razdel-1.5.docx'), scales), moves)
     for el in new:
         anchor_end.addprevious(el)
 
-    # финальный раздел идёт после альбомного: номер страницы должен быть и на его первой странице
-    for el in body.find(qn('w:sectPr')).findall(qn('w:titlePg')):
-        body.find(qn('w:sectPr')).remove(el)
+    if used_landscape[0]:
+        # финальный раздел идёт после альбомного: номер страницы должен быть и на его первой странице
+        for el in body.find(qn('w:sectPr')).findall(qn('w:titlePg')):
+            body.find(qn('w:sectPr')).remove(el)
     raw = tempfile.mktemp(suffix='.docx')
     draft.save(raw)
-    split_tables.main(raw, out_path)
+    return raw
+
+
+def lo_path(out_path):
+    return out_path.replace('.docx', '.lo.docx')
+
+
+def assemble(draft_path, out_path, scales, moves):
+    """out_path – docx для Word; рядом пишется копия .lo.docx для LibreOffice (измерение вёрстки и PDF)."""
+    raw = assemble_raw(draft_path, scales, moves)
+    split_tables.main(raw, out_path, lo_copy=lo_path(out_path))
     os.remove(raw)
 
+
+def figure_heights(draft_path):
+    """Высоты рисунков разделов 1.4 и 1.5 (см) по номеру."""
+    mk_doc = docx.Document(draft_path)
+    mk = Maker(mk_doc)
+    heights = {}
+    for name in ('razdel-1.4.docx', 'razdel-1.5.docx'):
+        els = mk.convert(os.path.join(KURS, name))
+        for i, e in enumerate(els):
+            if e.tag == qn('w:p') and e.find('.//' + qn('w:drawing')) is not None:
+                heights[figure_number(els, i)] = picture_height_cm(e)
+    return heights
+
+
+def main(draft_path, out_path):
+    """Сборка с подгонкой вёрстки: рисунок, который уходит на следующую страницу и оставляет внизу пустое место,
+    уменьшается (не более чем на 15 %), чтобы поместиться. Порядок абзацев и рисунков задан вручную в MOVES."""
+    import check_layout
+    heights = figure_heights(draft_path)
+    scales, seen = {}, set()
+    for it in range(6):
+        assemble(draft_path, out_path, scales, MOVES)
+        gaps = check_layout.analyze(lo_path(out_path))
+        todo = []
+        for g in gaps:
+            m = re.match(r'Рисунок 1\.(\d+)\s', g['next'])
+            if g['gap'] > LIMIT and m and int(m.group(1)) >= 10:
+                todo.append((int(m.group(1)), g['gap']))
+        print('подгонка', it, 'пустые места перед рисунками:', todo, 'масштабы', scales)
+        changed = False
+        for n, gap in todo:
+            need = heights[n] * scales.get(n, 1.0) + 2.6        # рисунок, подпись и пустые строки
+            k = (gap - 2.6) / heights[n]
+            if need - gap <= 0.15 * heights[n] and k >= 0.85 and k < scales.get(n, 1.0):
+                scales[n] = round(k, 3); changed = True
+        if not changed or tuple(sorted(scales.items())) in seen:
+            break
+        seen.add(tuple(sorted(scales.items())))
+    pdf = check_layout.to_pdf(lo_path(out_path))
+    os.replace(pdf, out_path.replace('.docx', '.pdf'))
+    for g in check_layout.analyze(out_path.replace('.docx', '.pdf')):
+        if g['gap'] > LIMIT:
+            print(f"осталось пустое место: стр. {g['page']}, {g['gap']} см, дальше {g['next'][:50]!r}")
+
+
+# Ручной порядок: рисунок N сдвигается ниже на k абзацев/таблиц, чтобы текст заполнил страницу
+MOVES = {}
+
+LIMIT = 5.0
 
 if __name__ == '__main__':
     main(sys.argv[1], sys.argv[2])

@@ -17,21 +17,19 @@ const Lf = (o, t = 0.5) => [o.x, o.y + o.h * t];
 const Rt = (o, t = 0.5) => [o.x + o.w, o.y + o.h * t];
 
 /* =====================  Варианты использования  ===================== */
-// Одна диаграмма: слева гость и клиент, справа сотрудники банка; в середине общие варианты («include»).
+// Одна диаграмма в книжной ориентации: слева гость и клиент, справа сотрудники банка.
+// Общие варианты («include») стоят в столбце клиента рядом с теми вариантами, которые их включают.
 function useCases() {
   const d = new Diagram('Варианты использования');
-  const rx = 140, ry = 26, P = 68, top0 = 80;
+  const rx = 125, ry = 24, P = 74, top0 = 80;
   const cy = (r) => top0 + r * P;
-  const cxA = 330, cxM = 650, cxB = 970;
-  const ell = (cx, r, text, w = rx) => { const e = { cx, cy: cy(r), rx: w, ry, text }; d.ellipse(e); return e; };
-  const frame = { x: 140, y: 30, w: 1010, h: cy(12.1) - 30 };
-  d.frame({ ...frame, title: 'Система ТалерБанк', center: true });
-  // левый столбец: гость и клиент
+  const cxA = 285, cxB = 625;
+  d.frame({ x: 140, y: 30, w: 620, h: cy(12.4) - 30, title: 'Система ТалерБанк', center: true });
   const A = [
-    'Просмотр курсов валют\nи калькуляторы', 'Регистрация\n(подача анкеты)', 'Подача заявки на кредит', 'Подписание договора\nи погашение кредита',
-    'Перевод между счетами,\nклиентам и в другие банки', 'Оплата услуг, шаблоны\nи автоплатежи', 'Оформление и закрытие\nвклада', 'Открытие и закрытие счёта',
-    'Выпуск карты, блокировка\nи лимиты', 'Выписки и справки (PDF)'
-  ].map((t, r) => ({ cx: cxA, cy: cy(r), rx, ry, text: t }));
+    'Просмотр курсов валют\nи калькуляторы', 'Регистрация\n(подача анкеты)', 'Подача заявки на кредит', 'Скоринг заявки',
+    'Подписание договора\nи погашение кредита', 'Подтверждение кодом', 'Перевод между счетами,\nклиентам и в другие банки', 'Оплата услуг, шаблоны\nи автоплатежи',
+    'Оформление и закрытие\nвклада', 'Открытие и закрытие счёта', 'Выпуск карты, блокировка\nи лимиты', 'Выписки и справки (PDF)'
+  ].map((t, r) => ({ cx: [3, 5].includes(r) ? cxA + 25 : cxA, cy: cy(r), rx: [3, 5].includes(r) ? 100 : rx, ry, text: t }));
   const actorL = (x, r0, r1, name, rows) => {
     const mid = (cy(r0) + cy(r1)) / 2;
     d.actor({ cx: x, y: mid - 37, name });
@@ -40,16 +38,15 @@ function useCases() {
       d.line({ pts: [[x + 16, mid], [e.cx - e.rx * 0.96, e.cy + above]], arrow: null });
     }
   };
-  actorL(75, 0, 1, 'Гость', [0, 1]);
-  actorL(75, 2, 9, 'Клиент', [0, 2, 3, 4, 5, 6, 7, 8, 9]);
+  actorL(70, 0, 1, 'Гость', [0, 1]);
+  actorL(70, 2, 11, 'Клиент', [0, 2, 4, 6, 7, 8, 9, 10, 11]);
   A.forEach((e) => d.ellipse(e));
-  // общие варианты
-  const score = { cx: cxM, cy: cy(2), rx: 105, ry, text: 'Скоринг заявки' };
-  const code = { cx: cxM, cy: (cy(3) + cy(4)) / 2, rx: 105, ry, text: 'Подтверждение\nкодом' };
-  d.ellipse(score); d.ellipse(code);
-  const inc = (src, dst, dy) => d.line({ pts: [[src.cx + src.rx, src.cy], [dst.cx - dst.rx * 0.97, dst.cy + dy]], dashed: true, arrow: 'open', label: '«include»', italic: true, at: { x: (src.cx + src.rx + dst.cx - dst.rx) / 2, y: (src.cy + dst.cy) / 2 - 6 } });
-  inc(A[2], score, 0); inc(A[3], code, -8); inc(A[4], code, 8);
-  // правый столбец: сотрудники
+  const inc = (i, j) => {
+    const a = A[i], b = A[j]; const down = b.cy > a.cy;
+    const x = cxA + 25 + 60 * (down ? 1 : 1);
+    d.line({ pts: [[x, a.cy + (down ? a.ry : -a.ry)], [x, b.cy + (down ? -b.ry : b.ry)]], dashed: true, arrow: 'open', label: '«include»', italic: true, at: { x: x + 8, y: (a.cy + b.cy) / 2 + 5, anchor: 'start' } });
+  };
+  inc(2, 3); inc(4, 5); inc(6, 5);
   const B = [
     [0, 'Проверка анкет клиентов', 'op'], [1, 'Касса и блокировка счетов', 'op'], [3, 'Рассмотрение заявки\nна кредит', 'cr'], [5, 'Разбор задержанных\nпереводов', 'mon'],
     [6.6, 'Курсы, спред и тарифы', 'ad'], [7.6, 'Пользователи и роли', 'ad'], [8.6, 'Журнал аудита', 'ad'], [9.6, 'Резервные копии', 'ad'], [10.6, 'Отчёты и ведомость', 'ad'], [11.6, 'Закрытие операционного дня', 'ad']
@@ -58,8 +55,8 @@ function useCases() {
   for (const [who, name] of Object.entries(groups)) {
     const es = B.filter((e) => e.who === who);
     const mid = (es[0].cy + es.at(-1).cy) / 2;
-    d.actor({ cx: 1235, y: mid - 37, name });
-    es.forEach((e) => d.line({ pts: [[1235 - 16, mid], [e.cx + e.rx * 0.96, e.cy + (e.cy < mid ? 8 : e.cy > mid ? -8 : 0)]], arrow: null }));
+    d.actor({ cx: 830, y: mid - 37, name });
+    es.forEach((e) => d.line({ pts: [[830 - 16, mid], [e.cx + e.rx * 0.96, e.cy + (e.cy < mid ? 8 : e.cy > mid ? -8 : 0)]], arrow: null }));
   }
   B.forEach((e) => d.ellipse(e));
   return d;
