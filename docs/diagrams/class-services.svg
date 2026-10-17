@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1230" height="975" viewBox="0 0 1230 975" font-family="Times New Roman, serif">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<path d="M434,171 L434,203 L170,203 L170,276" fill="none" stroke="#000" stroke-width="1" stroke-dasharray="6 4"/><polyline points="165,265 170,276 175,265" fill="none" stroke="#000"/><rect x="231.39999999999998" y="206" width="141.20000000000002" height="22" fill="#fff" opacity="0.92"/><text x="302" y="222" font-size="16" font-style="italic" text-anchor="middle">начисляет проценты</text>
+<path d="M525,171 L525,276" fill="none" stroke="#000" stroke-width="1" stroke-dasharray="6 4"/><polyline points="520,265 525,276 530,265" fill="none" stroke="#000"/><rect x="530" y="238" width="163.4" height="22" fill="#fff" opacity="0.92"/><text x="533" y="254" font-size="16" font-style="italic" text-anchor="start">исполняет автоплатежи</text>
+<path d="M616,171 L616,203 L880,203 L880,276" fill="none" stroke="#000" stroke-width="1" stroke-dasharray="6 4"/><polyline points="875,265 880,276 885,265" fill="none" stroke="#000"/><rect x="695.9" y="206" width="104.2" height="22" fill="#fff" opacity="0.92"/><text x="748" y="222" font-size="16" font-style="italic" text-anchor="middle">ведёт графики</text>
+<path d="M645,106 L1055,106 L1055,856 L645,856" fill="none" stroke="#000" stroke-width="1" stroke-dasharray="6 4"/><polyline points="656,851 645,856 656,861" fill="none" stroke="#000"/><rect x="1060" y="310" width="141.20000000000002" height="22" fill="#fff" opacity="0.92"/><text x="1063" y="326" font-size="16" font-style="italic" text-anchor="start">отправляет клиринг</text>
+<path d="M880,453 L880,558" fill="none" stroke="#000" stroke-width="1" stroke-dasharray="6 4"/><polyline points="875,547 880,558 885,547" fill="none" stroke="#000"/><rect x="885" y="494.5" width="141.20000000000002" height="22" fill="#fff" opacity="0.92"/><text x="888" y="510.5" font-size="16" font-style="italic" text-anchor="start">оценивает заёмщика</text>
+<path d="M788,453 L788,491 L597,491 L597,558" fill="none" stroke="#000" stroke-width="1" stroke-dasharray="6 4"/><polyline points="592,547 597,558 602,547" fill="none" stroke="#000"/><rect x="644.1" y="494" width="96.80000000000001" height="22" fill="#fff" opacity="0.92"/><text x="692.5" y="510" font-size="16" font-style="italic" text-anchor="middle">подтверждает</text>
+<path d="M290,622 L405,622" fill="none" stroke="#000" stroke-width="1" stroke-dasharray="6 4"/><polyline points="394,627 405,622 394,617" fill="none" stroke="#000"/><rect x="299.1" y="625" width="96.80000000000001" height="22" fill="#fff" opacity="0.92"/><text x="347.5" y="641" font-size="16" font-style="italic" text-anchor="middle">подтверждает</text>
+<path d="M170,689 L170,794" fill="none" stroke="#000" stroke-width="1" stroke-dasharray="6 4"/><polyline points="165,783 170,794 175,783" fill="none" stroke="#000"/><rect x="175" y="730.5" width="74.60000000000001" height="22" fill="#fff" opacity="0.92"/><text x="178" y="746.5" font-size="16" font-style="italic" text-anchor="start">проверяет</text>
+<path d="M405,856 L290,856" fill="none" stroke="#000" stroke-width="1" stroke-dasharray="6 4"/><polyline points="301,851 290,856 301,861" fill="none" stroke="#000"/><rect x="310.2" y="859" width="74.60000000000001" height="22" fill="#fff" opacity="0.92"/><text x="347.5" y="875" font-size="16" font-style="italic" text-anchor="middle">проверяет</text>
+<path d="M525,794 L525,666" fill="none" stroke="#000" stroke-width="1" stroke-dasharray="6 4"/><polyline points="530,677 525,666 520,677" fill="none" stroke="#000"/><rect x="530" y="719" width="96.80000000000001" height="22" fill="#fff" opacity="0.92"/><text x="533" y="735" font-size="16" font-style="italic" text-anchor="start">подтверждает</text>
+<rect x="405" y="40" width="240" height="131" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="525" y="60" font-size="15" text-anchor="middle">«service»</text>
+<text x="525" y="83" font-size="19" font-weight="bold" text-anchor="middle">EodService</text>
+<line x1="405" y1="94" x2="645" y2="94" stroke="#000"/>
+<line x1="405" y1="94" x2="645" y2="94" stroke="#000"/>
+<text x="413" y="111" font-size="16">+ closeDay()</text>
+<text x="413" y="134" font-size="16">+ advanceDays()</text>
+<text x="413" y="157" font-size="16">+ currentBankDate()</text>
+<rect x="50" y="276" width="240" height="131" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="170" y="296" font-size="15" text-anchor="middle">«service»</text>
+<text x="170" y="319" font-size="19" font-weight="bold" text-anchor="middle">DepositService</text>
+<line x1="50" y1="330" x2="290" y2="330" stroke="#000"/>
+<line x1="50" y1="330" x2="290" y2="330" stroke="#000"/>
+<text x="58" y="347" font-size="16">+ openDeposit()</text>
+<text x="58" y="370" font-size="16">+ closeEarly()</text>
+<text x="58" y="393" font-size="16">+ processDeposits()</text>
+<rect x="405" y="276" width="240" height="131" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="525" y="296" font-size="15" text-anchor="middle">«service»</text>
+<text x="525" y="319" font-size="19" font-weight="bold" text-anchor="middle">PaymentService</text>
+<line x1="405" y1="330" x2="645" y2="330" stroke="#000"/>
+<line x1="405" y1="330" x2="645" y2="330" stroke="#000"/>
+<text x="413" y="347" font-size="16">+ pay()</text>
+<text x="413" y="370" font-size="16">+ createAutopayment()</text>
+<text x="413" y="393" font-size="16">+ processAutopayments()</text>
+<rect x="760" y="276" width="240" height="177" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="880" y="296" font-size="15" text-anchor="middle">«service»</text>
+<text x="880" y="319" font-size="19" font-weight="bold" text-anchor="middle">LoanService</text>
+<line x1="760" y1="330" x2="1000" y2="330" stroke="#000"/>
+<line x1="760" y1="330" x2="1000" y2="330" stroke="#000"/>
+<text x="768" y="347" font-size="16">+ apply()</text>
+<text x="768" y="370" font-size="16">+ decide()</text>
+<text x="768" y="393" font-size="16">+ sign()</text>
+<text x="768" y="416" font-size="16">+ repayFull()</text>
+<text x="768" y="439" font-size="16">+ processLoans()</text>
+<rect x="50" y="558" width="240" height="131" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="170" y="578" font-size="15" text-anchor="middle">«service»</text>
+<text x="170" y="601" font-size="19" font-weight="bold" text-anchor="middle">TransferService</text>
+<line x1="50" y1="612" x2="290" y2="612" stroke="#000"/>
+<line x1="50" y1="612" x2="290" y2="612" stroke="#000"/>
+<text x="58" y="629" font-size="16">+ createTransfer()</text>
+<text x="58" y="652" font-size="16">+ confirmTransfer()</text>
+<text x="58" y="675" font-size="16">+ reviewHeldTransfer()</text>
+<rect x="405" y="558" width="240" height="108" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="525" y="578" font-size="15" text-anchor="middle">«service»</text>
+<text x="525" y="601" font-size="19" font-weight="bold" text-anchor="middle">OtpService</text>
+<line x1="405" y1="612" x2="645" y2="612" stroke="#000"/>
+<line x1="405" y1="612" x2="645" y2="612" stroke="#000"/>
+<text x="413" y="629" font-size="16">+ issue()</text>
+<text x="413" y="652" font-size="16">+ verify()</text>
+<rect x="760" y="558" width="240" height="108" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="880" y="578" font-size="15" text-anchor="middle">«service»</text>
+<text x="880" y="601" font-size="19" font-weight="bold" text-anchor="middle">ScoringService</text>
+<line x1="760" y1="612" x2="1000" y2="612" stroke="#000"/>
+<line x1="760" y1="612" x2="1000" y2="612" stroke="#000"/>
+<text x="768" y="629" font-size="16">+ assess()</text>
+<text x="768" y="652" font-size="16">+ trainAndActivate()</text>
+<rect x="50" y="794" width="240" height="131" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="170" y="814" font-size="15" text-anchor="middle">«service»</text>
+<text x="170" y="837" font-size="19" font-weight="bold" text-anchor="middle">FraudService</text>
+<line x1="50" y1="848" x2="290" y2="848" stroke="#000"/>
+<line x1="50" y1="848" x2="290" y2="848" stroke="#000"/>
+<text x="58" y="865" font-size="16">+ evaluate()</text>
+<text x="58" y="888" font-size="16">+ evaluateInterbank()</text>
+<text x="58" y="911" font-size="16">+ review()</text>
+<rect x="405" y="794" width="240" height="131" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="525" y="814" font-size="15" text-anchor="middle">«service»</text>
+<text x="525" y="837" font-size="19" font-weight="bold" text-anchor="middle">InterbankService</text>
+<line x1="405" y1="848" x2="645" y2="848" stroke="#000"/>
+<line x1="405" y1="848" x2="645" y2="848" stroke="#000"/>
+<text x="413" y="865" font-size="16">+ createTransfer()</text>
+<text x="413" y="888" font-size="16">+ confirm()</text>
+<text x="413" y="911" font-size="16">+ processClearing()</text>
+</svg>

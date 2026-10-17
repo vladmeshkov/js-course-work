@@ -1,0 +1,121 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1242" viewBox="0 0 1200 1242" font-family="Times New Roman, serif">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<path d="M435,90 L310,90" fill="none" stroke="#000" stroke-width="1"/><polygon points="435,90 425,84 415,90 425,96" fill="#fff" stroke="#000"/><rect x="335.2" y="93" width="74.60000000000001" height="22" fill="#fff" opacity="0.92"/><text x="372.5" y="109" font-size="16" font-style="italic" text-anchor="middle">открывает</text><text x="405" y="83" font-size="16" text-anchor="end">1</text><text x="316" y="83" font-size="16" text-anchor="start">0..*</text>
+<path d="M705,90 L830,90" fill="none" stroke="#000" stroke-width="1"/><polygon points="705,90 715,96 725,90 715,84" fill="#fff" stroke="#000"/><rect x="741.3" y="93" width="52.400000000000006" height="22" fill="#fff" opacity="0.92"/><text x="767.5" y="109" font-size="16" font-style="italic" text-anchor="middle">подаёт</text><text x="735" y="83" font-size="16" text-anchor="start">1</text><text x="824" y="83" font-size="16" text-anchor="end">0..*</text>
+<path d="M570,253 L570,376" fill="none" stroke="#000" stroke-width="1"/><polygon points="570,253 564,263 570,273 576,263" fill="#fff" stroke="#000"/><rect x="575" y="303.5" width="59.800000000000004" height="22" fill="#fff" opacity="0.92"/><text x="578" y="319.5" font-size="16" font-style="italic" text-anchor="start">владеет</text><text x="584" y="295" font-size="16" text-anchor="start">1</text><text x="578" y="368" font-size="16" text-anchor="start">0..*</text>
+<path d="M435,426 L310,426" fill="none" stroke="#000" stroke-width="1"/><rect x="327.8" y="429" width="89.4" height="22" fill="#fff" opacity="0.92"/><text x="372.5" y="445" font-size="16" font-style="italic" text-anchor="middle">обслуживает</text><text x="429" y="419" font-size="16" text-anchor="end">1</text><text x="316" y="419" font-size="16" text-anchor="start">0..*</text>
+<path d="M965,276 L965,376" fill="none" stroke="#000" stroke-width="1"/><rect x="970" y="315" width="74.60000000000001" height="22" fill="#fff" opacity="0.92"/><text x="973" y="331" font-size="16" font-style="italic" text-anchor="start">порождает</text><text x="973" y="294" font-size="16" text-anchor="start">1</text><text x="973" y="368" font-size="16" text-anchor="start">0..1</text>
+<path d="M705,426 L830,426" fill="none" stroke="#000" stroke-width="1"/><rect x="733.9" y="429" width="67.2" height="22" fill="#fff" opacity="0.92"/><text x="767.5" y="445" font-size="16" font-style="italic" text-anchor="middle">погашает</text><text x="711" y="419" font-size="16" text-anchor="start">1</text><text x="824" y="419" font-size="16" text-anchor="end">0..*</text>
+<path d="M570,589 L570,689" fill="none" stroke="#000" stroke-width="1"/><rect x="575" y="628" width="89.4" height="22" fill="#fff" opacity="0.92"/><text x="578" y="644" font-size="16" font-style="italic" text-anchor="start">участвует в</text><text x="578" y="607" font-size="16" text-anchor="start">1</text><text x="578" y="681" font-size="16" text-anchor="start">0..*</text>
+<path d="M470,589 L470,634 L175,634 L175,689" fill="none" stroke="#000" stroke-width="1"/><rect x="281.5" y="637" width="82" height="22" fill="#fff" opacity="0.92"/><text x="322.5" y="653" font-size="16" font-style="italic" text-anchor="middle">оплачивает</text><text x="478" y="607" font-size="16" text-anchor="start">1</text><text x="183" y="681" font-size="16" text-anchor="start">0..*</text>
+<path d="M670,589 L670,634 L965,634 L965,689" fill="none" stroke="#000" stroke-width="1"/><rect x="776.5" y="637" width="82" height="22" fill="#fff" opacity="0.92"/><text x="817.5" y="653" font-size="16" font-style="italic" text-anchor="middle">отправляет</text><text x="678" y="607" font-size="16" text-anchor="start">1</text><text x="973" y="681" font-size="16" text-anchor="start">0..*</text>
+<path d="M570,1002 L570,856" fill="none" stroke="#000" stroke-width="1"/><polygon points="570,1002 576,992 570,982 564,992" fill="#000" stroke="#000"/><rect x="575" y="918" width="67.2" height="22" fill="#fff" opacity="0.92"/><text x="578" y="934" font-size="16" font-style="italic" text-anchor="start">содержит</text><text x="584" y="970" font-size="16" text-anchor="start">1</text><text x="578" y="874" font-size="16" text-anchor="start">1..*</text>
+<path d="M435,1052 L175,1052 L175,879" fill="none" stroke="#000" stroke-width="1"/><rect x="267.7" y="1055" width="74.60000000000001" height="22" fill="#fff" opacity="0.92"/><text x="305" y="1071" font-size="16" font-style="italic" text-anchor="middle">оформляет</text><text x="429" y="1045" font-size="16" text-anchor="end">1</text><text x="183" y="897" font-size="16" text-anchor="start">0..*</text>
+<path d="M705,1052 L965,1052 L965,902" fill="none" stroke="#000" stroke-width="1"/><rect x="797.7" y="1055" width="74.60000000000001" height="22" fill="#fff" opacity="0.92"/><text x="835" y="1071" font-size="16" font-style="italic" text-anchor="middle">оформляет</text><text x="711" y="1045" font-size="16" text-anchor="start">1</text><text x="973" y="920" font-size="16" text-anchor="start">0..*</text>
+<rect x="40" y="40" width="270" height="213" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="175" y="65" font-size="19" font-weight="bold" text-anchor="middle">Deposit</text>
+<line x1="40" y1="76" x2="310" y2="76" stroke="#000"/>
+<text x="48" y="93" font-size="16">- id: number</text>
+<text x="48" y="116" font-size="16">- amount: number</text>
+<text x="48" y="139" font-size="16">- ratePercent: number</text>
+<text x="48" y="162" font-size="16">- maturityDate: Date</text>
+<text x="48" y="185" font-size="16">- status: string</text>
+<line x1="40" y1="199" x2="310" y2="199" stroke="#000"/>
+<text x="48" y="216" font-size="16">+ quoteEarlyClose(): number</text>
+<text x="48" y="239" font-size="16">+ closeEarly(): void</text>
+<rect x="435" y="40" width="270" height="213" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="570" y="65" font-size="19" font-weight="bold" text-anchor="middle">Client</text>
+<line x1="435" y1="76" x2="705" y2="76" stroke="#000"/>
+<text x="443" y="93" font-size="16">- id: number</text>
+<text x="443" y="116" font-size="16">- lastName: string</text>
+<text x="443" y="139" font-size="16">- firstName: string</text>
+<text x="443" y="162" font-size="16">- birthDate: Date</text>
+<text x="443" y="185" font-size="16">- kycStatus: string</text>
+<line x1="435" y1="199" x2="705" y2="199" stroke="#000"/>
+<text x="443" y="216" font-size="16">+ verifyClient(): void</text>
+<text x="443" y="239" font-size="16">+ rejectClient(): void</text>
+<rect x="830" y="40" width="270" height="236" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="965" y="65" font-size="19" font-weight="bold" text-anchor="middle">LoanApplication</text>
+<line x1="830" y1="76" x2="1100" y2="76" stroke="#000"/>
+<text x="838" y="93" font-size="16">- id: number</text>
+<text x="838" y="116" font-size="16">- amount: number</text>
+<text x="838" y="139" font-size="16">- termMonths: number</text>
+<text x="838" y="162" font-size="16">- pdPercent: number</text>
+<text x="838" y="185" font-size="16">- status: string</text>
+<line x1="830" y1="199" x2="1100" y2="199" stroke="#000"/>
+<text x="838" y="216" font-size="16">+ apply(): void</text>
+<text x="838" y="239" font-size="16">+ decide(): void</text>
+<text x="838" y="262" font-size="16">+ sign(): Loan</text>
+<rect x="40" y="376" width="270" height="213" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="175" y="401" font-size="19" font-weight="bold" text-anchor="middle">Card</text>
+<line x1="40" y1="412" x2="310" y2="412" stroke="#000"/>
+<text x="48" y="429" font-size="16">- id: number</text>
+<text x="48" y="452" font-size="16">- last4: string</text>
+<text x="48" y="475" font-size="16">- dailyLimit: number</text>
+<text x="48" y="498" font-size="16">- status: string</text>
+<line x1="40" y1="512" x2="310" y2="512" stroke="#000"/>
+<text x="48" y="529" font-size="16">+ setBlocked(): void</text>
+<text x="48" y="552" font-size="16">+ updateLimits(): void</text>
+<text x="48" y="575" font-size="16">+ purchase(): void</text>
+<rect x="435" y="376" width="270" height="213" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="570" y="401" font-size="19" font-weight="bold" text-anchor="middle">Account</text>
+<line x1="435" y1="412" x2="705" y2="412" stroke="#000"/>
+<text x="443" y="429" font-size="16">- id: number</text>
+<text x="443" y="452" font-size="16">- iban: string</text>
+<text x="443" y="475" font-size="16">- currency: string</text>
+<text x="443" y="498" font-size="16">- balance: number</text>
+<text x="443" y="521" font-size="16">- status: string</text>
+<line x1="435" y1="535" x2="705" y2="535" stroke="#000"/>
+<text x="443" y="552" font-size="16">+ openForUser(): void</text>
+<text x="443" y="575" font-size="16">+ closeForUser(): void</text>
+<rect x="830" y="376" width="270" height="213" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="965" y="401" font-size="19" font-weight="bold" text-anchor="middle">Loan</text>
+<line x1="830" y1="412" x2="1100" y2="412" stroke="#000"/>
+<text x="838" y="429" font-size="16">- id: number</text>
+<text x="838" y="452" font-size="16">- amount: number</text>
+<text x="838" y="475" font-size="16">- ratePercent: number</text>
+<text x="838" y="498" font-size="16">- principalBalance: number</text>
+<text x="838" y="521" font-size="16">- status: string</text>
+<line x1="830" y1="535" x2="1100" y2="535" stroke="#000"/>
+<text x="838" y="552" font-size="16">+ repayPartial(): void</text>
+<text x="838" y="575" font-size="16">+ repayFull(): void</text>
+<rect x="40" y="689" width="270" height="190" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="175" y="714" font-size="19" font-weight="bold" text-anchor="middle">Payment</text>
+<line x1="40" y1="725" x2="310" y2="725" stroke="#000"/>
+<text x="48" y="742" font-size="16">- id: number</text>
+<text x="48" y="765" font-size="16">- requisite: string</text>
+<text x="48" y="788" font-size="16">- amount: number</text>
+<text x="48" y="811" font-size="16">- fee: number</text>
+<line x1="40" y1="825" x2="310" y2="825" stroke="#000"/>
+<text x="48" y="842" font-size="16">+ pay(): void</text>
+<text x="48" y="865" font-size="16">+ getReceipt(): Receipt</text>
+<rect x="435" y="689" width="270" height="167" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="570" y="714" font-size="19" font-weight="bold" text-anchor="middle">Posting</text>
+<line x1="435" y1="725" x2="705" y2="725" stroke="#000"/>
+<text x="443" y="742" font-size="16">- id: number</text>
+<text x="443" y="765" font-size="16">- debitAccount: Account</text>
+<text x="443" y="788" font-size="16">- creditAccount: Account</text>
+<text x="443" y="811" font-size="16">- amount: number</text>
+<line x1="435" y1="825" x2="705" y2="825" stroke="#000"/>
+<rect x="830" y="689" width="270" height="213" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="965" y="714" font-size="19" font-weight="bold" text-anchor="middle">TransferIntent</text>
+<line x1="830" y1="725" x2="1100" y2="725" stroke="#000"/>
+<text x="838" y="742" font-size="16">- id: string</text>
+<text x="838" y="765" font-size="16">- kind: string</text>
+<text x="838" y="788" font-size="16">- amount: number</text>
+<text x="838" y="811" font-size="16">- fee: number</text>
+<text x="838" y="834" font-size="16">- status: string</text>
+<line x1="830" y1="848" x2="1100" y2="848" stroke="#000"/>
+<text x="838" y="865" font-size="16">+ confirmTransfer(): void</text>
+<text x="838" y="888" font-size="16">+ cancelTransfer(): void</text>
+<rect x="435" y="1002" width="270" height="190" fill="#fff" stroke="#000" stroke-width="1"/>
+<text x="570" y="1027" font-size="19" font-weight="bold" text-anchor="middle">Document</text>
+<line x1="435" y1="1038" x2="705" y2="1038" stroke="#000"/>
+<text x="443" y="1055" font-size="16">- id: number</text>
+<text x="443" y="1078" font-size="16">- type: string</text>
+<text x="443" y="1101" font-size="16">- status: string</text>
+<text x="443" y="1124" font-size="16">- idempotencyKey: string</text>
+<line x1="435" y1="1138" x2="705" y2="1138" stroke="#000"/>
+<text x="443" y="1155" font-size="16">+ post(): void</text>
+<text x="443" y="1178" font-size="16">+ reverse(): void</text>
+</svg>

@@ -17,59 +17,54 @@ const Lf = (o, t = 0.5) => [o.x, o.y + o.h * t];
 const Rt = (o, t = 0.5) => [o.x + o.w, o.y + o.h * t];
 
 /* =====================  Варианты использования  ===================== */
-/** groups: [{actor, cases:[текст]}], shared: [{text, from:[[группа, номер]...], label}] */
-function useCases(name, system, groups, shared = []) {
-  const d = new Diagram(name);
-  const rx = 160; const ry = 30; const pitch = 84;
-  const frameX = 170; const cx = frameX + 30 + rx;
-  let y = 70;
-  const caseEll = [];
-  groups.forEach((g, gi) => {
-    caseEll[gi] = g.cases.map((text, k) => ({ cx, cy: y + ry + k * pitch, rx, ry, text }));
-    const top = caseEll[gi][0].cy; const bottom = caseEll[gi].at(-1).cy;
-    g.mid = (top + bottom) / 2;
-    y = bottom + ry + 34;
-  });
-  const bottomY = y - 34 + 24;
-  const cx2 = cx + rx + 90 + 110;
-  const frameW = (shared.length ? cx2 + 110 + 24 : cx + rx + 24) - frameX;
-  d.frame({ x: frameX, y: 30, w: frameW, h: bottomY - 30, title: system, center: true });
-  groups.forEach((g, gi) => {
-    const ax = 72;
-    d.actor({ cx: ax, y: g.mid - 37, name: g.actor });
-    caseEll[gi].forEach((e) => {
-      d.line({ pts: [[ax + 16, g.mid], [e.cx - e.rx * 0.97, e.cy + (e.cy < g.mid ? 6 : e.cy > g.mid ? -6 : 0)]], arrow: null });
-    });
-  });
-  groups.forEach((g, gi) => caseEll[gi].forEach((e) => d.ellipse(e)));
-  shared.forEach((s, si) => {
-    const srcs = s.from.map(([gi, k]) => caseEll[gi][k]);
-    const sy = s.cy ?? (srcs.reduce((a, e) => a + e.cy, 0) / srcs.length);
-    const e = { cx: cx2, cy: sy, rx: 110, ry: 30, text: s.text };
-    d.ellipse(e);
-    srcs.forEach((src) => d.line({ pts: [[src.cx + src.rx, src.cy], [e.cx - e.rx * 0.95, e.cy + (src.cy < e.cy ? -8 : src.cy > e.cy ? 8 : 0)]], dashed: true, arrow: 'open', label: s.label ?? '«include»', at: { x: (src.cx + src.rx + e.cx - e.rx) / 2, y: (src.cy + e.cy) / 2 - 8 } }));
-    void si;
-  });
+// Одна диаграмма: слева гость и клиент, справа сотрудники банка; в середине общие варианты («include»).
+function useCases() {
+  const d = new Diagram('Варианты использования');
+  const rx = 140, ry = 26, P = 68, top0 = 80;
+  const cy = (r) => top0 + r * P;
+  const cxA = 330, cxM = 650, cxB = 970;
+  const ell = (cx, r, text, w = rx) => { const e = { cx, cy: cy(r), rx: w, ry, text }; d.ellipse(e); return e; };
+  const frame = { x: 140, y: 30, w: 1010, h: cy(12.1) - 30 };
+  d.frame({ ...frame, title: 'Система ТалерБанк', center: true });
+  // левый столбец: гость и клиент
+  const A = [
+    'Просмотр курсов валют\nи калькуляторы', 'Регистрация\n(подача анкеты)', 'Подача заявки на кредит', 'Подписание договора\nи погашение кредита',
+    'Перевод между счетами,\nклиентам и в другие банки', 'Оплата услуг, шаблоны\nи автоплатежи', 'Оформление и закрытие\nвклада', 'Открытие и закрытие счёта',
+    'Выпуск карты, блокировка\nи лимиты', 'Выписки и справки (PDF)'
+  ].map((t, r) => ({ cx: cxA, cy: cy(r), rx, ry, text: t }));
+  const actorL = (x, r0, r1, name, rows) => {
+    const mid = (cy(r0) + cy(r1)) / 2;
+    d.actor({ cx: x, y: mid - 37, name });
+    for (const r of rows) {
+      const e = A[r]; const above = e.cy < mid ? 8 : e.cy > mid ? -8 : 0;
+      d.line({ pts: [[x + 16, mid], [e.cx - e.rx * 0.96, e.cy + above]], arrow: null });
+    }
+  };
+  actorL(75, 0, 1, 'Гость', [0, 1]);
+  actorL(75, 2, 9, 'Клиент', [0, 2, 3, 4, 5, 6, 7, 8, 9]);
+  A.forEach((e) => d.ellipse(e));
+  // общие варианты
+  const score = { cx: cxM, cy: cy(2), rx: 105, ry, text: 'Скоринг заявки' };
+  const code = { cx: cxM, cy: (cy(3) + cy(4)) / 2, rx: 105, ry, text: 'Подтверждение\nкодом' };
+  d.ellipse(score); d.ellipse(code);
+  const inc = (src, dst, dy) => d.line({ pts: [[src.cx + src.rx, src.cy], [dst.cx - dst.rx * 0.97, dst.cy + dy]], dashed: true, arrow: 'open', label: '«include»', italic: true, at: { x: (src.cx + src.rx + dst.cx - dst.rx) / 2, y: (src.cy + dst.cy) / 2 - 6 } });
+  inc(A[2], score, 0); inc(A[3], code, -8); inc(A[4], code, 8);
+  // правый столбец: сотрудники
+  const B = [
+    [0, 'Проверка анкет клиентов', 'op'], [1, 'Касса и блокировка счетов', 'op'], [3, 'Рассмотрение заявки\nна кредит', 'cr'], [5, 'Разбор задержанных\nпереводов', 'mon'],
+    [6.6, 'Курсы, спред и тарифы', 'ad'], [7.6, 'Пользователи и роли', 'ad'], [8.6, 'Журнал аудита', 'ad'], [9.6, 'Резервные копии', 'ad'], [10.6, 'Отчёты и ведомость', 'ad'], [11.6, 'Закрытие операционного дня', 'ad']
+  ].map(([r, t, who]) => ({ cx: cxB, cy: cy(r), rx, ry, text: t, who }));
+  const groups = { op: 'Операционист', cr: 'Кредитный\nспециалист', mon: 'Специалист по\nмониторингу', ad: 'Администратор' };
+  for (const [who, name] of Object.entries(groups)) {
+    const es = B.filter((e) => e.who === who);
+    const mid = (es[0].cy + es.at(-1).cy) / 2;
+    d.actor({ cx: 1235, y: mid - 37, name });
+    es.forEach((e) => d.line({ pts: [[1235 - 16, mid], [e.cx + e.rx * 0.96, e.cy + (e.cy < mid ? 8 : e.cy > mid ? -8 : 0)]], arrow: null }));
+  }
+  B.forEach((e) => d.ellipse(e));
   return d;
 }
-
-const ucGuest = useCases('Гость', 'Система ТалерБанк', [{ actor: 'Гость', cases: ['Просмотр курсов валют\nи конвертер', 'Расчёт вклада\nи кредита', 'Просмотр сведений\nо банке', 'Регистрация\n(подача анкеты)'] }]);
-const ucClient1 = useCases('Клиент: счета, переводы, платежи', 'Система ТалерБанк', [{ actor: 'Клиент', cases: [
-  'Вход в систему', 'Открытие и закрытие счёта', 'Просмотр выписки\nи справки (PDF)', 'Перевод между\nсвоими счетами', 'Перевод клиенту банка',
-  'Перевод в другой банк', 'Оплата услуг по каталогу', 'Шаблоны платежей\nи автоплатежи'] }],
-[{ text: 'Подтверждение\nкодом', from: [[0, 4], [0, 5]] }]);
-const ucClient2 = useCases('Клиент: вклады, кредиты, карты', 'Система ТалерБанк', [{ actor: 'Клиент', cases: [
-  'Оформление вклада', 'Досрочное закрытие вклада', 'Подача заявки на кредит', 'Подписание договора\nи получение кредита', 'Погашение кредита',
-  'Выпуск карты', 'Блокировка карты\nи настройка лимитов', 'Настройка двухфакторной\nзащиты и уведомлений'] }],
-[{ text: 'Скоринг заявки', from: [[0, 2]] }, { text: 'Подтверждение\nкодом', from: [[0, 3]] }]);
-const ucStaff = useCases('Сотрудники банка', 'Система ТалерБанк', [
-  { actor: 'Операционист', cases: ['Проверка анкет клиентов', 'Касса: приём и выдача\nналичных', 'Регистрация входящих\nмежбанковских платежей', 'Блокировка счетов'] },
-  { actor: 'Кредитный\nспециалист', cases: ['Рассмотрение заявки\nна кредит'] },
-  { actor: 'Специалист по\nмониторингу', cases: ['Разбор задержанных\nпереводов', 'Контроль операций\nособого контроля'] }
-]);
-const ucAdmin = useCases('Администратор', 'Система ТалерБанк', [{ actor: 'Администратор', cases: [
-  'Управление курсами\nи спредом', 'Настройка тарифов\nи лимитов', 'Управление пользователями\nи ролями', 'Просмотр журнала аудита',
-  'Резервное копирование\nи восстановление', 'Отчёты и оборотно-\nсальдовая ведомость', 'Закрытие операционного дня', 'Управление клирингом'] }]);
+const ucAll = useCases();
 
 /* =====================  Диаграммы последовательности  ===================== */
 /** steps: {m:[от, до, текст, 'ret'|'self']} | {alt:'условие'} | {els:'условие'} | {end:true} */
@@ -119,32 +114,6 @@ function sequence(name, names, steps, pitch = 150) {
   return d;
 }
 
-const seqTransfer = sequence('Перевод клиенту банка',
-  ['Клиент', 'Transfer-\nController', 'Transfer-\nService', 'Fraud-\nService', 'Otp-\nService', 'Ledger-\nService'], [
-    { m: [0, 1, 'Форма перевода:\nсчёт, IBAN, сумма'] },
-    { m: [1, 2, 'createTransfer()'] },
-    { m: [2, 2, 'Проверка счетов, IBAN,\nлимита и комиссии', 'self'] },
-    { m: [2, 3, 'evaluate()'] },
-    { m: [3, 2, 'решение, балл риска', 'ret'] },
-    { alt: '[решение «задержать»]' },
-    { m: [2, 2, 'Резерв суммы, случай\nдля специалиста', 'self'] },
-    { m: [2, 1, 'перевод на проверке', 'ret'] },
-    { els: '[нужен код подтверждения]' },
-    { m: [2, 4, 'issue()'] },
-    { m: [4, 2, 'код (письмом)', 'ret'] },
-    { m: [2, 1, 'заявка ждёт кода', 'ret'] },
-    { m: [1, 0, 'Форма ввода кода', 'ret'] },
-    { m: [0, 1, 'Код из письма'] },
-    { m: [1, 2, 'confirmTransfer()'] },
-    { m: [2, 4, 'verify()'] },
-    { m: [4, 2, 'код верный', 'ret'] },
-    { end: true },
-    { m: [2, 5, 'post(проводки)'] },
-    { m: [5, 2, 'документ проведён', 'ret'] },
-    { m: [2, 1, 'перевод выполнен', 'ret'] },
-    { m: [1, 0, 'Квитанция', 'ret'] }
-  ]);
-
 const seqLoan = sequence('Заявка на кредит',
   ['Клиент', 'Loan-\nController', 'Loan-\nService', 'Scoring-\nService', 'Кредитный\nспециалист', 'Otp-\nService', 'Ledger-\nService'], [
     { m: [0, 1, 'Заявка: сумма,\nсрок, доход'] },
@@ -184,44 +153,6 @@ function lanes(d, titles, width, height, top = 30) {
 const act = (d, cxv, cy, text, w = 230, h = 46) => d.rect({ x: cxv - w / 2, y: cy - h / 2, w, h, round: 20, text });
 const dec = (d, cxv, cy, text, w = 200, h = 92) => { const o = d.diamond({ cx: cxv, cy, w, h, text, size: 15 }); return { x: cxv - w / 2, y: cy - h / 2, w, h, cx: cxv, cy }; };
 const arrow = (d, pts, label, at) => d.line({ pts, label, at, italic: true });
-
-function actTransfer() {
-  const d = new Diagram('Перевод клиенту банка');
-  const W = 960; const H = 1130;
-  const C = lanes(d, ['Клиент', 'Система', 'Специалист по мониторингу'], W, H);
-  const c0 = C(0); const c1 = C(1); const c2 = C(2);
-  d.mark({ kind: 'start', cx: c0, cy: 110 });
-  const a1 = act(d, c0, 175, 'Ввод счёта списания,\nIBAN получателя и суммы');
-  arrow(d, [[c0, 120], [c0, a1.y]]);
-  const a2 = act(d, c1, 275, 'Проверка счетов, IBAN\n(mod 97), лимита, комиссии', 250);
-  arrow(d, [Rt(a1), [c1, 175], [c1, a2.y]]);
-  const d1 = dec(d, c1, 385, 'Данные\nверны?');
-  arrow(d, [B(a2), [c1, d1.y]]);
-  const e1 = act(d, c0, 385, 'Сообщение об ошибке,\nисправление данных', 230);
-  arrow(d, [Lf(d1), Rt(e1)], 'нет', { x: (d1.x + e1.x + e1.w) / 2, y: 378 });
-  arrow(d, [T(e1), B(a1)]);
-  const a3 = act(d, c1, 500, 'Оценка риска перевода\n(антифрод)', 250);
-  arrow(d, [B(d1), T(a3)], 'да', { x: c1 + 8, y: 456, anchor: 'start' });
-  const d2 = dec(d, c1, 625, 'Решение\nантифрода', 210, 100);
-  arrow(d, [B(a3), T(d2)]);
-  const a4 = act(d, c0, 625, 'Ввод кода подтверждения\nиз письма', 230);
-  arrow(d, [Lf(d2), Rt(a4)], 'нужен код', { x: (d2.x + a4.x + a4.w) / 2, y: 618 });
-  const a5 = act(d, c2, 625, 'Анализ случая\nи решение', 220);
-  arrow(d, [Rt(d2), Lf(a5)], 'задержать', { x: (d2.x + d2.w + a5.x) / 2, y: 618 });
-  const a6 = act(d, c1, 880, 'Проводка двойной записью\n(одна транзакция)', 260);
-  arrow(d, [B(d2), T(a6)], 'без кода', { x: c1 + 8, y: 730, anchor: 'start' });
-  arrow(d, [B(a4), [c0, a6.y + 23], Lf(a6)], 'код проверяется\nсистемой', { x: c0 + 8, y: 790, anchor: 'start' });
-  const d4 = dec(d, c2, 760, 'Одобрить?', 170, 80);
-  arrow(d, [B(a5), T(d4)]);
-  arrow(d, [Lf(d4), [c1 + 175, 760], [c1 + 175, a6.y + 23], Rt(a6)], 'да', { x: (c1 + 175 + d4.x) / 2, y: 752 });
-  d.mark({ kind: 'end', cx: c2, cy: 880 });
-  arrow(d, [B(d4), [c2, 870]], 'нет: резерв снимается,\nклиент уведомляется', { x: c2 + 8, y: 826, anchor: 'start' });
-  const a7 = act(d, c1, 985, 'Уведомление клиента,\nквитанция', 230);
-  arrow(d, [B(a6), T(a7)]);
-  d.mark({ kind: 'end', cx: c1, cy: 1070 });
-  arrow(d, [B(a7), [c1, 1060]]);
-  return d;
-}
 
 function actLoan() {
   const d = new Diagram('Оформление кредита');
@@ -264,29 +195,6 @@ function actLoan() {
 /* =====================  Диаграммы состояний  ===================== */
 const st = (d, x, y, text, w = 190, h = 60) => d.rect({ x, y, w, h, round: 22, text });
 
-function stTransfer() {
-  const d = new Diagram('Состояния заявки на перевод');
-  d.mark({ kind: 'start', cx: 50, cy: 300 });
-  const nw = st(d, 140, 160, 'new\nсоздана, ждёт кода', 200);
-  const rv = st(d, 140, 410, 'review\nзадержана, на проверке', 200);
-  const cn = st(d, 660, 80, 'cancelled\nотменена клиентом', 200);
-  const ex = st(d, 660, 160, 'expired\nистёк срок кода', 200);
-  const cf = st(d, 660, 270, 'confirmed\nвыполнена', 200);
-  const rj = st(d, 660, 425, 'rejected\nотклонена специалистом', 230);
-  d.line({ pts: [[60, 296], [100, 296], [100, 190], [140, 190]], label: 'создание', at: { x: 94, y: 240, anchor: 'end' } });
-  d.line({ pts: [[60, 304], [100, 304], [100, 440], [140, 440]], label: 'антифрод:\nзадержать', at: { x: 94, y: 372, anchor: 'end' } });
-  d.line({ pts: [[340, 172], [450, 172], [450, 110], [660, 110]], label: 'клиент отменил', at: { x: 555, y: 102 } });
-  d.line({ pts: [[340, 190], [660, 190]], label: 'срок истёк', at: { x: 580, y: 182 } });
-  d.line({ pts: [[340, 208], [500, 208], [500, 285], [660, 285]], label: 'верный код\nили без кода', at: { x: 580, y: 250 } });
-  d.line({ pts: [[340, 425], [450, 425], [450, 315], [660, 315]], label: 'специалист\nодобрил', at: { x: 555, y: 351 } });
-  d.line({ pts: [[340, 455], [660, 455]], label: 'специалист отклонил', at: { x: 500, y: 447 } });
-  d.mark({ kind: 'end', cx: 960, cy: 300 });
-  for (const s of [cn, ex, rj]) d.line({ pts: [[s.x + s.w, s.y + s.h / 2], [960, s.y + s.h / 2], [960, s.y + s.h / 2 < 300 ? 290 : 310]], arrow: null });
-  d.line({ pts: [[cf.x + cf.w, 300], [950, 300]] });
-  void nw; void rv;
-  return d;
-}
-
 function stLoanApp() {
   const d = new Diagram('Состояния заявки на кредит');
   d.mark({ kind: 'start', cx: 50, cy: 250 });
@@ -305,49 +213,6 @@ function stLoanApp() {
   d.mark({ kind: 'end', cx: 1010, cy: 415 });
   d.line({ pts: [[950, 415], [1000, 415]] });
   void mr; void rj; void ap; void sg;
-  return d;
-}
-
-function stLoanPayment() {
-  const d = new Diagram('Состояния кредита и платежа по графику');
-  d.frame({ x: 20, y: 20, w: 330, h: 330, title: 'Кредит (loans)' });
-  d.mark({ kind: 'start', cx: 185, cy: 90 });
-  const ac = st(d, 90, 130, 'active\nдействует', 190);
-  const cl = st(d, 90, 250, 'closed\nпогашен', 190);
-  d.line({ pts: [[185, 100], [185, 130]] });
-  d.line({ pts: [[185, 190], [185, 250]], label: 'полное погашение', at: { x: 193, y: 225, anchor: 'start' } });
-  d.frame({ x: 400, y: 20, w: 560, h: 330, title: 'Платёж по графику (loan_schedule)' });
-  d.mark({ kind: 'start', cx: 440, cy: 130 });
-  const pl = st(d, 480, 100, 'planned\nзапланирован', 190);
-  const ov = st(d, 480, 250, 'overdue\nпросрочен', 190);
-  const pd = st(d, 790, 100, 'paid\nоплачен', 150);
-  d.line({ pts: [[450, 130], [480, 130]] });
-  d.line({ pts: [[670, 130], [790, 130]], label: 'оплачен\nв срок', at: { x: 730, y: 94 } });
-  d.line({ pts: [[575, 160], [575, 250]], label: 'срок прошёл,\nоплаты нет', at: { x: 583, y: 200, anchor: 'start' } });
-  d.line({ pts: [[670, 280], [865, 280], [865, 160]], label: 'погашен с пеней', at: { x: 770, y: 272 } });
-  return d;
-}
-
-function stDepositCard() {
-  const d = new Diagram('Состояния вклада и карты');
-  d.frame({ x: 20, y: 20, w: 540, h: 360, title: 'Вклад (deposits)' });
-  d.mark({ kind: 'start', cx: 55, cy: 200 });
-  st(d, 150, 170, 'active\nдействует', 160);
-  st(d, 400, 90, 'closed\nзакрыт по сроку', 150);
-  st(d, 400, 270, 'early_closed\nзакрыт досрочно', 150);
-  d.line({ pts: [[65, 200], [150, 200]], label: 'открытие', at: { x: 107, y: 192 } });
-  d.line({ pts: [[310, 188], [355, 188], [355, 120], [400, 120]], label: 'срок\nистёк', at: { x: 348, y: 160, anchor: 'end' } });
-  d.line({ pts: [[310, 212], [355, 212], [355, 300], [400, 300]], label: 'досрочное\nзакрытие', at: { x: 348, y: 256, anchor: 'end' } });
-  d.frame({ x: 600, y: 20, w: 540, h: 360, title: 'Карта (cards)' });
-  d.mark({ kind: 'start', cx: 640, cy: 120 });
-  st(d, 700, 90, 'active\nдействует', 160);
-  st(d, 700, 270, 'blocked\nзаблокирована', 160);
-  st(d, 950, 175, 'closed\nзакрыта', 140);
-  d.line({ pts: [[650, 120], [700, 120]], label: 'выпуск', at: { x: 675, y: 110 } });
-  d.line({ pts: [[740, 150], [740, 270]], label: 'блокировка', at: { x: 732, y: 215, anchor: 'end' } });
-  d.line({ pts: [[820, 270], [820, 150]], label: 'разблокировка', at: { x: 828, y: 215, anchor: 'start' } });
-  d.line({ pts: [[860, 120], [1020, 120], [1020, 175]], label: 'закрытие', at: { x: 940, y: 112 } });
-  d.line({ pts: [[860, 300], [1020, 300], [1020, 235]], label: 'закрытие', at: { x: 940, y: 292 } });
   return d;
 }
 
@@ -409,11 +274,7 @@ function deployment() {
 }
 
 const pages = [
-  ['uc-guest', ucGuest], ['uc-client-1', ucClient1], ['uc-client-2', ucClient2], ['uc-staff', ucStaff], ['uc-admin', ucAdmin],
-  ['seq-transfer', seqTransfer], ['seq-loan', seqLoan],
-  ['act-transfer', actTransfer()], ['act-loan', actLoan()],
-  ['st-transfer', stTransfer()], ['st-loan', stLoanApp()], ['st-loan-payment', stLoanPayment()], ['st-deposit-card', stDepositCard()],
-  ['components', components()], ['deployment', deployment()]
+  ['uc', ucAll], ['seq-loan', seqLoan], ['act-loan', actLoan()], ['st-loan', stLoanApp()], ['components', components()], ['deployment', deployment()]
 ];
 writeFileSync(path.join(outDir, 'views.drawio'), `<?xml version="1.0" encoding="UTF-8"?>\n<mxfile host="app.diagrams.net" type="device">${pages.map(([, p]) => p.drawio()).join('')}</mxfile>\n`);
 for (const [n, p] of pages) writeFileSync(path.join(outDir, `view-${n}.svg`), p.svg());

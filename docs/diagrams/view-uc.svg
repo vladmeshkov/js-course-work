@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1315" height="943" viewBox="0 0 1315 943" font-family="Times New Roman, serif">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<rect x="140" y="30" width="1010" height="872.8" fill="none" stroke="#666" stroke-dasharray="6 4"/><text x="645" y="52" font-size="16" font-weight="bold" text-anchor="middle">Система ТалерБанк</text>
+<path d="M91,114 L195.6,88" fill="none" stroke="#000"/>
+<path d="M91,114 L195.6,140" fill="none" stroke="#000"/>
+<path d="M91,454 L195.6,88" fill="none" stroke="#000"/>
+<path d="M91,454 L195.6,224" fill="none" stroke="#000"/>
+<path d="M91,454 L195.6,292" fill="none" stroke="#000"/>
+<path d="M91,454 L195.6,360" fill="none" stroke="#000"/>
+<path d="M91,454 L195.6,428" fill="none" stroke="#000"/>
+<path d="M91,454 L195.6,480" fill="none" stroke="#000"/>
+<path d="M91,454 L195.6,548" fill="none" stroke="#000"/>
+<path d="M91,454 L195.6,616" fill="none" stroke="#000"/>
+<path d="M91,454 L195.6,684" fill="none" stroke="#000"/>
+<path d="M470,216 L548.15,216" fill="none" stroke="#000" stroke-dasharray="6 4"/><polyline points="536.15,221 548.15,216 536.15,211" fill="none" stroke="#000"/><rect x="466.06" y="194" width="82.88" height="22" fill="#fff" opacity="0.92"/><text x="507.5" y="210" font-size="16" text-anchor="middle" font-style="italic">«include»</text>
+<path d="M470,284 L548.15,310" fill="none" stroke="#000" stroke-dasharray="6 4"/><polyline points="535.1852101151062,310.9561502186134 548.15,310 538.3420235352901,301.46749757294515" fill="none" stroke="#000"/><rect x="466.06" y="279" width="82.88" height="22" fill="#fff" opacity="0.92"/><text x="507.5" y="295" font-size="16" text-anchor="middle" font-style="italic">«include»</text>
+<path d="M470,352 L548.15,326" fill="none" stroke="#000" stroke-dasharray="6 4"/><polyline points="538.3420235352901,334.53250242705485 548.15,326 535.1852101151062,325.0438497813866" fill="none" stroke="#000"/><rect x="466.06" y="313" width="82.88" height="22" fill="#fff" opacity="0.92"/><text x="507.5" y="329" font-size="16" text-anchor="middle" font-style="italic">«include»</text>
+<path d="M1219,114 L1104.4,88" fill="none" stroke="#000"/>
+<path d="M1219,114 L1104.4,140" fill="none" stroke="#000"/>
+<path d="M1219,284 L1104.4,284" fill="none" stroke="#000"/>
+<path d="M1219,420 L1104.4,420" fill="none" stroke="#000"/>
+<path d="M1219,698.8 L1104.4,536.8" fill="none" stroke="#000"/>
+<path d="M1219,698.8 L1104.4,604.8" fill="none" stroke="#000"/>
+<path d="M1219,698.8 L1104.4,672.8" fill="none" stroke="#000"/>
+<path d="M1219,698.8 L1104.4,724.8" fill="none" stroke="#000"/>
+<path d="M1219,698.8 L1104.4,792.8" fill="none" stroke="#000"/>
+<path d="M1219,698.8 L1104.4,860.8" fill="none" stroke="#000"/>
+<circle cx="75" cy="88" r="11" fill="#fff" stroke="#000"/><path d="M75,99 V129 M57,109 H93 M75,129 L61,151 M75,129 L89,151" stroke="#000" fill="none"/><text x="75" y="174.44" font-size="16" text-anchor="middle" font-weight="bold">Гость</text>
+<circle cx="75" cy="428" r="11" fill="#fff" stroke="#000"/><path d="M75,439 V469 M57,449 H93 M75,469 L61,491 M75,469 L89,491" stroke="#000" fill="none"/><text x="75" y="514.44" font-size="16" text-anchor="middle" font-weight="bold">Клиент</text>
+<ellipse cx="330" cy="80" rx="140" ry="26" fill="#fff" stroke="#000"/><text x="330" y="75.94" font-size="16" text-anchor="middle">Просмотр курсов валют</text><text x="330" y="94.94" font-size="16" text-anchor="middle">и калькуляторы</text>
+<ellipse cx="330" cy="148" rx="140" ry="26" fill="#fff" stroke="#000"/><text x="330" y="143.94" font-size="16" text-anchor="middle">Регистрация</text><text x="330" y="162.94" font-size="16" text-anchor="middle">(подача анкеты)</text>
+<ellipse cx="330" cy="216" rx="140" ry="26" fill="#fff" stroke="#000"/><text x="330" y="221.44" font-size="16" text-anchor="middle">Подача заявки на кредит</text>
+<ellipse cx="330" cy="284" rx="140" ry="26" fill="#fff" stroke="#000"/><text x="330" y="279.94" font-size="16" text-anchor="middle">Подписание договора</text><text x="330" y="298.94" font-size="16" text-anchor="middle">и погашение кредита</text>
+<ellipse cx="330" cy="352" rx="140" ry="26" fill="#fff" stroke="#000"/><text x="330" y="347.94" font-size="16" text-anchor="middle">Перевод между счетами,</text><text x="330" y="366.94" font-size="16" text-anchor="middle">клиентам и в другие банки</text>
+<ellipse cx="330" cy="420" rx="140" ry="26" fill="#fff" stroke="#000"/><text x="330" y="415.94" font-size="16" text-anchor="middle">Оплата услуг, шаблоны</text><text x="330" y="434.94" font-size="16" text-anchor="middle">и автоплатежи</text>
+<ellipse cx="330" cy="488" rx="140" ry="26" fill="#fff" stroke="#000"/><text x="330" y="483.94" font-size="16" text-anchor="middle">Оформление и закрытие</text><text x="330" y="502.94" font-size="16" text-anchor="middle">вклада</text>
+<ellipse cx="330" cy="556" rx="140" ry="26" fill="#fff" stroke="#000"/><text x="330" y="561.44" font-size="16" text-anchor="middle">Открытие и закрытие счёта</text>
+<ellipse cx="330" cy="624" rx="140" ry="26" fill="#fff" stroke="#000"/><text x="330" y="619.94" font-size="16" text-anchor="middle">Выпуск карты, блокировка</text><text x="330" y="638.94" font-size="16" text-anchor="middle">и лимиты</text>
+<ellipse cx="330" cy="692" rx="140" ry="26" fill="#fff" stroke="#000"/><text x="330" y="697.44" font-size="16" text-anchor="middle">Выписки и справки (PDF)</text>
+<ellipse cx="650" cy="216" rx="105" ry="26" fill="#fff" stroke="#000"/><text x="650" y="221.44" font-size="16" text-anchor="middle">Скоринг заявки</text>
+<ellipse cx="650" cy="318" rx="105" ry="26" fill="#fff" stroke="#000"/><text x="650" y="313.94" font-size="16" text-anchor="middle">Подтверждение</text><text x="650" y="332.94" font-size="16" text-anchor="middle">кодом</text>
+<circle cx="1235" cy="88" r="11" fill="#fff" stroke="#000"/><path d="M1235,99 V129 M1217,109 H1253 M1235,129 L1221,151 M1235,129 L1249,151" stroke="#000" fill="none"/><text x="1235" y="174.44" font-size="16" text-anchor="middle" font-weight="bold">Операционист</text>
+<circle cx="1235" cy="258" r="11" fill="#fff" stroke="#000"/><path d="M1235,269 V299 M1217,279 H1253 M1235,299 L1221,321 M1235,299 L1249,321" stroke="#000" fill="none"/><text x="1235" y="334.94" font-size="16" text-anchor="middle" font-weight="bold">Кредитный</text><text x="1235" y="353.94" font-size="16" text-anchor="middle" font-weight="bold">специалист</text>
+<circle cx="1235" cy="394" r="11" fill="#fff" stroke="#000"/><path d="M1235,405 V435 M1217,415 H1253 M1235,435 L1221,457 M1235,435 L1249,457" stroke="#000" fill="none"/><text x="1235" y="470.94" font-size="16" text-anchor="middle" font-weight="bold">Специалист по</text><text x="1235" y="489.94" font-size="16" text-anchor="middle" font-weight="bold">мониторингу</text>
+<circle cx="1235" cy="672.8" r="11" fill="#fff" stroke="#000"/><path d="M1235,683.8 V713.8 M1217,693.8 H1253 M1235,713.8 L1221,735.8 M1235,713.8 L1249,735.8" stroke="#000" fill="none"/><text x="1235" y="759.24" font-size="16" text-anchor="middle" font-weight="bold">Администратор</text>
+<ellipse cx="970" cy="80" rx="140" ry="26" fill="#fff" stroke="#000"/><text x="970" y="85.44" font-size="16" text-anchor="middle">Проверка анкет клиентов</text>
+<ellipse cx="970" cy="148" rx="140" ry="26" fill="#fff" stroke="#000"/><text x="970" y="153.44" font-size="16" text-anchor="middle">Касса и блокировка счетов</text>
+<ellipse cx="970" cy="284" rx="140" ry="26" fill="#fff" stroke="#000"/><text x="970" y="279.94" font-size="16" text-anchor="middle">Рассмотрение заявки</text><text x="970" y="298.94" font-size="16" text-anchor="middle">на кредит</text>
+<ellipse cx="970" cy="420" rx="140" ry="26" fill="#fff" stroke="#000"/><text x="970" y="415.94" font-size="16" text-anchor="middle">Разбор задержанных</text><text x="970" y="434.94" font-size="16" text-anchor="middle">переводов</text>
+<ellipse cx="970" cy="528.8" rx="140" ry="26" fill="#fff" stroke="#000"/><text x="970" y="534.24" font-size="16" text-anchor="middle">Курсы, спред и тарифы</text>
+<ellipse cx="970" cy="596.8" rx="140" ry="26" fill="#fff" stroke="#000"/><text x="970" y="602.24" font-size="16" text-anchor="middle">Пользователи и роли</text>
+<ellipse cx="970" cy="664.8" rx="140" ry="26" fill="#fff" stroke="#000"/><text x="970" y="670.24" font-size="16" text-anchor="middle">Журнал аудита</text>
+<ellipse cx="970" cy="732.8" rx="140" ry="26" fill="#fff" stroke="#000"/><text x="970" y="738.24" font-size="16" text-anchor="middle">Резервные копии</text>
+<ellipse cx="970" cy="800.8" rx="140" ry="26" fill="#fff" stroke="#000"/><text x="970" y="806.24" font-size="16" text-anchor="middle">Отчёты и ведомость</text>
+<ellipse cx="970" cy="868.8" rx="140" ry="26" fill="#fff" stroke="#000"/><text x="970" y="874.24" font-size="16" text-anchor="middle">Закрытие операционного дня</text>
+</svg>

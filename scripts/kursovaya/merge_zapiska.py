@@ -3,6 +3,7 @@
 
 Использование: python3 merge_zapiska.py черновик.docx выход.docx
 Файлы разделов берутся из docs/kursovaya (razdel-1.3-dopolnenie.docx, razdel-1.4.docx, razdel-1.5.docx).
+Широкий рисунок (больше 18 см, диаграмма вариантов использования) выводится на отдельной альбомной странице.
 Оформление новых разделов приводится к оформлению черновика (стили, шрифт 14, одинарный интервал, таблицы), затем
 таблицы разрезаются по страницам с подписью «Продолжение таблицы X.X» (split_tables.py).
 """
@@ -53,6 +54,7 @@ class Maker:
         self.h2 = next(p for p in P if p.style.name == 'Heading 2')._p.pPr.find(qn('w:pStyle')).get(qn('w:val'))
         self.table_style = draft.tables[2]._tbl.tblPr.find(qn('w:tblStyle')).get(qn('w:val'))
         self.docpr = 5000
+        self.base_sect = copy.deepcopy(draft.element.body.find(qn('w:sectPr')))
 
     def par(self, ppr=None, text=''):
         p = OxmlElement('w:p')
@@ -61,6 +63,18 @@ class Maker:
         if text:
             r = OxmlElement('w:r'); t = OxmlElement('w:t'); t.text = text
             t.set('{http://www.w3.org/XML/1998/namespace}space', 'preserve'); r.append(t); p.append(r)
+        return p
+
+    def sect_par(self, landscape):
+        """Абзац-разделитель разделов: sectPr описывает раздел, который заканчивается этим абзацем."""
+        sp = copy.deepcopy(self.base_sect)
+        if landscape:
+            for el in sp.findall(qn('w:titlePg')):
+                sp.remove(el)
+            pg = sp.find(qn('w:pgSz')); pg.set(qn('w:w'), '16838'); pg.set(qn('w:h'), '11906'); pg.set(qn('w:orient'), 'landscape')
+            mar = sp.find(qn('w:pgMar')); mar.set(qn('w:left'), '1134'); mar.set(qn('w:right'), '851'); mar.set(qn('w:top'), '850'); mar.set(qn('w:bottom'), '850')
+        ppr = OxmlElement('w:pPr'); ppr.append(sp)
+        p = OxmlElement('w:p'); p.append(ppr)
         return p
 
     def heading(self, text):
@@ -162,6 +176,9 @@ def normalize(mk, els):
         if el.tag == qn('w:tbl'):
             return 'tbl'
         t = text_of(el).strip()
+        ppr0 = el.find(qn('w:pPr'))
+        if ppr0 is not None and ppr0.find(qn('w:sectPr')) is not None:
+            return 'sect'
         if el.find('.//' + qn('w:drawing')) is not None:
             return 'pic'
         if not t:
@@ -174,31 +191,40 @@ def normalize(mk, els):
         if t.startswith('Таблица '):
             return 'tcap'
         return 'p'
+    def wide(el):
+        return any(int(x.get('cx')) > 6480000 for x in el.iter('{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}extent'))
     items = [(kind(e), e) for e in els if kind(e) != 'blank']
     out = []
+    pending_landscape = False
     def blank():
         if out and kind(out[-1]) != 'blank':
             out.append(mk.par(None))
     for i, (k, e) in enumerate(items):
-        if k in ('h', 'pic', 'tcap'):
+        if k == 'pic' and wide(e):
+            out.append(mk.sect_par(False))      # всё до рисунка – книжный раздел
+            pending_landscape = True
+        elif k in ('h', 'pic', 'tcap'):
             blank()
         out.append(e)
         if k in ('h', 'tbl', 'figcap'):
             out.append(mk.par(None))
         if k == 'pic':
             out.append(mk.par(None))
+        if k == 'figcap' and pending_landscape:
+            out.append(mk.sect_par(True))       # рисунок и подпись – альбомный раздел
+            pending_landscape = False
     return out
 
 
 def main(draft_path, out_path):
     draft = docx.Document(draft_path)
-    # таблица функциональных требований становится 1.20 (перед ней вставляются таблицы 1.5 – 1.19)
+    # таблица функциональных требований становится 1.7 (перед ней вставляются таблицы 1.5 и 1.6)
     mk = Maker(draft)
-    replace_in_runs(draft, 'таблице 1.5', 'таблице 1.20')
-    replace_in_runs(draft, 'Таблица 1.5 –', 'Таблица 1.20 –')
+    replace_in_runs(draft, 'таблице 1.5', 'таблице 1.7')
+    replace_in_runs(draft, 'Таблица 1.5 –', 'Таблица 1.7 –')
     body = draft.element.body
 
-    # дополнение к 1.3: части A и B разделены жёлтыми служебными пометками
+    # дополнение к 1.3: перед ним стоит жёлтая служебная пометка (она не переносится)
     flat = tempfile.mktemp(suffix='.docx')
     split_tables.prepare(os.path.join(KURS, 'razdel-1.3-dopolnenie.docx'), flat)
     sup = docx.Document(flat)
@@ -211,20 +237,21 @@ def main(draft_path, out_path):
         if cur is not None:
             cur.append(copy.deepcopy(el))
     os.remove(flat)
-    assert len(parts) == 2, len(parts)
+    assert len(parts) == 1, len(parts)
 
     anchor_a = find_par(body, 'Программное средство должно быть реализовано как клиент-серверное')
-    anchor_b = find_par(body, 'Вариант использования «Авторизоваться»')
     end_heading = find_par(body, 'СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ')
     anchor_end = end_heading.getprevious()           # абзац с разрывом страницы
     parts = [normalize(mk, part) for part in parts]
-    for anchor, part in ((anchor_b, parts[1]), (anchor_a, parts[0])):   # с конца, чтобы якоря не сдвигались
-        for el in reversed(part):
-            anchor.addnext(el)
+    for el in reversed(parts[0]):
+        anchor_a.addnext(el)
     new = normalize(mk, mk.convert(os.path.join(KURS, 'razdel-1.4.docx')) + mk.convert(os.path.join(KURS, 'razdel-1.5.docx')))
     for el in new:
         anchor_end.addprevious(el)
 
+    # финальный раздел идёт после альбомного: номер страницы должен быть и на его первой странице
+    for el in body.find(qn('w:sectPr')).findall(qn('w:titlePg')):
+        body.find(qn('w:sectPr')).remove(el)
     raw = tempfile.mktemp(suffix='.docx')
     draft.save(raw)
     split_tables.main(raw, out_path)
