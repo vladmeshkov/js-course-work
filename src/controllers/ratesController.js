@@ -5,10 +5,10 @@ import { ratesView } from './homeController.js';
 const CURRENCIES = ['BYN', 'USD', 'EUR', 'RUB', 'CNY'];
 
 export async function index(req, res) {
-  res.render('pages/rates', { title: 'Курсы валют', rates: await ratesView() });
+  res.json({ rates: await ratesView() });
 }
 
-/** JSON для конвертера на странице курсов. */
+/** Расчёт для конвертера на странице курсов. */
 export async function convert(req, res) {
   const { from, to } = req.query;
   const amount = parseAmount(req.query.amount);

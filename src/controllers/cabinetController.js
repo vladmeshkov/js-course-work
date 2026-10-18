@@ -1,12 +1,12 @@
 import * as staffDashboardService from '../services/staffDashboardService.js';
 import * as dashboardService from '../services/dashboardService.js';
-import { ForbiddenError } from '../lib/errors.js';
 
+/** Главная клиента: суммы по счетам, плитки продуктов, последние операции. */
 export async function cabinet(req, res) {
-  if (req.user.role_code !== 'client') throw new ForbiddenError();
-  res.render('pages/cabinet/index', { title: 'Главная', ...(await dashboardService.forClient(req.user.id)) });
+  res.json(await dashboardService.forClient(req.user.id));
 }
 
+/** Рабочее место сотрудника: показатели и ближайшие задачи по правам роли. */
 export async function workplace(req, res) {
-  res.render('pages/cabinet/workplace', { title: 'Рабочее место', ...(await staffDashboardService.forUser(req.user)) });
+  res.json(await staffDashboardService.forUser(req.user));
 }

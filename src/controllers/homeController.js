@@ -1,3 +1,4 @@
+import { NotFoundError } from '../lib/errors.js';
 import * as loanModel from '../models/loanModel.js';
 import * as depositModel from '../models/depositModel.js';
 import * as searchService from '../services/searchService.js';
@@ -26,12 +27,11 @@ export async function ratesView() {
   });
 }
 
+/** Данные главной страницы гостя: лучшие ставки и курсы. */
 export async function home(req, res) {
-  if (req.user) return res.redirect(req.user.role_code === 'client' ? '/cabinet' : '/workplace');
   const deposits = await depositModel.listProducts();
   const loans = await loanModel.listProducts();
-  res.render('pages/home', {
-    title: 'ТалерБанк',
+  res.json({
     maxDepositRate: Math.max(...deposits.map((d) => Number(d.rate_percent))),
     minLoanRate: Math.min(...loans.map((l) => Number(l.rate_percent))),
     rates: await ratesView()
@@ -78,11 +78,11 @@ const INFO = {
   }
 };
 
-export function info(req, res, next) {
-  const key = req.params.slug || req.path.slice(1);
-  const page = INFO[key];
-  if (!page) return next();
-  res.render('pages/info', { title: page.title, blocks: page.blocks });
+/** Статические страницы: политика, условия, тарифы, лицензия, восстановление пароля. */
+export function info(req, res) {
+  const page = INFO[req.params.slug];
+  if (!page) throw new NotFoundError('Страница не найдена');
+  res.json(page);
 }
 
 /** JSON-индекс для поиска в шапке. */

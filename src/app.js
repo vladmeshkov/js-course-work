@@ -4,47 +4,54 @@ import express from 'express';
 import helmet from 'helmet';
 import { sessionMiddleware } from './middleware/session.js';
 import { csrf } from './middleware/csrf.js';
-import { flash } from './middleware/flash.js';
 import { loadUser, enforceStaff2fa } from './middleware/auth.js';
 import { notFound, errorHandler } from './middleware/errorHandler.js';
-import { formatAmount } from './lib/money.js';
-import { formatIban } from './lib/iban.js';
 import routes from './routes/index.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const publicDir = path.join(root, 'public');
 
-/** Создаёт приложение Express. Сервер запускается отдельно в server.js. */
+/**
+ * Создаёт приложение Express. Сервер запускается отдельно в server.js.
+ * Бизнес-логика доступна как JSON API по адресу /api, интерфейс (HTML, CSS, JavaScript) отдаётся как статические файлы:
+ * любой другой GET-запрос получает index.html, дальше страницу выбирает клиентский маршрутизатор.
+ */
 export function createApp() {
   const app = express();
-  app.set('view engine', 'ejs');
-  app.set('views', path.join(root, 'src/views'));
   app.set('trust proxy', 1);
-  app.locals.formatAmount = formatAmount;
-  app.locals.formatIban = formatIban;
-  app.locals.esc = (value) => String(value ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 
   app.use(helmet({
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
         styleSrc: ["'self'", 'https://fonts.googleapis.com'],
         fontSrc: ["'self'", 'https://fonts.gstatic.com'],
         imgSrc: ["'self'", 'data:'],
+        connectSrc: ["'self'"],
         // форма выхода и т. п. отправляются только на свой адрес
         formAction: ["'self'"]
       }
     }
   }));
-  app.use(express.static(path.join(root, 'public')));
-  app.use(express.urlencoded({ extended: false }));
-  app.use(sessionMiddleware());
-  app.use(flash);
-  app.use(csrf);
-  app.use(loadUser);
-  app.use(enforceStaff2fa);
+  app.use(express.static(publicDir, { index: false }));
 
-  app.use(routes);
-  app.use(notFound);
+  const api = express.Router();
+  api.use(express.json({ limit: '100kb' }));
+  api.use(sessionMiddleware());
+  api.use(csrf);
+  api.use(loadUser);
+  api.use(enforceStaff2fa);
+  api.use(routes);
+  api.use(notFound);
+  app.use('/api', api);
+
+  // страницы приложения: клиентский маршрутизатор разбирает адрес сам
+  app.get(/^\/(?!api(\/|$)).*/, (req, res, next) => {
+    if (path.extname(req.path)) return next();
+    res.sendFile(path.join(publicDir, 'index.html'));
+  });
+
   app.use(errorHandler);
   return app;
 }

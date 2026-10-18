@@ -1,75 +1,57 @@
-import { AppError, ValidationError } from '../lib/errors.js';
+import { AppError } from '../lib/errors.js';
 import * as settingsModel from '../models/settingsModel.js';
 import * as mailService from '../services/mailService.js';
 import * as userModel from '../models/userModel.js';
 import * as notificationService from '../services/notificationService.js';
 import * as twoFactorService from '../services/twoFactorService.js';
 
+/** Страница «Безопасность»: состояние двухфакторной защиты, резервные коды (один раз после включения), почта. */
 export async function show(req, res) {
-  const codes = req.session.recoveryCodes ?? null;
+  const recoveryCodes = req.session.recoveryCodes ?? null;
   delete req.session.recoveryCodes;
   const locked = req.user.role_code !== 'client' && (await settingsModel.getNumber('security.require_2fa_staff')) === 1;
   const email = req.user.role_code === 'client' ? await mailService.emailOf(req.user.id) : null;
-  res.render('pages/security/index', {
-    title: 'Безопасность', locked, recoveryCodes: codes, left: req.user.totp_enabled ? await twoFactorService.recoveryLeft(req.user.id) : 0, errors: {},
+  res.json({
+    locked, recoveryCodes,
+    left: req.user.totp_enabled ? await twoFactorService.recoveryLeft(req.user.id) : 0,
     mail: { enabled: mailService.enabled(), email: email ? mailService.maskEmail(email) : null }
   });
 }
 
 export async function setEmailNotifications(req, res) {
-  await userModel.setNotifyEmail(req.user.id, req.body.enabled === 'on');
-  req.flash('success', req.body.enabled === 'on' ? 'Уведомления будут дублироваться на почту' : 'Дублирование на почту отключено');
-  res.redirect('/security');
+  const enabled = req.body.enabled === true || req.body.enabled === 'on';
+  await userModel.setNotifyEmail(req.user.id, enabled);
+  res.json({ status: 'ok', enabled, message: enabled ? 'Уведомления будут дублироваться на почту' : 'Дублирование на почту отключено' });
 }
 
+/** Начало настройки: секрет и QR-код. Секрет живёт в сессии до подтверждения кодом. */
 export async function showSetup(req, res) {
-  if (req.user.totp_enabled) return res.redirect('/security');
+  if (req.user.totp_enabled) throw new AppError('Двухфакторная защита уже включена', 409, 'already_enabled');
   let setup;
   if (req.session.pendingSecret) setup = await twoFactorService.qrFor(req.user, req.session.pendingSecret);
   else {
     setup = await twoFactorService.beginSetup(req.user);
     req.session.pendingSecret = setup.secret;
   }
-  res.render('pages/security/setup', { title: 'Включить двухфакторную защиту', setup, errors: {} });
+  res.json(setup);
 }
 
 export async function confirmSetup(req, res) {
   const secret = req.session.pendingSecret;
-  if (!secret) return res.redirect('/security/2fa/setup');
-  try {
-    req.session.recoveryCodes = await twoFactorService.confirmSetup(req.user, secret, req.body.code);
-    delete req.session.pendingSecret;
-    req.flash('success', 'Двухфакторная защита включена');
-    res.redirect('/security');
-  } catch (error) {
-    if (error instanceof ValidationError) {
-      const setup = await twoFactorService.qrFor(req.user, secret);
-      return res.status(422).render('pages/security/setup', { title: 'Включить двухфакторную защиту', setup, errors: error.fields });
-    }
-    throw error;
-  }
+  if (!secret) throw new AppError('Начните настройку заново', 409, 'setup_expired');
+  req.session.recoveryCodes = await twoFactorService.confirmSetup(req.user, secret, req.body.code);
+  delete req.session.pendingSecret;
+  res.json({ status: 'ok', message: 'Двухфакторная защита включена' });
 }
 
 export async function disable(req, res) {
-  try {
-    await twoFactorService.disable(req.user, req.body.password, req.body.code);
-    req.flash('success', 'Двухфакторная защита отключена');
-    res.redirect('/security');
-  } catch (error) {
-    if (error instanceof ValidationError) {
-      return res.status(422).render('pages/security/index', { title: 'Безопасность', locked: false, recoveryCodes: null, left: await twoFactorService.recoveryLeft(req.user.id), errors: error.fields, mail: { enabled: mailService.enabled(), email: null } });
-    }
-    if (error instanceof AppError && error.status < 500) {
-      req.flash('error', error.message);
-      return res.redirect('/security');
-    }
-    throw error;
-  }
+  await twoFactorService.disable(req.user, req.body.password, req.body.code);
+  res.json({ status: 'ok', message: 'Двухфакторная защита отключена' });
 }
 
+/** Список уведомлений. Непрочитанные отмечаются в ответе, после показа помечаются прочитанными. */
 export async function notifications(req, res) {
   const items = await notificationService.list(req.user.id);
-  // непрочитанные подсвечиваются на этой странице, после показа помечаются прочитанными
   await notificationService.markAllRead(req.user.id);
-  res.render('pages/security/notifications', { title: 'Уведомления', items, unreadBefore: items.filter((n) => !n.read_at).length });
+  res.json({ items, unreadBefore: items.filter((n) => !n.read_at).length });
 }
