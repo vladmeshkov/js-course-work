@@ -1,59 +1,41 @@
-import { config } from '../config/index.js';
-import { AppError, ForbiddenError, ValidationError } from '../lib/errors.js';
+import { AppError, ValidationError } from '../lib/errors.js';
 import { parseAmount } from '../lib/money.js';
+import { clearDemoCode, deliverCode, demoCodeFor } from '../lib/demoCode.js';
 import * as accountModel from '../models/accountModel.js';
 import * as clientModel from '../models/clientModel.js';
 import * as transferModel from '../models/transferModel.js';
 import * as accountService from '../services/accountService.js';
-import * as mailService from '../services/mailService.js';
 import * as transferService from '../services/transferService.js';
 
-async function clientAccounts(req) {
-  if (req.user.role_code !== 'client') throw new ForbiddenError();
+/** Счёт для экрана: только то, что нужно форме и подтверждению. */
+const accountView = (a) => ({ id: a.id, title: a.title, iban: a.iban, currency: a.currency, balance: a.balance });
+
+/** Данные формы перевода: счета клиента, выбранный вид перевода и счёт списания из ссылки. */
+export async function showForm(req, res) {
   const client = await clientModel.findByUserId(req.user.id);
-  if (!client) throw new ForbiddenError();
-  return accountService.listForClient(client.id);
+  if (!client) throw new AppError('Клиент не найден', 404);
+  const accounts = (await accountService.listForClient(client.id)).map(accountView);
+  const kind = req.query.kind === 'own' ? 'own' : 'client';
+  res.json({ kind, accounts, fromAccountId: req.query.from ? Number(req.query.from) : null });
 }
 
-async function renderForm(req, res, { form = {}, errors = {}, status = 200 } = {}) {
-  const accounts = await clientAccounts(req);
-  const kind = (form.kind ?? req.query.kind) === 'own' ? 'own' : 'client';
-  res.status(status).render('pages/transfers/new', { title: 'Перевод', accounts, kind, form, errors });
-}
-
-export function showForm(req, res) {
-  return renderForm(req, res, { form: { fromAccountId: req.query.from } });
-}
-
+/**
+ * Создание перевода. Ответ говорит клиенту, куда идти дальше:
+ * review (на проверке) и executed (выполнен) ведут на страницу счёта, иначе на экран подтверждения кодом.
+ */
 export async function submit(req, res) {
   const kind = req.body.kind === 'own' ? 'own' : 'client';
   const amount = parseAmount(req.body.amount);
-  try {
-    if (amount === null) throw new ValidationError({ amount: 'Введите сумму, например 150,50' });
-    const result = await transferService.createTransfer(req.user.id, {
-      kind, amount, comment: req.body.comment,
-      fromAccountId: Number(req.body.fromAccountId), toAccountId: Number(req.body.toAccountId), toIban: req.body.toIban
-    });
-    if (result.review) {
-      req.flash('info', 'Перевод принят и находится на проверке в банке. Мы сообщим о результате, деньги на счёте зарезервированы.');
-      return res.redirect(`/accounts/${result.intent.from_account_id}`);
-    }
-    if (result.executed) {
-      req.flash('success', 'Перевод выполнен');
-      return res.redirect(`/accounts/${result.intent.from_account_id}`);
-    }
-    // код уходит письмом на почту клиента; без настроенной почты в учебной версии он показывается на экране
-    const sentTo = await mailService.sendCode(req.user.id, result.otpCode, 'подтверждения перевода');
-    if (sentTo) req.flash('info', `Код подтверждения отправлен на почту ${sentTo}`);
-    else if (!config.isProd) req.session.demoOtp = { intentId: result.intent.id, code: result.otpCode };
-    return res.redirect(`/transfers/${result.intent.id}/confirm`);
-  } catch (error) {
-    if (error instanceof ValidationError) return renderForm(req, res, { form: req.body, errors: error.fields, status: 422 });
-    if (error instanceof AppError && error.status < 500) {
-      return renderForm(req, res, { form: req.body, errors: { common: error.message }, status: error.status });
-    }
-    throw error;
-  }
+  if (amount === null) throw new ValidationError({ amount: 'Введите сумму, например 150,50' });
+  const result = await transferService.createTransfer(req.user.id, {
+    kind, amount, comment: req.body.comment,
+    fromAccountId: Number(req.body.fromAccountId), toAccountId: Number(req.body.toAccountId), toIban: req.body.toIban
+  });
+  const base = { id: result.intent.id, fromAccountId: result.intent.from_account_id, review: Boolean(result.review), executed: Boolean(result.executed) };
+  if (result.review || result.executed) return res.status(201).json({ ...base, sentTo: null, demoCode: null });
+  // код уходит письмом на почту клиента; без настроенной почты в учебной версии он показывается на экране
+  const { sentTo, demoCode } = await deliverCode(req, { intentId: result.intent.id, code: result.otpCode, label: 'подтверждения перевода' });
+  res.status(201).json({ ...base, sentTo, demoCode });
 }
 
 async function loadIntent(req) {
@@ -64,32 +46,26 @@ async function loadIntent(req) {
   return { intent, from, to };
 }
 
+/** Данные экрана подтверждения. Если перевод уже обработан, клиент уходит на страницу счёта (status != new). */
 export async function showConfirm(req, res) {
   const { intent, from, to } = await loadIntent(req);
-  if (intent.status !== 'new') return res.redirect(`/accounts/${intent.from_account_id}`);
-  const demo = req.session.demoOtp?.intentId === intent.id ? req.session.demoOtp.code : null;
-  res.render('pages/transfers/confirm', { title: 'Подтверждение перевода', intent, from, to, demoCode: demo, error: null });
+  res.json({
+    intent: { id: intent.id, status: intent.status, amount: intent.amount, fee: intent.fee, comment: intent.comment, fromAccountId: intent.from_account_id },
+    from: { id: from.id, iban: from.iban, currency: from.currency },
+    to: { id: to.id, iban: to.iban, currency: to.currency },
+    demoCode: demoCodeFor(req, intent.id)
+  });
 }
 
 export async function confirm(req, res) {
-  const { intent, from, to } = await loadIntent(req);
-  try {
-    await transferService.confirmTransfer(req.user.id, intent.id, req.body.code);
-  } catch (error) {
-    if (error instanceof AppError && error.status < 500) {
-      const demo = req.session.demoOtp?.intentId === intent.id ? req.session.demoOtp.code : null;
-      return res.status(error.status).render('pages/transfers/confirm', { title: 'Подтверждение перевода', intent, from, to, demoCode: demo, error: error.message });
-    }
-    throw error;
-  }
-  delete req.session.demoOtp;
-  req.flash('success', 'Перевод выполнен');
-  res.redirect(`/accounts/${intent.from_account_id}`);
+  const { intent } = await loadIntent(req);
+  await transferService.confirmTransfer(req.user.id, intent.id, req.body.code);
+  clearDemoCode(req, intent.id);
+  res.json({ status: 'ok', fromAccountId: intent.from_account_id, message: 'Перевод выполнен' });
 }
 
 export async function cancel(req, res) {
   await transferService.cancelTransfer(req.user.id, req.params.id);
-  delete req.session.demoOtp;
-  req.flash('info', 'Перевод отменён');
-  res.redirect('/transfers/new');
+  clearDemoCode(req, req.params.id);
+  res.json({ status: 'ok', message: 'Перевод отменён' });
 }

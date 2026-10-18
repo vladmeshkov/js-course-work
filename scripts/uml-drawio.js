@@ -173,7 +173,7 @@ function sequence(name, lifelines, messages) {
 }
 
 const transfer = sequence('Перевод клиенту банка',
-  ['Клиент', 'TransferController', 'TransferService', 'FraudService', 'OtpService', 'MailService', 'LedgerService', 'PostgreSQL'],
+  ['Клиент', 'TransferController', 'TransferService', 'FraudService', 'OtpService', 'MailService', 'LedgerService', 'MySQL'],
   [
     [0, 1, 'POST /transfers (счёт, IBAN, сумма)'],
     [1, 2, 'createTransfer(userId, input)'],
@@ -196,7 +196,7 @@ const transfer = sequence('Перевод клиенту банка',
   ]);
 
 const loan = sequence('Заявка на кредит',
-  ['Клиент', 'LoanController', 'LoanService', 'ScoringService', 'Кредитный специалист', 'LedgerService', 'PostgreSQL'],
+  ['Клиент', 'LoanController', 'LoanService', 'ScoringService', 'Кредитный специалист', 'LedgerService', 'MySQL'],
   [
     [0, 1, 'POST /loans (сумма, срок, доход, ...)'],
     [1, 2, 'apply(userId, input)'],
@@ -214,7 +214,7 @@ const loan = sequence('Заявка на кредит',
   ]);
 
 const eod = sequence('Закрытие операционного дня',
-  ['Администратор', 'AdminController', 'EodService', 'DepositService', 'LoanService', 'PaymentService', 'InterbankService', 'PostgreSQL'],
+  ['Администратор', 'AdminController', 'EodService', 'DepositService', 'LoanService', 'PaymentService', 'InterbankService', 'MySQL'],
   [
     [0, 1, 'POST /admin/eod (дней)'],
     [1, 2, 'closeDays(userId, days)'],

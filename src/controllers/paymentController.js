@@ -1,16 +1,19 @@
-import { AppError, ForbiddenError, NotFoundError, ValidationError } from '../lib/errors.js';
+import { NotFoundError, ValidationError } from '../lib/errors.js';
 import { parseAmount } from '../lib/money.js';
 import * as clientModel from '../models/clientModel.js';
 import * as accountService from '../services/accountService.js';
 import * as paymentService from '../services/paymentService.js';
 
-function requireClient(req) {
-  if (req.user?.role_code !== 'client') throw new ForbiddenError();
+/** Числовой идентификатор из адреса; иначе 404. */
+function idOf(value, message = 'Страница или запись не найдена') {
+  const id = Number(value);
+  if (!Number.isInteger(id) || id <= 0) throw new NotFoundError(message);
+  return id;
 }
 
+/** Платежи и переводы: шаблоны, автоплатежи, последние платежи. */
 export async function hub(req, res) {
-  requireClient(req);
-  res.render('pages/payments/hub', { title: 'Платежи и переводы', ...(await paymentService.overview(req.user.id)), errors: {}, form: {} });
+  res.json(await paymentService.overview(req.user.id));
 }
 
 /** Трёхмерная иконка категории по её названию. */
@@ -24,8 +27,8 @@ function iconFor(name) {
   return 'phone';
 }
 
+/** Каталог: категории, результаты поиска (если задан q), популярное, шаблоны и автоплатежи. */
 export async function catalog(req, res) {
-  requireClient(req);
   const q = String(req.query.q ?? '').trim();
   const city = String(req.query.city ?? '');
   const categories = (await paymentService.catalog.categories()).map((c) => ({ ...c, icon: iconFor(c.name) }));
@@ -34,92 +37,67 @@ export async function catalog(req, res) {
   const POPULAR = ['Энергосбыт', 'Мобильный оператор «Синий»', 'Интернет-провайдер «Сеть»', 'Налоговая инспекция'];
   const popular = POPULAR.map((name) => all.find((p) => p.name === name)).filter(Boolean);
   const { templates, autopayments } = await paymentService.overview(req.user.id);
-  res.render('pages/payments/catalog', { title: 'Каталог платежей', categories, found, q, city, popular, templates, autopayments });
+  res.json({ categories, found, q, city, popular, templates, autopayments });
 }
 
 export async function category(req, res) {
-  requireClient(req);
-  const category = await paymentService.catalog.category(Number(req.params.id));
+  const category = await paymentService.catalog.category(idOf(req.params.id));
   if (!category) throw new NotFoundError();
   const city = String(req.query.city ?? '');
-  res.render('pages/payments/category', {
-    title: category.name, category: { ...category, icon: iconFor(category.name) }, city, cities: await paymentService.catalog.cities(),
+  res.json({
+    category: { ...category, icon: iconFor(category.name) }, city, cities: await paymentService.catalog.cities(),
     providers: await paymentService.catalog.providers({ categoryId: category.id, city })
   });
 }
 
-async function renderPay(req, res, { form = {}, errors = {}, status = 200 } = {}) {
-  requireClient(req);
-  const provider = await paymentService.catalog.provider(Number(req.params.providerId ?? form.providerId));
-  if (!provider) throw new NotFoundError();
-  const client = await clientModel.findByUserId(req.user.id);
-  const accounts = (await accountService.listForClient(client.id)).filter((a) => a.currency === 'BYN' && ['current', 'savings'].includes(a.kind));
-  const history = await paymentService.historyFor(req.user.id, provider.id);
-  res.status(status).render('pages/payments/pay', { title: provider.name, provider, icon: iconFor(provider.category_name), accounts, form, errors, history });
-}
-
+/** Данные формы оплаты: получатель, счета в BYN, прошлые платежи и (если открыт шаблон) предзаполненные значения. */
 export async function showPay(req, res) {
-  requireClient(req);
+  const provider = await paymentService.catalog.provider(idOf(req.params.providerId));
+  if (!provider) throw new NotFoundError();
   let form = {};
   if (req.query.template) {
-    const t = await paymentService.getTemplate(req.user.id, Number(req.query.template));
+    const t = await paymentService.getTemplate(req.user.id, idOf(req.query.template, 'Шаблон не найден'));
     form = { requisite: t.requisite, fromAccountId: t.from_account_id, amount: t.amount ? String(t.amount / 100).replace('.', ',') : '' };
   }
-  return renderPay(req, res, { form });
+  const client = await clientModel.findByUserId(req.user.id);
+  const accounts = (await accountService.listForClient(client.id)).filter((a) => a.currency === 'BYN' && ['current', 'savings'].includes(a.kind));
+  res.json({
+    provider, icon: iconFor(provider.category_name), form,
+    accounts: accounts.map((a) => ({ id: a.id, title: a.title, iban: a.iban, currency: a.currency, balance: a.balance })),
+    history: await paymentService.historyFor(req.user.id, provider.id)
+  });
 }
 
+/** Оплата услуги. В ответе идентификатор платежа: по нему клиент открывает квитанцию. */
 export async function pay(req, res) {
-  requireClient(req);
   const b = req.body;
-  req.params.providerId = b.providerId;
-  try {
-    const amount = parseAmount(b.amount);
-    if (amount === null) throw new ValidationError({ amount: 'Введите сумму, например 25,40' });
-    const payment = await paymentService.pay(req.user.id, {
-      providerId: Number(b.providerId), fromAccountId: Number(b.fromAccountId), amount, requisite: b.requisite,
-      templateName: b.saveTemplate === 'on' ? b.templateName || 'Мой платёж' : '', saveAmount: b.saveAmount === 'on'
-    });
-    res.redirect(`/payments/${payment.id}/receipt`);
-  } catch (error) {
-    if (error instanceof ValidationError) return renderPay(req, res, { form: b, errors: error.fields, status: 422 });
-    if (error instanceof AppError && error.status < 500) return renderPay(req, res, { form: b, errors: { common: error.message }, status: error.status });
-    throw error;
-  }
+  const amount = parseAmount(b.amount);
+  if (amount === null) throw new ValidationError({ amount: 'Введите сумму, например 25,40' });
+  const payment = await paymentService.pay(req.user.id, {
+    providerId: Number(b.providerId), fromAccountId: Number(b.fromAccountId), amount, requisite: b.requisite,
+    templateName: b.saveTemplate === 'on' ? b.templateName || 'Мой платёж' : '', saveAmount: b.saveAmount === 'on'
+  });
+  res.status(201).json({ id: payment.id });
 }
 
 export async function receipt(req, res) {
-  requireClient(req);
-  const r = await paymentService.getReceipt(req.user.id, Number(req.params.id));
-  res.render('pages/payments/receipt', { title: `Квитанция № ${r.id}`, r });
+  const r = await paymentService.getReceipt(req.user.id, idOf(req.params.id, 'Платёж не найден'));
+  res.json({ r });
 }
 
 export async function deleteTemplate(req, res) {
-  requireClient(req);
-  await paymentService.removeTemplate(req.user.id, Number(req.params.id));
-  req.flash('info', 'Шаблон удалён');
-  res.redirect('/payments');
+  await paymentService.removeTemplate(req.user.id, idOf(req.params.id, 'Шаблон не найден'));
+  res.json({ status: 'ok', message: 'Шаблон удалён' });
 }
 
 export async function createAutopay(req, res) {
-  requireClient(req);
-  try {
-    const amount = parseAmount(req.body.amount);
-    if (amount === null) throw new ValidationError({ amount: 'Введите сумму' });
-    await paymentService.createAutopayment(req.user.id, { templateId: Number(req.params.id), amount, day: Number(req.body.day) });
-    req.flash('success', 'Автоплатёж включён');
-    res.redirect('/payments');
-  } catch (error) {
-    if (error instanceof ValidationError) {
-      req.flash('error', Object.values(error.fields).join('. '));
-      return res.redirect('/payments');
-    }
-    throw error;
-  }
+  const amount = parseAmount(req.body.amount);
+  if (amount === null) throw new ValidationError({ amount: 'Введите сумму' });
+  await paymentService.createAutopayment(req.user.id, { templateId: idOf(req.params.id, 'Шаблон не найден'), amount, day: Number(req.body.day) });
+  res.status(201).json({ status: 'ok', message: 'Автоплатёж включён' });
 }
 
 export async function cancelAutopay(req, res) {
-  requireClient(req);
-  await paymentService.cancelAutopayment(req.user.id, Number(req.params.id));
-  req.flash('info', 'Автоплатёж отключён');
-  res.redirect('/payments');
+  await paymentService.cancelAutopayment(req.user.id, idOf(req.params.id, 'Автоплатёж не найден'));
+  res.json({ status: 'ok', message: 'Автоплатёж отключён' });
 }

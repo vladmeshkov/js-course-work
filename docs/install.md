@@ -1,27 +1,27 @@
 # Руководство по установке и запуску
 
-Инструкция для Windows 10 и новее. На Linux и macOS шаги те же, отличается только установка Node.js и PostgreSQL.
+Инструкция для Windows 10 и новее. На Linux и macOS шаги те же, отличается только установка Node.js и MySQL.
 
 ## 1. Что нужно установить
 
 | Программа | Версия | Зачем | Где взять |
 |---|---|---|---|
 | Node.js | 20 или новее (LTS) | запуск сервера | https://nodejs.org |
-| PostgreSQL | 16 | база данных | https://www.postgresql.org/download/windows/ |
+| MySQL | 8.0 или новее (Community Server) | база данных | https://dev.mysql.com/downloads/installer/ |
 | Git | любая | получение проекта (можно скачать архив) | https://git-scm.com |
 | Браузер | Яндекс Браузер, Firefox, Chrome или Opera | работа с интерфейсом | |
 
-При установке PostgreSQL запомните пароль пользователя `postgres` и порт (по умолчанию 5432). Вместе с PostgreSQL ставятся утилиты `pg_dump` и `pg_restore`, они нужны для резервных копий.
+При установке MySQL запомните пароль пользователя `root` и порт (по умолчанию 3306). Вместе с сервером ставятся утилиты `mysqldump` и `mysql`, они нужны для резервных копий. Удобно поставить и MySQL Workbench: в нём можно открыть `db/schema.sql` и посмотреть ER-диаграмму.
 
 Проверьте установку, открыв PowerShell или командную строку:
 
 ```
 node -v
 npm -v
-psql --version
+mysql --version
 ```
 
-Если `psql` не находится, добавьте в переменную среды `Path` папку `C:\Program Files\PostgreSQL\16\bin` или используйте приложение pgAdmin вместо `psql`.
+Если `mysql` не находится, добавьте в переменную среды `Path` папку `C:\Program Files\MySQL\MySQL Server 8.0\bin` или выполняйте команды из следующего раздела в MySQL Workbench.
 
 ## 2. Получение проекта
 
@@ -34,13 +34,18 @@ cd js-course-work
 
 ## 3. Создание базы данных
 
-Откройте `psql` под администратором (`psql -U postgres`) или Query Tool в pgAdmin и выполните:
+Откройте клиент под администратором (`mysql -u root -p`) или вкладку запросов в MySQL Workbench и выполните:
 
 ```sql
-CREATE USER taler WITH PASSWORD 'taler' CREATEDB;
-CREATE DATABASE talerbank OWNER taler;
-CREATE DATABASE talerbank_test OWNER taler;
+CREATE USER 'taler'@'%' IDENTIFIED BY 'taler';
+CREATE DATABASE talerbank CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+CREATE DATABASE talerbank_test CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+GRANT ALL PRIVILEGES ON talerbank.* TO 'taler'@'%';
+GRANT ALL PRIVILEGES ON talerbank_test.* TO 'taler'@'%';
+GRANT RELOAD ON *.* TO 'taler'@'%';
 ```
+
+Право `RELOAD` нужно утилите `mysqldump`, которая делает резервные копии. Если задать пароль, отличный от `taler`, поменяйте его и в `.env` (раздел 4).
 
 База `talerbank` рабочая, `talerbank_test` нужна только автотестам: они пересоздают в ней схему при каждом запуске, поэтому не храните там ничего нужного.
 
@@ -60,8 +65,8 @@ npm run setup
 | Параметр | Значение по умолчанию | Назначение |
 |---|---|---|
 | `PORT` | 3000 | порт сервера |
-| `DATABASE_URL` | `postgres://taler:taler@localhost:5432/talerbank` | подключение к рабочей базе |
-| `TEST_DATABASE_URL` | `postgres://taler:taler@localhost:5432/talerbank_test` | база для автотестов |
+| `DATABASE_URL` | `mysql://taler:taler@localhost:3306/talerbank` | подключение к рабочей базе |
+| `TEST_DATABASE_URL` | `mysql://taler:taler@localhost:3306/talerbank_test` | база для автотестов |
 | `SESSION_SECRET` | случайный | секрет подписи сессий |
 | `DATA_KEY` | случайный | ключ AES-256-GCM для паспортных данных и резервных копий (64 шестнадцатеричных символа) |
 | `BANK_CODE` | TLRB | код банка в номере IBAN |
@@ -70,7 +75,7 @@ npm run setup
 | `BACKUP_DIR` | backups | каталог резервных копий |
 | `BACKUP_KEEP` | 14 | сколько копий хранить |
 | `BACKUP_INTERVAL_HOURS` | 24 | период автокопирования, 0 выключает |
-| `PG_BIN_DIR` | пусто | папка `bin` PostgreSQL, если `pg_dump` не найден в `Path` (например `C:\Program Files\PostgreSQL\16\bin`) |
+| `MYSQL_BIN_DIR` | пусто | папка `bin` MySQL, если `mysqldump` не найден в `Path` (например `C:\Program Files\MySQL\MySQL Server 8.0\bin`) |
 
 ### Почта вместо SMS
 
@@ -159,7 +164,7 @@ npm test
 ## 9. Резервное копирование и восстановление
 
 - Копии создаются автоматически по расписанию (`BACKUP_INTERVAL_HOURS`) и вручную в разделе администратора «Резервные копии». Файлы лежат в каталоге `BACKUP_DIR`, шифруются ключом `DATA_KEY`. Хранятся последние `BACKUP_KEEP` копий.
-- Для работы нужны `pg_dump` и `pg_restore`. Если они не находятся, задайте `PG_BIN_DIR` в `.env`.
+- Для работы нужны `mysqldump` и `mysql`. Если они не находятся, задайте `MYSQL_BIN_DIR` в `.env`.
 - Восстановление из копии заменяет все текущие данные. Перед ним создайте свежую копию.
 
 ## 10. Работа по HTTPS
@@ -171,12 +176,12 @@ npm test
 | Симптом | Причина и решение |
 |---|---|
 | PowerShell: «выполнение сценариев отключено в этой системе» при `npm` | выполните в PowerShell `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` либо запускайте команды в обычной командной строке `cmd` |
-| `ECONNREFUSED` или «password authentication failed» | не запущена служба PostgreSQL, либо в `DATABASE_URL` неверные пользователь, пароль или имя базы |
-| `database "talerbank" does not exist` | не выполнен шаг 3, создайте базы |
+| `ECONNREFUSED` или «Access denied for user» | не запущена служба MySQL (`MySQL80`), либо в `DATABASE_URL` неверные пользователь, пароль или имя базы |
+| `Unknown database 'talerbank'` | не выполнен шаг 3, создайте базы |
 | `EADDRINUSE` при запуске | порт 3000 занят предыдущей копией сервера. Закройте её окно или выполните `taskkill /F /IM node.exe`, затем `npm start`. Либо смените `PORT` в `.env` |
 | После обновления кода страница показывает ошибку «... is not defined» | сервер работает со старой версией: перезапустите его (Ctrl+C и `npm start`) |
 | Курсы валют не обновляются | нет доступа к api.nbrb.by. Используются запасные курсы. Администратор может нажать «Обновить курсы с Нацбанка» позже |
-| Резервная копия не создаётся | не найден `pg_dump`: задайте `PG_BIN_DIR` |
+| Резервная копия не создаётся | не найден `mysqldump`: задайте `MYSQL_BIN_DIR`; либо у пользователя нет права `RELOAD` (шаг 3) |
 | Код подтверждения не приходит | если почта не настроена (`SMTP_HOST` пуст), код показан прямо на странице подтверждения. Если настроена: проверьте папку «Спам», адрес в анкете клиента и сообщения в консоли сервера (`Не удалось отправить код на почту`) |
 | Сотрудник потерял телефон с аутентификатором | войдите, используя резервный код. Если кодов нет, администратор выполняет `npm run staff2fa:off` на сервере и сотрудник настраивает защиту заново |
 | Вход временно заблокирован после неверных паролей | подождите `LOGIN_LOCK_MINUTES` минут. Блокировка снимается сама |
@@ -189,7 +194,7 @@ backups/              зашифрованные резервные копии
 db/sql/               схема и начальные данные
 db/schema.sql         полный скрипт БД (собирается npm run db:schema)
 src/                  код сервера
-public/               стили, скрипты, изображения
+public/               интерфейс: index.html, стили, скрипты страниц, изображения
 docs/                 документация
 test/                 автотесты
 ```

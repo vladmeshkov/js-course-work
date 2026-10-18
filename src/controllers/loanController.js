@@ -1,5 +1,5 @@
 import { config } from '../config/index.js';
-import { AppError, ForbiddenError, ValidationError } from '../lib/errors.js';
+import { AppError, ValidationError } from '../lib/errors.js';
 import { parseAmount } from '../lib/money.js';
 import * as clientModel from '../models/clientModel.js';
 import * as loanModel from '../models/loanModel.js';
@@ -7,28 +7,33 @@ import * as accountService from '../services/accountService.js';
 import * as mailService from '../services/mailService.js';
 import * as loanService from '../services/loanService.js';
 
-function requireClient(req) {
-  if (req.user?.role_code !== 'client') throw new ForbiddenError();
+/** Учебный код подписания, если он был выдан для этой заявки (без почты и не в промышленном режиме). */
+function demoCodeFor(req, applicationId) {
+  return req.session.demoOtp?.loanId === applicationId ? req.session.demoOtp.code : null;
 }
 
+/**
+ * Каталог кредитов: открыт гостю. У вошедшего клиента к каталогу добавляются его кредиты и заявки.
+ * @returns {{products: object[], loans: object[], applications: object[]}}
+ */
 export async function index(req, res) {
   const products = await loanModel.listProducts();
   const mine = req.user?.role_code === 'client' ? await loanService.listForClient(req.user.id) : { loans: [], applications: [] };
-  res.render('pages/loans/index', { title: 'Кредиты', products, ...mine });
+  res.json({ products, ...mine });
 }
 
-async function renderNew(req, res, { form = {}, errors = {}, status = 200 } = {}) {
-  requireClient(req);
+/** Данные страницы заявки: выбранный кредит и счета в BYN для зачисления. */
+export async function showNew(req, res) {
   const client = await clientModel.findByUserId(req.user.id);
-  const product = await loanModel.findProduct(Number(form.productId ?? req.query.product));
+  const product = await loanModel.findProduct(Number(req.query.product));
   if (!product) throw new AppError('Кредит не найден', 404);
-  const accounts = (await accountService.listForClient(client.id)).filter((a) => a.currency === 'BYN' && ['current', 'savings'].includes(a.kind));
-  res.status(status).render('pages/loans/new', { title: `Кредит «${product.name}»`, product, accounts, form, errors });
+  const accounts = (await accountService.listForClient(client.id))
+    .filter((a) => a.currency === 'BYN' && ['current', 'savings'].includes(a.kind))
+    .map((a) => ({ id: a.id, title: a.title, iban: a.iban, balance: a.balance, currency: a.currency }));
+  res.json({ product, accounts });
 }
 
-export const showNew = (req, res) => renderNew(req, res);
-
-/** JSON для калькулятора: график по введённым условиям. */
+/** Расчёт графика по введённым условиям для калькулятора. Открыт без входа. */
 export async function calc(req, res) {
   try {
     const { rows } = await loanService.previewSchedule({
@@ -43,97 +48,64 @@ export async function calc(req, res) {
   }
 }
 
+/** Подача заявки. Скоринг выполняется сразу, в ответе номер заявки и её статус. */
 export async function create(req, res) {
   const b = req.body;
-  try {
-    const income = parseAmount(b.income);
-    const obligations = b.obligations === '' || b.obligations === undefined ? 0 : parseAmount(b.obligations);
-    const errors = {};
-    if (income === null) errors.income = 'Введите доход, например 1500,00';
-    if (obligations === null) errors.obligations = 'Введите сумму или 0';
-    const amount = parseAmount(b.amount);
-    if (amount === null) errors.amount = 'Введите сумму, например 5000,00';
-    if (Object.keys(errors).length) throw new ValidationError(errors);
-    const application = await loanService.apply(req.user.id, {
-      productId: Number(b.productId), amount, termMonths: Number(b.termMonths), scheduleType: b.scheduleType,
-      targetAccountId: Number(b.targetAccountId), income, obligations,
-      experienceMonths: Number(b.experienceMonths), dependents: Number(b.dependents || 0)
-    });
-    res.redirect(`/loans/applications/${application.id}`);
-  } catch (error) {
-    if (error instanceof ValidationError) return renderNew(req, res, { form: b, errors: error.fields, status: 422 });
-    if (error instanceof AppError && error.status < 500) return renderNew(req, res, { form: b, errors: { common: error.message }, status: error.status });
-    throw error;
-  }
+  const income = parseAmount(b.income);
+  const obligations = b.obligations === '' || b.obligations === undefined ? 0 : parseAmount(b.obligations);
+  const amount = parseAmount(b.amount);
+  const errors = {};
+  if (income === null) errors.income = 'Введите доход, например 1500,00';
+  if (obligations === null) errors.obligations = 'Введите сумму или 0';
+  if (amount === null) errors.amount = 'Введите сумму, например 5000,00';
+  if (Object.keys(errors).length) throw new ValidationError(errors);
+  const application = await loanService.apply(req.user.id, {
+    productId: Number(b.productId), amount, termMonths: Number(b.termMonths), scheduleType: b.scheduleType,
+    targetAccountId: Number(b.targetAccountId), income, obligations,
+    experienceMonths: Number(b.experienceMonths), dependents: Number(b.dependents || 0)
+  });
+  res.status(201).json({ id: application.id, status: application.status });
 }
 
+/** Заявка клиента со скоринговыми пояснениями; demoCode есть, только если код выдан в учебном режиме. */
 export async function showApplication(req, res) {
-  requireClient(req);
   const application = await loanService.applicationForClient(req.user.id, Number(req.params.id));
-  const demo = req.session.demoOtp?.loanId === application.id ? req.session.demoOtp.code : null;
-  res.render('pages/loans/application', { title: `Заявка № ${application.id}`, application, demoCode: demo, error: null });
+  res.json({ application, demoCode: demoCodeFor(req, application.id) });
 }
 
+/** Выдаёт код подписания договора: письмом на почту, а без почты (не в промышленном режиме) возвращает его в ответе. */
 export async function sendCode(req, res) {
-  requireClient(req);
   const id = Number(req.params.id);
   const code = await loanService.requestSignCode(req.user.id, id);
   const sentTo = await mailService.sendCode(req.user.id, code, 'подписания кредитного договора');
-  if (sentTo) req.flash('info', `Код подписания отправлен на почту ${sentTo}`);
-  else {
-    if (!config.isProd) req.session.demoOtp = { loanId: id, code };
-    req.flash('info', 'Код сформирован. В учебной версии он показан на странице');
+  let demoCode = null;
+  if (!sentTo && !config.isProd) {
+    req.session.demoOtp = { loanId: id, code };
+    demoCode = code;
   }
-  res.redirect(`/loans/applications/${id}`);
+  res.json({ sentTo: sentTo || null, demoCode });
 }
 
+/** Подписание договора кодом: деньги зачисляются на счёт. Возвращает номер кредита. */
 export async function sign(req, res) {
-  requireClient(req);
-  const id = Number(req.params.id);
-  try {
-    const loan = await loanService.sign(req.user.id, id, req.body.code);
-    delete req.session.demoOtp;
-    req.flash('success', 'Договор подписан, деньги зачислены на счёт');
-    res.redirect(`/loans/${loan.id}`);
-  } catch (error) {
-    if (error instanceof AppError && error.status < 500) {
-      const application = await loanService.applicationForClient(req.user.id, id);
-      const demo = req.session.demoOtp?.loanId === id ? req.session.demoOtp.code : null;
-      return res.status(error.status).render('pages/loans/application', { title: `Заявка № ${id}`, application, demoCode: demo, error: error.message });
-    }
-    throw error;
-  }
+  const loan = await loanService.sign(req.user.id, Number(req.params.id), req.body.code);
+  delete req.session.demoOtp;
+  res.json({ id: loan.id });
 }
 
+/** Кредит с графиком, ближайшим платежом, просрочкой и расчётом полного погашения. */
 export async function show(req, res) {
-  requireClient(req);
-  const data = await loanService.getLoan(req.user.id, Number(req.params.id));
-  res.render('pages/loans/show', { title: `Кредит № ${data.loan.id}`, ...data, errors: {}, form: {} });
+  res.json(await loanService.getLoan(req.user.id, Number(req.params.id)));
 }
 
+/** Полное досрочное погашение: возвращает расчёт (долг, проценты, пеня, итог). */
 export async function repayFull(req, res) {
-  requireClient(req);
-  await loanService.repayFull(req.user.id, Number(req.params.id));
-  req.flash('success', 'Кредит полностью погашен');
-  res.redirect('/loans');
+  res.json(await loanService.repayFull(req.user.id, Number(req.params.id)));
 }
 
+/** Частичное досрочное погашение: mode «term» сокращает срок, «payment» снижает платёж. */
 export async function repayPartial(req, res) {
-  requireClient(req);
-  const id = Number(req.params.id);
-  try {
-    const amount = parseAmount(req.body.amount);
-    if (amount === null) throw new ValidationError({ amount: 'Введите сумму, например 500,00' });
-    await loanService.repayPartial(req.user.id, id, { amount, mode: req.body.mode });
-    req.flash('success', 'Досрочный платёж принят, график пересчитан');
-    res.redirect(`/loans/${id}`);
-  } catch (error) {
-    if (error instanceof AppError && error.status < 500) {
-      const data = await loanService.getLoan(req.user.id, id);
-      return res.status(error.status).render('pages/loans/show', {
-        title: `Кредит № ${id}`, ...data, form: req.body, errors: error.fields ?? { common: error.message }
-      });
-    }
-    throw error;
-  }
+  const amount = parseAmount(req.body.amount);
+  if (amount === null) throw new ValidationError({ amount: 'Введите сумму, например 500,00' });
+  res.json(await loanService.repayPartial(req.user.id, Number(req.params.id), { amount, mode: req.body.mode }));
 }

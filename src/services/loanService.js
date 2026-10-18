@@ -358,7 +358,7 @@ export async function sendReminders(db, date) {
   const { rows } = await db.query(
     `SELECT s.id, s.loan_id, s.due_date, s.principal, s.interest, c.user_id
      FROM loan_schedule s JOIN loans l ON l.id = s.loan_id JOIN clients c ON c.id = l.client_id
-     WHERE s.status = 'planned' AND NOT s.reminded AND l.status = 'active' AND s.due_date > ? AND s.due_date <= ? + 3
+     WHERE s.status = 'planned' AND NOT s.reminded AND l.status = 'active' AND s.due_date > ? AND s.due_date <= DATE_ADD(?, INTERVAL 3 DAY)
      ORDER BY s.id`, [date, date]);
   for (const r of rows) {
     await notify(r.user_id, { type: 'loan', title: 'Скоро платёж по кредиту', body: `Договор № ${r.loan_id}: ${money(r.principal + r.interest)} до ${String(r.due_date).slice(0, 10)}. Проверьте остаток на счёте.`, link: `/loans/${r.loan_id}` }, db);

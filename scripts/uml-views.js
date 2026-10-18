@@ -287,20 +287,19 @@ function stLoanApp() {
 function components() {
   const d = new Diagram('Диаграмма компонентов');
   d.frame({ x: 20, y: 20, w: 250, h: 330, title: 'Браузер клиента', center: true });
-  const pg = d.component({ x: 60, y: 80, w: 170, h: 60, text: 'Страницы HTML,\nCSS (одна таблица)' });
-  const js = d.component({ x: 60, y: 170, w: 170, h: 60, text: 'Клиентский\nJavaScript' });
-  void js;
+  const pg = d.component({ x: 60, y: 80, w: 170, h: 60, text: 'Страница index.html\nи стили (CSS)' });
+  const js = d.component({ x: 60, y: 170, w: 170, h: 60, text: 'Модули страниц и\nмаршрутизатор (JS)' });
   d.frame({ x: 340, y: 20, w: 560, h: 560, title: 'Сервер приложения (Node.js, Express 5)', center: true });
-  const mw = d.component({ x: 400, y: 80, w: 200, h: 50, text: 'Промежуточные слои:\nсессии, CSRF, права, 2FA' });
+  const mw = d.component({ x: 400, y: 170, w: 200, h: 50, text: 'Промежуточные слои:\nсессии, CSRF, права, 2FA' });
   const rt = d.component({ x: 650, y: 80, w: 200, h: 50, text: 'Маршруты (routes)' });
-  const ct = d.component({ x: 650, y: 170, w: 200, h: 50, text: 'Контроллеры' });
-  const vw = d.component({ x: 400, y: 170, w: 200, h: 50, text: 'Представления (EJS)' });
+  const ct = d.component({ x: 650, y: 170, w: 200, h: 50, text: 'Контроллеры (JSON)' });
+  const vw = d.component({ x: 400, y: 80, w: 200, h: 50, text: 'Раздача файлов\nинтерфейса (public)' });
   const sv = d.component({ x: 650, y: 260, w: 200, h: 60, text: 'Сервисы:\nбизнес-логика' });
   const lb = d.component({ x: 400, y: 260, w: 200, h: 60, text: 'Библиотеки: деньги,\nIBAN, TOTP, PDF' });
   const md = d.component({ x: 650, y: 360, w: 200, h: 50, text: 'Модели (SQL-запросы)' });
   const jb = d.component({ x: 400, y: 440, w: 200, h: 60, text: 'Фоновые задачи: копии,\nочередь писем' });
   void mw;
-  d.frame({ x: 970, y: 330, w: 250, h: 150, title: 'PostgreSQL 16', center: true });
+  d.frame({ x: 970, y: 330, w: 250, h: 150, title: 'MySQL 8', center: true });
   const db = d.component({ x: 1010, y: 380, w: 170, h: 70, text: 'Таблицы, триггеры,\nсессии' });
   d.frame({ x: 970, y: 20, w: 250, h: 120, title: 'Национальный банк', center: true });
   const nb = d.component({ x: 1010, y: 70, w: 170, h: 50, text: 'API курсов\napi.nbrb.by' });
@@ -308,10 +307,10 @@ function components() {
   const sm = d.component({ x: 1010, y: 220, w: 170, h: 50, text: 'SMTP' });
   d.frame({ x: 970, y: 510, w: 250, h: 100, title: 'Хранилище копий', center: true });
   const bk = d.component({ x: 1010, y: 550, w: 170, h: 40, text: 'Файлы (AES-256-GCM)' });
-  d.line({ pts: [Rt(pg), [310, pg.y + 30], [310, mw.y + 25], Lf(mw)], label: 'HTTPS', at: { x: 295, y: 70 }, arrow: 'open' });
+  d.line({ pts: [Rt(pg), Lf(vw)], label: 'HTTPS', at: { x: 305, y: 85 }, arrow: 'open' });
+  d.line({ pts: [Rt(js), Lf(mw)], label: 'HTTPS, JSON', at: { x: 305, y: 175 }, arrow: 'open' });
   d.line({ pts: [Rt(mw), Lf(rt)], arrow: 'open' });
   d.line({ pts: [B(rt), T(ct)], arrow: 'open' });
-  d.line({ pts: [Lf(ct), Rt(vw)], arrow: 'open' });
   d.line({ pts: [B(ct), T(sv)], arrow: 'open' });
   d.line({ pts: [Lf(sv), Rt(lb)], arrow: 'open' });
   d.line({ pts: [B(sv), T(md)], arrow: 'open' });
@@ -326,13 +325,13 @@ function components() {
 function deployment() {
   const d = new Diagram('Диаграмма развёртывания');
   const pc = d.node({ x: 30, y: 120, w: 240, h: 150, title: '«device» Компьютер клиента', text: 'Браузер: Яндекс, Firefox,\nChrome, Opera' });
-  const app = d.node({ x: 400, y: 80, w: 300, h: 230, title: '«server» Сервер приложения', text: 'Обратный прокси (nginx, Caddy)\nс сертификатом TLS\n\nNode.js 20+, Express 5\nприложение ТалерБанк' });
-  const db = d.node({ x: 830, y: 120, w: 240, h: 150, title: '«server» Сервер БД', text: 'PostgreSQL 16\nбаза talerbank' });
+  const app = d.node({ x: 400, y: 80, w: 300, h: 230, title: '«server» Сервер приложения', text: 'Обратный прокси (nginx, Caddy)\nс сертификатом TLS\n\nNode.js 20+, Express 5\nAPI и файлы интерфейса' });
+  const db = d.node({ x: 830, y: 120, w: 240, h: 150, title: '«server» Сервер БД', text: 'MySQL 8 (InnoDB)\nбаза talerbank' });
   const mail = d.node({ x: 400, y: 430, w: 300, h: 100, title: '«server» Почтовый сервер', text: 'SMTP (коды и уведомления)' });
   const nb = d.node({ x: 30, y: 430, w: 280, h: 100, title: '«server» Нацбанк', text: 'api.nbrb.by (курсы валют)' });
   const bk = d.node({ x: 830, y: 430, w: 240, h: 100, title: '«device» Хранилище', text: 'Резервные копии\n(шифрование AES-256-GCM)' });
   d.line({ pts: [[pc.x + pc.w + 16, 200], [app.x, 200]], arrow: null, label: 'HTTPS', at: { x: 343, y: 192 } });
-  d.line({ pts: [[app.x + app.w + 16, 200], [db.x, 200]], arrow: null, label: 'TCP 5432 (SQL)', at: { x: 770, y: 192 } });
+  d.line({ pts: [[app.x + app.w + 16, 200], [db.x, 200]], arrow: null, label: 'TCP 3306 (SQL)', at: { x: 770, y: 192 } });
   d.line({ pts: [[app.x + 150, app.y + app.h], [app.x + 150, mail.y - 14]], arrow: null, label: 'SMTP', at: { x: app.x + 158, y: 385, anchor: 'start' } });
   d.line({ pts: [[app.x + 40, app.y + app.h], [app.x + 40, 380], [170, 380], [170, nb.y - 14]], arrow: null, label: 'HTTPS (JSON)', at: { x: 255, y: 372 } });
   d.line({ pts: [[app.x + 260, app.y + app.h], [app.x + 260, 380], [950, 380], [950, bk.y - 14]], arrow: null, label: 'файлы копий', at: { x: 810, y: 372 } });

@@ -1,5 +1,5 @@
 import { withTransaction } from '../db/pool.js';
-import { AppError, BusinessError } from '../lib/errors.js';
+import { BusinessError, NotFoundError } from '../lib/errors.js';
 import { decrypt } from '../lib/crypto.js';
 import * as clientModel from '../models/clientModel.js';
 import * as accountService from './accountService.js';
@@ -36,7 +36,7 @@ export const queue = () => clientModel.listByKycStatus('submitted');
 /** Анкета для проверки: паспорт и идентификационный номер расшифровываются, факт просмотра пишется в журнал. */
 export async function getForReview(clientId, operatorId) {
   const client = await clientModel.findFull(clientId);
-  if (!client) throw new AppError('Анкета не найдена', 404);
+  if (!client) throw new NotFoundError('Анкета не найдена');
   await auditService.log({ userId: operatorId, action: 'kyc.view', entity: 'client', entityId: clientId });
   return { ...client, idNumber: decrypt(client.id_number_enc), passport: decrypt(client.passport_enc) };
 }

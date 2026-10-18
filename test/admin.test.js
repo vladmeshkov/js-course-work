@@ -1,5 +1,4 @@
 import { describe, it, expect, afterAll } from 'vitest';
-import request from 'supertest';
 import { createApp } from '../src/app.js';
 import { pool } from '../src/db/pool.js';
 import * as settingsModel from '../src/models/settingsModel.js';
@@ -9,8 +8,11 @@ import { convert } from '../src/services/ratesService.js';
 import { hashPassword } from '../src/services/authService.js';
 import * as userModel from '../src/models/userModel.js';
 import { createClientWithAccount, closePool } from './helpers.js';
+import { apiClient, loggedIn } from './http.js';
 
 afterAll(closePool);
+
+const app = createApp();
 
 async function admin() {
   const hash = await hashPassword('Parol2026');
@@ -59,16 +61,13 @@ describe('пользователи и журнал', () => {
     const c = await createClientWithAccount(0, 'BYN', hash);
     await expect(adminService.setBlocked(a.id, a.id, true)).rejects.toThrow(/собственную/);
     await adminService.setBlocked(a.id, c.userId, true);
-    const app = createApp();
-    const agent = request.agent(app);
-    const page = await agent.get('/login');
-    const token = /name="_csrf" value="([0-9a-f]+)"/.exec(page.text)[1];
-    const res = await agent.post('/login').type('form').send({ _csrf: token, login: c.login, password: 'Parol2026' });
+    const client = apiClient(app);
+    await client.refresh();
+    const res = await client.login(c.login, 'Parol2026');
     expect(res.status).toBe(403);
-    expect(res.text).toContain('заблокирована');
+    expect(res.body.error.message).toContain('заблокирована');
     await adminService.setBlocked(a.id, c.userId, false);
-    const ok = await agent.post('/login').type('form').send({ _csrf: token, login: c.login, password: 'Parol2026' });
-    expect(ok.status).toBe(302);
+    expect((await client.login(c.login, 'Parol2026')).status).toBe(200);
   });
 
   it('создаёт сотрудника и меняет роль, клиента в сотрудники переводить нельзя', async () => {
@@ -94,16 +93,13 @@ describe('пользователи и журнал', () => {
     const hash = await hashPassword('Parol2026');
     const login = `adm${Date.now()}x`;
     await userModel.create(pool, { login, passwordHash: hash, roleCode: 'admin' });
-    const app = createApp();
-    const agent = request.agent(app);
-    const token = /name="_csrf" value="([0-9a-f]+)"/.exec((await agent.get('/login')).text)[1];
-    await agent.post('/login').type('form').send({ _csrf: token, login, password: 'Parol2026' });
-    for (const url of ['/admin/rates', '/admin/users', '/admin/audit', '/admin/eod', '/admin/reports', '/admin/reports?from=2026-01-01&to=2026-12-31&currency=USD', '/admin/reports/trial.csv', '/admin/backups', '/admin/clearing', '/workplace']) expect((await agent.get(url)).status, url).toBe(200);
+    const adminClient = await loggedIn(app, login);
+    for (const url of ['/admin/rates', '/admin/users', '/admin/audit', '/admin/eod', '/admin/reports', '/admin/reports?from=2026-01-01&to=2026-12-31&currency=USD', '/admin/reports/trial.csv', '/admin/backups', '/admin/clearing', '/workplace']) {
+      expect((await adminClient.get(url)).status, url).toBe(200);
+    }
 
     const client = await createClientWithAccount(0, 'BYN', hash);
-    const other = request.agent(app);
-    const t2 = /name="_csrf" value="([0-9a-f]+)"/.exec((await other.get('/login')).text)[1];
-    await other.post('/login').type('form').send({ _csrf: t2, login: client.login, password: 'Parol2026' });
+    const other = await loggedIn(app, client.login);
     for (const url of ['/admin/rates', '/admin/users', '/admin/audit']) expect((await other.get(url)).status, url).toBe(403);
   });
 });

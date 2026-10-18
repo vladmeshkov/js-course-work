@@ -1,39 +1,20 @@
-import { ForbiddenError, ValidationError } from '../lib/errors.js';
 import { formatAmount } from '../lib/money.js';
 import { formatIban } from '../lib/iban.js';
 import { createDocument, fact, table, footer } from '../lib/pdf.js';
 import * as statementService from '../services/statementService.js';
 import * as paymentService from '../services/paymentService.js';
 import * as accountService from '../services/accountService.js';
-import * as clientModel from '../models/clientModel.js';
-
-function requireClient(req) {
-  if (req.user?.role_code !== 'client') throw new ForbiddenError();
-}
 
 const fullName = (c) => [c.last_name, c.first_name, c.patronymic].filter(Boolean).join(' ');
 const money = (minor, currency) => `${formatAmount(minor)} ${currency}`;
 
-export async function statementPage(req, res) {
-  requireClient(req);
-  const id = Number(req.params.id);
-  try {
-    const statement = await statementService.getStatement(req.user.id, id, { from: req.query.from, to: req.query.to });
-    const kind = ['in', 'out'].includes(req.query.kind) ? req.query.kind : '';
-    const client = await clientModel.findByUserId(req.user.id);
-    const accounts = client ? await accountService.listForClient(client.id) : [];
-    res.render('pages/accounts/statement', { title: 'Выписка по счёту', statement, errors: {}, kind, accounts });
-  } catch (error) {
-    if (error instanceof ValidationError) {
-      const statement = await statementService.getStatement(req.user.id, id);
-      return res.status(422).render('pages/accounts/statement', { title: 'Выписка по счёту', statement, errors: error.fields, kind: '', accounts: [] });
-    }
-    throw error;
-  }
+/** Выписка за период в JSON: сама выписка и все счета клиента (для переключения между ними). Отбор по виду операций делает клиент. */
+export async function statement(req, res) {
+  const { client, ...data } = await statementService.getStatement(req.user.id, Number(req.params.id), { from: req.query.from, to: req.query.to });
+  res.json({ statement: data, accounts: await accountService.listForClient(client.id) });
 }
 
 export async function statementPdf(req, res) {
-  requireClient(req);
   const s = await statementService.getStatement(req.user.id, Number(req.params.id), { from: req.query.from, to: req.query.to });
   const cur = s.account.currency;
   const doc = createDocument('Выписка по счёту', `за период с ${s.from} по ${s.to}`);
@@ -56,7 +37,6 @@ export async function statementPdf(req, res) {
 }
 
 export async function certificatePdf(req, res) {
-  requireClient(req);
   const c = await statementService.getCertificate(req.user.id, Number(req.params.id));
   const cur = c.account.currency;
   const doc = createDocument('Справка об остатке на счёте', `по состоянию на ${c.date}`);
@@ -72,7 +52,6 @@ export async function certificatePdf(req, res) {
 }
 
 export async function receiptPdf(req, res) {
-  requireClient(req);
   const r = await paymentService.getReceipt(req.user.id, Number(req.params.id));
   const doc = createDocument(`Квитанция об оплате № ${r.id}`, `от ${String(r.bank_date).slice(0, 10)}`);
   fact(doc, 'Получатель', r.provider_name);

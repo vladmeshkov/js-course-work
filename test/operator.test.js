@@ -1,5 +1,4 @@
 import { describe, it, expect, afterAll } from 'vitest';
-import request from 'supertest';
 import { createApp } from '../src/app.js';
 import { pool } from '../src/db/pool.js';
 import { register, hashPassword } from '../src/services/authService.js';
@@ -9,6 +8,7 @@ import { setFrozen, searchAccounts } from '../src/services/accountService.js';
 import { createTransfer } from '../src/services/transferService.js';
 import * as userModel from '../src/models/userModel.js';
 import { createClientWithAccount, getAccount, closePool } from './helpers.js';
+import { loggedIn } from './http.js';
 
 afterAll(closePool);
 
@@ -65,15 +65,12 @@ describe('операционист', () => {
     await cashOperation(op.id, { iban: (await getAccount(a.accountId)).iban, amount: 1000, direction: 'out' });
   });
 
-  it('страницы операциониста открываются, а клиенту недоступны', async () => {
+  it('API операциониста открывается ему, а чужие разделы закрыты', async () => {
     const op = await operator();
-    const app = createApp();
-    const agent = request.agent(app);
-    const token = /name="_csrf" value="([0-9a-f]+)"/.exec((await agent.get('/login')).text)[1];
-    await agent.post('/login').type('form').send({ _csrf: token, login: op.login, password: 'Parol2026' });
-    for (const url of ['/staff/kyc', '/staff/cash', '/staff/incoming', '/staff/accounts?q=client', '/workplace']) expect((await agent.get(url)).status, url).toBe(200);
-    expect((await agent.get('/admin/users')).status).toBe(403);
-    expect((await agent.get('/staff/loans')).status).toBe(403);
+    const client = await loggedIn(createApp(), op.login);
+    for (const url of ['/staff/kyc', '/staff/incoming', '/staff/accounts?q=client', '/workplace']) expect((await client.get(url)).status, url).toBe(200);
+    expect((await client.get('/admin/users')).status).toBe(403);
+    expect((await client.get('/staff/loans')).status).toBe(403);
   });
 });
 

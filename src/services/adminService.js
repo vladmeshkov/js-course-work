@@ -8,8 +8,8 @@ import { hashPassword } from './authService.js';
 export async function listUsers({ q = '', role = '' } = {}) {
   const params = [];
   const where = [];
-  if (q) { params.push(`%${q.toLowerCase()}%`); where.push(`(lower(u.login) LIKE $${params.length} OR lower(c.last_name) LIKE $${params.length})`); }
-  if (role) { params.push(role); where.push(`r.code = $${params.length}`); }
+  if (q) { params.push(`%${q.toLowerCase()}%`, `%${q.toLowerCase()}%`); where.push('(lower(u.login) LIKE ? OR lower(c.last_name) LIKE ?)'); }
+  if (role) { params.push(role); where.push('r.code = ?'); }
   const { rows } = await query(
     `SELECT u.id, u.login, u.status, u.last_login_at, u.created_at, r.code AS role_code, r.name AS role_name,
             c.last_name, c.first_name

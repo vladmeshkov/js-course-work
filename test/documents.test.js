@@ -1,5 +1,4 @@
 import { describe, it, expect, afterAll } from 'vitest';
-import request from 'supertest';
 import { createApp } from '../src/app.js';
 import { pool } from '../src/db/pool.js';
 import { hashPassword } from '../src/services/authService.js';
@@ -7,6 +6,7 @@ import { getStatement } from '../src/services/statementService.js';
 import { createTransfer } from '../src/services/transferService.js';
 import { addDays } from '../src/lib/dates.js';
 import { createClientWithAccount, getAccount, closePool } from './helpers.js';
+import { loggedIn } from './http.js';
 
 afterAll(closePool);
 
@@ -38,24 +38,23 @@ describe('выписка', () => {
 });
 
 describe('PDF-документы', () => {
-  it('выписка, справка и квитанция отдаются как PDF', async () => {
+  it('выписка, справка и квитанция отдаются как PDF, выписка в JSON согласована с остатком', async () => {
     const hash = await hashPassword('Parol2026');
     const c = await createClientWithAccount(100000, 'BYN', hash);
     const { pay } = await import('../src/services/paymentService.js');
     const providerId = (await pool.query("SELECT id FROM payment_providers WHERE name = 'Энергосбыт'")).rows[0].id;
     const payment = await pay(c.userId, { providerId, fromAccountId: c.accountId, amount: 1000, requisite: '12345678' });
-    const app = createApp();
-    const agent = request.agent(app);
-    const page = await agent.get('/login');
-    const token = /name="_csrf" value="([0-9a-f]+)"/.exec(page.text)[1];
-    await agent.post('/login').type('form').send({ _csrf: token, login: c.login, password: 'Parol2026' });
+    const client = await loggedIn(createApp(), c.login);
     for (const url of [`/accounts/${c.accountId}/statement.pdf`, `/accounts/${c.accountId}/certificate.pdf`, `/payments/${payment.id}/receipt.pdf`]) {
-      const res = await agent.get(url).buffer(true).parse((r, cb) => { const chunks = []; r.on('data', (d) => chunks.push(d)); r.on('end', () => cb(null, Buffer.concat(chunks))); });
+      const res = await client.get(url).buffer(true).parse((r, cb) => { const chunks = []; r.on('data', (d) => chunks.push(d)); r.on('end', () => cb(null, Buffer.concat(chunks))); });
       expect(res.status, url).toBe(200);
       expect(res.headers['content-type']).toContain('application/pdf');
       expect(res.body.subarray(0, 5).toString()).toBe('%PDF-');
       expect(res.body.length).toBeGreaterThan(2000);
     }
-    expect((await agent.get(`/accounts/${c.accountId}/statement`)).text).toContain('Исходящий остаток');
+    const json = (await client.get(`/accounts/${c.accountId}/statement`)).body;
+    expect(json.statement.closing).toBe((await getAccount(c.accountId)).balance);
+    expect(json.statement.client).toBeUndefined();
+    expect(json.accounts.map((a) => a.id)).toContain(c.accountId);
   });
 });
