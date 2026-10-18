@@ -29,7 +29,7 @@ describe('операционист', () => {
     expect((await kycService.queue()).some((c) => c.id === clientId)).toBe(true);
     const view = await kycService.getForReview(clientId, op.id);
     expect(view.passport).toBe('MC1112223');
-    const { rows } = await pool.query("SELECT 1 FROM audit_log WHERE action = 'kyc.view' AND user_id = $1", [op.id]);
+    const { rows } = await pool.query("SELECT 1 FROM audit_log WHERE action = 'kyc.view' AND user_id = ?", [op.id]);
     expect(rows).toHaveLength(1);
     const account = await kycService.verifyClient(clientId, op.id);
     expect(account.currency).toBe('BYN');

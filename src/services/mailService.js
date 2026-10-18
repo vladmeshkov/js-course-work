@@ -54,7 +54,7 @@ async function deliver({ to, subject, body }) {
 
 /** Адрес электронной почты клиента по пользователю. */
 export async function emailOf(userId, db = { query }) {
-  const { rows } = await db.query('SELECT c.email FROM clients c WHERE c.user_id = $1', [userId]);
+  const { rows } = await db.query('SELECT c.email FROM clients c WHERE c.user_id = ?', [userId]);
   return rows[0]?.email || null;
 }
 
@@ -79,25 +79,25 @@ export async function sendCode(userId, code, label) {
 export async function enqueue(userId, { title, body }, db = { query }) {
   if (!enabled() || !userId) return;
   const { rows } = await db.query(
-    'SELECT c.email FROM users u JOIN clients c ON c.user_id = u.id WHERE u.id = $1 AND u.notify_email AND c.email IS NOT NULL', [userId]);
+    'SELECT c.email FROM users u JOIN clients c ON c.user_id = u.id WHERE u.id = ? AND u.notify_email AND c.email IS NOT NULL', [userId]);
   if (!rows[0]) return;
-  await db.query('INSERT INTO mail_outbox (user_id, to_email, subject, body) VALUES ($1, $2, $3, $4)', [userId, rows[0].email, title, body || title]);
+  await db.query('INSERT INTO mail_outbox (user_id, to_email, subject, body) VALUES (?, ?, ?, ?)', [userId, rows[0].email, title, body || title]);
 }
 
 /** Отправляет накопившиеся письма. Неудачные повторяются, после пяти попыток письмо помечается как неотправленное. */
 export async function processOutbox(limit = 20) {
   if (!enabled()) return { sent: 0, failed: 0 };
-  const { rows } = await query("SELECT id, to_email, subject, body, attempts FROM mail_outbox WHERE status = 'pending' ORDER BY id LIMIT $1", [limit]);
+  const { rows } = await query("SELECT id, to_email, subject, body, attempts FROM mail_outbox WHERE status = 'pending' ORDER BY id LIMIT ?", [limit]);
   let sent = 0;
   let failed = 0;
   for (const m of rows) {
     try {
       await deliver({ to: m.to_email, subject: m.subject, body: m.body });
-      await query("UPDATE mail_outbox SET status = 'sent', sent_at = now(), attempts = attempts + 1 WHERE id = $1", [m.id]);
+      await query("UPDATE mail_outbox SET status = 'sent', sent_at = UTC_TIMESTAMP(3), attempts = attempts + 1 WHERE id = ?", [m.id]);
       sent += 1;
     } catch (error) {
       const dead = m.attempts + 1 >= MAX_ATTEMPTS;
-      await query('UPDATE mail_outbox SET status = $2, attempts = attempts + 1, last_error = $3 WHERE id = $1', [m.id, dead ? 'failed' : 'pending', String(error.message).slice(0, 300)]);
+      await query('UPDATE mail_outbox SET status = ?, attempts = attempts + 1, last_error = ? WHERE id = ?', [dead ? 'failed' : 'pending', String(error.message).slice(0, 300), m.id]);
       failed += 1;
     }
   }

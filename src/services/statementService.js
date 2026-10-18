@@ -25,13 +25,13 @@ export async function getStatement(userId, accountId, period = {}) {
   if (from > to) throw new ValidationError({ from: 'Дата начала позже даты окончания' });
 
   const { rows: [open] } = await query(
-    `SELECT COALESCE(SUM(CASE WHEN credit_account_id = $1 THEN amount ELSE -amount END), 0) AS balance
-     FROM postings WHERE (credit_account_id = $1 OR debit_account_id = $1) AND bank_date < $2`, [accountId, from]);
+    `SELECT COALESCE(SUM(CASE WHEN credit_account_id = ? THEN amount ELSE -amount END), 0) AS balance
+     FROM postings WHERE (credit_account_id = ? OR debit_account_id = ?) AND bank_date < ?`, [accountId, accountId, accountId, from]);
   const { rows } = await query(
-    `SELECT p.id, p.bank_date, d.type, d.description, CASE WHEN p.credit_account_id = $1 THEN p.amount ELSE -p.amount END AS signed
+    `SELECT p.id, p.bank_date, d.type, d.description, CASE WHEN p.credit_account_id = ? THEN p.amount ELSE -p.amount END AS signed
      FROM postings p JOIN documents d ON d.id = p.document_id
-     WHERE (p.credit_account_id = $1 OR p.debit_account_id = $1) AND p.bank_date >= $2 AND p.bank_date <= $3 ORDER BY p.id`,
-    [accountId, from, to]);
+     WHERE (p.credit_account_id = ? OR p.debit_account_id = ?) AND p.bank_date >= ? AND p.bank_date <= ? ORDER BY p.id`,
+    [accountId, accountId, accountId, from, to]);
 
   let running = Number(open.balance);
   const operations = rows.map((r) => {
@@ -46,6 +46,6 @@ export async function getStatement(userId, accountId, period = {}) {
 /** Справка об остатке на счёте на текущую банковскую дату. */
 export async function getCertificate(userId, accountId) {
   const s = await getStatement(userId, accountId);
-  const { rows: [h] } = await pool.query("SELECT COALESCE(SUM(amount), 0) AS held FROM holds WHERE account_id = $1 AND status = 'active'", [accountId]);
+  const { rows: [h] } = await pool.query("SELECT COALESCE(SUM(amount), 0) AS held FROM holds WHERE account_id = ? AND status = 'active'", [accountId]);
   return { account: s.account, client: s.client, date: s.today, balance: s.closing, held: Number(h.held) };
 }

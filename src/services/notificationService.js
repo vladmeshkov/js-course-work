@@ -17,32 +17,32 @@ export const money = (minor, currency = 'BYN') => `${formatAmount(minor)} ${curr
  */
 export async function notify(userId, { type, title, body = '', link = null }, db = { query }) {
   if (!userId) return;
-  await db.query('INSERT INTO notifications (user_id, type, title, body, link) VALUES ($1, $2, $3, $4, $5)', [userId, type, title, body, link]);
+  await db.query('INSERT INTO notifications (user_id, type, title, body, link) VALUES (?, ?, ?, ?, ?)', [userId, type, title, body, link]);
   await mailService.enqueue(userId, { title, body }, db);
 }
 
 /** Уведомление владельцу счёта (если владелец клиент банка). */
 export async function notifyAccountOwner(accountId, n, db = { query }) {
   const { rows } = await db.query(
-    'SELECT c.user_id FROM accounts a JOIN clients c ON c.id = a.owner_client_id WHERE a.id = $1', [accountId]);
+    'SELECT c.user_id FROM accounts a JOIN clients c ON c.id = a.owner_client_id WHERE a.id = ?', [accountId]);
   if (rows[0]) await notify(rows[0].user_id, n, db);
 }
 
 export async function unreadCount(userId, db = { query }) {
-  const { rows } = await db.query('SELECT count(*)::int AS n FROM notifications WHERE user_id = $1 AND read_at IS NULL', [userId]);
+  const { rows } = await db.query('SELECT count(*) AS n FROM notifications WHERE user_id = ? AND read_at IS NULL', [userId]);
   return rows[0].n;
 }
 
 export async function list(userId, limit = 100) {
   const { rows } = await query(
-    'SELECT id, type, title, body, link, created_at, read_at FROM notifications WHERE user_id = $1 ORDER BY id DESC LIMIT $2', [userId, limit]);
+    'SELECT id, type, title, body, link, created_at, read_at FROM notifications WHERE user_id = ? ORDER BY id DESC LIMIT ?', [userId, limit]);
   return rows;
 }
 
 export async function markAllRead(userId) {
-  await query('UPDATE notifications SET read_at = now() WHERE user_id = $1 AND read_at IS NULL', [userId]);
+  await query('UPDATE notifications SET read_at = UTC_TIMESTAMP(3) WHERE user_id = ? AND read_at IS NULL', [userId]);
 }
 
 export async function markRead(userId, id) {
-  await query('UPDATE notifications SET read_at = now() WHERE user_id = $1 AND id = $2 AND read_at IS NULL', [userId, id]);
+  await query('UPDATE notifications SET read_at = UTC_TIMESTAMP(3) WHERE user_id = ? AND id = ? AND read_at IS NULL', [userId, id]);
 }

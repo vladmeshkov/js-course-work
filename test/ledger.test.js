@@ -24,7 +24,7 @@ describe('ledgerService', () => {
     await expect(post({ type: 'transfer', entries: [entry(a.accountId, b.accountId, 1001)] }))
       .rejects.toMatchObject({ code: 'insufficient_funds' });
     expect(await accountBalance(a.accountId)).toBe(1000);
-    const { rows } = await pool.query('SELECT count(*)::int AS n FROM postings WHERE debit_account_id = $1', [a.accountId]);
+    const { rows } = await pool.query('SELECT count(*) AS n FROM postings WHERE debit_account_id = ?', [a.accountId]);
     expect(rows[0].n).toBe(0);
   });
 
@@ -42,7 +42,7 @@ describe('ledgerService', () => {
   it('учитывает активные холды при проверке остатка', async () => {
     const a = await createClientWithAccount(5000);
     const b = await createClientWithAccount(0);
-    await pool.query("INSERT INTO holds (account_id, amount) VALUES ($1, 4500)", [a.accountId]);
+    await pool.query("INSERT INTO holds (account_id, amount) VALUES (?, 4500)", [a.accountId]);
     await expect(post({ type: 'transfer', entries: [entry(a.accountId, b.accountId, 600)] })).rejects.toMatchObject({ code: 'insufficient_funds' });
     await post({ type: 'transfer', entries: [entry(a.accountId, b.accountId, 500)] });
   });
@@ -50,7 +50,7 @@ describe('ledgerService', () => {
   it('запрещает списание с заблокированного счёта, но принимает поступления', async () => {
     const a = await createClientWithAccount(5000);
     const b = await createClientWithAccount(1000);
-    await pool.query("UPDATE accounts SET status = 'frozen' WHERE id = $1", [a.accountId]);
+    await pool.query("UPDATE accounts SET status = 'frozen' WHERE id = ?", [a.accountId]);
     await expect(post({ type: 'transfer', entries: [entry(a.accountId, b.accountId, 100)] })).rejects.toThrow(/заблокирован/);
     await post({ type: 'transfer', entries: [entry(b.accountId, a.accountId, 100)] });
     expect(await accountBalance(a.accountId)).toBe(5100);
@@ -63,16 +63,16 @@ describe('ledgerService', () => {
     await reverse(documentId, { reason: 'ошибочный перевод' });
     expect(await accountBalance(a.accountId)).toBe(8000);
     expect(await accountBalance(b.accountId)).toBe(0);
-    const { rows } = await pool.query('SELECT count(*)::int AS n FROM postings WHERE document_id = $1', [documentId]);
+    const { rows } = await pool.query('SELECT count(*) AS n FROM postings WHERE document_id = ?', [documentId]);
     expect(rows[0].n).toBe(1);
     await expect(reverse(documentId)).rejects.toThrow(/уже сторнирован/);
   });
 
   it('проводки нельзя изменять и удалять', async () => {
     const a = await createClientWithAccount(1000);
-    await expect(pool.query('UPDATE postings SET amount = 1 WHERE debit_account_id = $1 OR credit_account_id = $1', [a.accountId]))
+    await expect(pool.query('UPDATE postings SET amount = 1 WHERE debit_account_id = ? OR credit_account_id = ?', [a.accountId, a.accountId]))
       .rejects.toThrow(/только добавление/);
-    await expect(pool.query('DELETE FROM postings WHERE credit_account_id = $1', [a.accountId])).rejects.toThrow(/только добавление/);
+    await expect(pool.query('DELETE FROM postings WHERE credit_account_id = ?', [a.accountId, a.accountId])).rejects.toThrow(/только добавление/);
   });
 
   it('при ошибке в середине документа откатывает все проводки', async () => {

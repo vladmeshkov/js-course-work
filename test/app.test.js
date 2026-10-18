@@ -202,7 +202,7 @@ describe('счета и курсы', () => {
     expect(usd.iban).toMatch(/^BY\d{2}TLRB2400/);
     await expect(openForUser(c.userId, { kind: 'x', currency: 'USD' })).rejects.toMatchObject({ fields: { kind: expect.any(String) } });
     await closeForUser(c.userId, usd.id);
-    expect((await pool.query('SELECT status FROM accounts WHERE id = $1', [usd.id])).rows[0].status).toBe('closed');
+    expect((await pool.query('SELECT status FROM accounts WHERE id = ?', [usd.id])).rows[0].status).toBe('closed');
     // нельзя закрыть счёт с деньгами
     const rich = await createClientWithAccount(5000);
     await expect(closeForUser(rich.userId, rich.accountId)).rejects.toThrow(/нулевым остатком/);

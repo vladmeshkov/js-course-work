@@ -41,11 +41,11 @@ describe('двухфакторная защита', () => {
     await expect(twoFactor.confirmSetup(user, setup.secret, '000000')).rejects.toMatchObject({ fields: { code: expect.any(String) } }).catch(() => {});
     const codes = await twoFactor.confirmSetup(user, setup.secret, totp(setup.secret));
     expect(codes).toHaveLength(10);
-    const row = (await pool.query('SELECT totp_secret_enc, totp_enabled FROM users WHERE id = $1', [c.userId])).rows[0];
+    const row = (await pool.query('SELECT totp_secret_enc, totp_enabled FROM users WHERE id = ?', [c.userId])).rows[0];
     expect(row.totp_enabled).toBe(true);
     expect(row.totp_secret_enc).not.toContain(setup.secret);
     expect(decrypt(row.totp_secret_enc)).toBe(setup.secret);
-    const { rows } = await pool.query('SELECT code_hash FROM recovery_codes WHERE user_id = $1', [c.userId]);
+    const { rows } = await pool.query('SELECT code_hash FROM recovery_codes WHERE user_id = ?', [c.userId]);
     expect(rows).toHaveLength(10);
     expect(rows.some((r) => codes.some((x) => r.code_hash.includes(x)))).toBe(false);
   });
@@ -164,11 +164,11 @@ describe('уведомления', () => {
 
   it('кредит: выдача, платёж, просрочка и напоминание за 3 дня', async () => {
     const c = await createClientWithAccount(0);
-    await pool.query("UPDATE clients SET birth_date = '1990-05-05' WHERE id = $1", [c.clientId]);
+    await pool.query("UPDATE clients SET birth_date = '1990-05-05' WHERE id = ?", [c.clientId]);
     const productId = (await pool.query("SELECT id FROM loan_products WHERE name LIKE 'Потребительский «Талер»'")).rows[0].id;
     const app1 = await apply(c.userId, { productId, amount: 300000, termMonths: 12, scheduleType: 'annuity', targetAccountId: c.accountId, income: 300000, obligations: 0, experienceMonths: 60, dependents: 0 });
     await requestSignCode(c.userId, app1.id);
-    await pool.query('UPDATE otp_codes SET code_hash = $1 WHERE user_id = $2 AND purpose = $3 AND used_at IS NULL', [lookupHash(`${c.userId}:loan:${app1.id}:123456`), c.userId, `loan:${app1.id}`]);
+    await pool.query('UPDATE otp_codes SET code_hash = ? WHERE user_id = ? AND purpose = ? AND used_at IS NULL', [lookupHash(`${c.userId}:loan:${app1.id}:123456`), c.userId, `loan:${app1.id}`]);
     const loan = await sign(c.userId, app1.id, '123456');
     expect(await titles(c.userId)).toEqual(expect.arrayContaining(['Кредит одобрен', 'Кредит выдан']));
 
@@ -185,7 +185,7 @@ describe('уведомления', () => {
       const { post } = await import('../src/services/ledgerService.js');
       const { ensureInternalAccount } = await import('../src/services/accountService.js');
       const cash = await ensureInternalAccount(db, 'cash', 'BYN');
-      const { balance } = (await db.query('SELECT balance FROM accounts WHERE id = $1', [c.accountId])).rows[0];
+      const { balance } = (await db.query('SELECT balance FROM accounts WHERE id = ?', [c.accountId])).rows[0];
       await post({ type: 'cash_out', entries: [{ debit: c.accountId, credit: cash.id, amount: balance, currency: 'BYN' }] }, db);
     });
     await withTransaction((db) => processLoans(db, due));
@@ -205,7 +205,7 @@ describe('обязательная 2FA для сотрудников', () => {
     await agent.post('/login').type('form').send({ _csrf: token, login, password: 'Parol2026' });
     return { agent, id };
   }
-  const setRequired = (v) => pool.query("UPDATE settings SET value = $1 WHERE key = 'security.require_2fa_staff'", [v]);
+  const setRequired = (v) => pool.query("UPDATE settings SET value = ? WHERE `key` = 'security.require_2fa_staff'", [v]);
 
   it('сотрудника без 2FA отправляют на настройку, остальные страницы закрыты', async () => {
     await setRequired('1');

@@ -27,7 +27,7 @@ export async function createClientWithAccount(startBalance = 0, currency = 'BYN'
 }
 
 export async function accountBalance(id) {
-  const { rows } = await pool.query('SELECT balance FROM accounts WHERE id = $1', [id]);
+  const { rows } = await pool.query('SELECT balance FROM accounts WHERE id = ?', [id]);
   return rows[0].balance;
 }
 
@@ -49,6 +49,6 @@ export async function addAccount(clientId, currency, startBalance = 0, kind = 'c
 }
 
 export async function getAccount(id) {
-  const { rows } = await pool.query('SELECT * FROM accounts WHERE id = $1', [id]);
+  const { rows } = await pool.query('SELECT * FROM accounts WHERE id = ?', [id]);
   return rows[0];
 }

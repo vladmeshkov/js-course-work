@@ -29,7 +29,7 @@ describe('тарифы и спред', () => {
     const groups = await settingsService.list();
     const item = groups.flatMap((g) => g.items).find((i) => i.key === 'transfer.daily_limit');
     expect(item.value).toBe('7500,5');
-    const { rows } = await pool.query("SELECT details FROM audit_log WHERE action = 'settings.update' AND user_id = $1", [a.id]);
+    const { rows } = await pool.query("SELECT details FROM audit_log WHERE action = 'settings.update' AND user_id = ?", [a.id]);
     expect(rows).toHaveLength(2);
     await settingsService.update(a.id, { 'transfer.daily_limit': '5000', 'transfer.fee_percent': '0' });
   });
@@ -87,7 +87,7 @@ describe('пользователи и журнал', () => {
     const rows = await adminService.auditLog({ login: a.login, action: 'user.block' });
     expect(rows.length).toBeGreaterThan(0);
     expect(rows.every((r) => r.action === 'user.block')).toBe(true);
-    await expect(pool.query('DELETE FROM audit_log WHERE id = $1', [rows[0].id])).rejects.toThrow(/только добавление/);
+    await expect(pool.query('DELETE FROM audit_log WHERE id = ?', [rows[0].id])).rejects.toThrow(/только добавление/);
   });
 
   it('страницы администратора открываются, клиенту они недоступны', async () => {

@@ -19,7 +19,7 @@ export const config = {
   bankCode: env.BANK_CODE || 'TLRB',
   backup: {
     dir: env.BACKUP_DIR || 'backups',
-    pgBinDir: env.PG_BIN_DIR || '',
+    mysqlBinDir: env.MYSQL_BIN_DIR || '',
     intervalHours: Number(env.BACKUP_INTERVAL_HOURS || 24),
     keep: Number(env.BACKUP_KEEP || 14)
   },

@@ -52,9 +52,9 @@ export async function confirmSetup(user, secret, code) {
   if (step === null) throw new ValidationError({ code: 'Неверный код. Проверьте время на телефоне и попробуйте ещё раз' });
   const codes = newRecoveryCodes();
   await withTransaction(async (db) => {
-    await db.query('UPDATE users SET totp_secret_enc = $2, totp_enabled = true, totp_last_step = $3 WHERE id = $1', [user.id, encrypt(secret), step]);
-    await db.query('DELETE FROM recovery_codes WHERE user_id = $1', [user.id]);
-    for (const c of codes) await db.query('INSERT INTO recovery_codes (user_id, code_hash) VALUES ($1, $2)', [user.id, lookupHash(normalizeCode(c))]);
+    await db.query('UPDATE users SET totp_secret_enc = ?, totp_enabled = true, totp_last_step = ? WHERE id = ?', [encrypt(secret), step, user.id]);
+    await db.query('DELETE FROM recovery_codes WHERE user_id = ?', [user.id]);
+    for (const c of codes) await db.query('INSERT INTO recovery_codes (user_id, code_hash) VALUES (?, ?)', [user.id, lookupHash(normalizeCode(c))]);
     await auditService.log({ userId: user.id, action: '2fa.enable', entity: 'user', entityId: user.id }, db);
     await notificationService.notify(user.id, { type: 'security', title: 'Включена двухфакторная защита', body: 'Вход в кабинет теперь требует код из приложения-аутентификатора.', link: '/security' }, db);
   });
@@ -71,12 +71,12 @@ export async function verifyLogin(userId, code) {
   const step = verify(decrypt(user.totp_secret_enc), code, { lastStep: user.totp_last_step === null ? null : Number(user.totp_last_step) });
   if (step !== null) {
     // условие step > last защищает от гонки двух одновременных входов с одним кодом
-    const { rowCount } = await query('UPDATE users SET totp_last_step = $2 WHERE id = $1 AND (totp_last_step IS NULL OR totp_last_step < $2)', [userId, step]);
+    const { rowCount } = await query('UPDATE users SET totp_last_step = ? WHERE id = ? AND (totp_last_step IS NULL OR totp_last_step < ?)', [step, userId, step]);
     return rowCount === 1;
   }
   const hash = lookupHash(normalizeCode(code));
   if (!hash || normalizeCode(code).length < 8) return false;
-  const { rowCount } = await query('UPDATE recovery_codes SET used_at = now() WHERE user_id = $1 AND code_hash = $2 AND used_at IS NULL', [userId, hash]);
+  const { rowCount } = await query('UPDATE recovery_codes SET used_at = UTC_TIMESTAMP(3) WHERE user_id = ? AND code_hash = ? AND used_at IS NULL', [userId, hash]);
   if (rowCount === 1) {
     await auditService.log({ userId, action: '2fa.recovery_used', entity: 'user', entityId: userId });
     await notificationService.notify(userId, { type: 'security', title: 'Вход по резервному коду', body: 'Использован один из резервных кодов. Проверьте, что это были вы.', link: '/security' });
@@ -86,7 +86,7 @@ export async function verifyLogin(userId, code) {
 }
 
 export async function recoveryLeft(userId) {
-  const { rows } = await query('SELECT count(*)::int AS n FROM recovery_codes WHERE user_id = $1 AND used_at IS NULL', [userId]);
+  const { rows } = await query('SELECT count(*) AS n FROM recovery_codes WHERE user_id = ? AND used_at IS NULL', [userId]);
   return rows[0].n;
 }
 
@@ -100,8 +100,8 @@ export async function disable(user, password, code) {
   if (!(await bcrypt.compare(String(password ?? ''), fresh.password_hash))) throw new ValidationError({ password: 'Неверный пароль' });
   if (!(await verifyLogin(user.id, code))) throw new ValidationError({ code: 'Неверный код' });
   await withTransaction(async (db) => {
-    await db.query('UPDATE users SET totp_enabled = false, totp_secret_enc = NULL, totp_last_step = NULL WHERE id = $1', [user.id]);
-    await db.query('DELETE FROM recovery_codes WHERE user_id = $1', [user.id]);
+    await db.query('UPDATE users SET totp_enabled = false, totp_secret_enc = NULL, totp_last_step = NULL WHERE id = ?', [user.id]);
+    await db.query('DELETE FROM recovery_codes WHERE user_id = ?', [user.id]);
     await auditService.log({ userId: user.id, action: '2fa.disable', entity: 'user', entityId: user.id }, db);
     await notificationService.notify(user.id, { type: 'security', title: 'Двухфакторная защита отключена', body: 'Если это были не вы, срочно смените пароль и обратитесь в банк.', link: '/security' }, db);
   });

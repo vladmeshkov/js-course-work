@@ -12,7 +12,7 @@ const failing = { sendMail: async () => { throw new Error('SMTP недоступ
 
 async function clientWithEmail(email = 'anna.test@example.by') {
   const c = await createClientWithAccount(0);
-  await pool.query('UPDATE clients SET email = $2 WHERE id = $1', [c.clientId, email]);
+  await pool.query('UPDATE clients SET email = ? WHERE id = ?', [email, c.clientId]);
   return c;
 }
 
@@ -24,7 +24,7 @@ describe('почта вместо SMS', () => {
     expect(mailService.enabled()).toBe(false);
     expect(await mailService.sendCode(c.userId, '123456', 'теста')).toBeNull();
     await notify(c.userId, { type: 'transfer', title: 'Тест', body: 'Текст' });
-    expect((await pool.query('SELECT count(*)::int AS n FROM mail_outbox WHERE user_id = $1', [c.userId])).rows[0].n).toBe(0);
+    expect((await pool.query('SELECT count(*) AS n FROM mail_outbox WHERE user_id = ?', [c.userId])).rows[0].n).toBe(0);
   });
 
   it('код подтверждения уходит письмом, адрес показывается замаскированным', async () => {
@@ -51,12 +51,12 @@ describe('почта вместо SMS', () => {
     mailService.setTransport(fake);
     const c = await clientWithEmail();
     await notify(c.userId, { type: 'transfer', title: 'Перевод выполнен', body: 'Списано 10,00 BYN' });
-    const { rows } = await pool.query("SELECT status, subject FROM mail_outbox WHERE user_id = $1", [c.userId]);
+    const { rows } = await pool.query("SELECT status, subject FROM mail_outbox WHERE user_id = ?", [c.userId]);
     expect(rows).toEqual([{ status: 'pending', subject: 'Перевод выполнен' }]);
     const stats = await mailService.processOutbox();
     expect(stats.sent).toBeGreaterThanOrEqual(1);
     expect(sent.some((m) => m.subject === 'Перевод выполнен')).toBe(true);
-    expect((await pool.query('SELECT status FROM mail_outbox WHERE user_id = $1', [c.userId])).rows[0].status).toBe('sent');
+    expect((await pool.query('SELECT status FROM mail_outbox WHERE user_id = ?', [c.userId])).rows[0].status).toBe('sent');
   });
 
   it('при откате операции письмо в очередь не попадает', async () => {
@@ -66,21 +66,21 @@ describe('почта вместо SMS', () => {
       await notify(c.userId, { type: 'transfer', title: 'Не должно уйти', body: '' }, db);
       throw new Error('откат');
     })).rejects.toThrow('откат');
-    expect((await pool.query('SELECT count(*)::int AS n FROM mail_outbox WHERE user_id = $1', [c.userId])).rows[0].n).toBe(0);
+    expect((await pool.query('SELECT count(*) AS n FROM mail_outbox WHERE user_id = ?', [c.userId])).rows[0].n).toBe(0);
   });
 
   it('клиент может отключить письма, неудачные письма повторяются и после пяти попыток помечаются неотправленными', async () => {
     mailService.setTransport(fake);
     const off = await clientWithEmail();
-    await pool.query('UPDATE users SET notify_email = false WHERE id = $1', [off.userId]);
+    await pool.query('UPDATE users SET notify_email = false WHERE id = ?', [off.userId]);
     await notify(off.userId, { type: 'transfer', title: 'Выключено', body: '' });
-    expect((await pool.query('SELECT count(*)::int AS n FROM mail_outbox WHERE user_id = $1', [off.userId])).rows[0].n).toBe(0);
+    expect((await pool.query('SELECT count(*) AS n FROM mail_outbox WHERE user_id = ?', [off.userId])).rows[0].n).toBe(0);
 
     const c = await clientWithEmail();
     await notify(c.userId, { type: 'loan', title: 'Платёж по кредиту', body: '' });
     mailService.setTransport(failing);
     for (let i = 0; i < 5; i++) await mailService.processOutbox();
-    const { rows: [row] } = await pool.query('SELECT status, attempts, last_error FROM mail_outbox WHERE user_id = $1', [c.userId]);
+    const { rows: [row] } = await pool.query('SELECT status, attempts, last_error FROM mail_outbox WHERE user_id = ?', [c.userId]);
     expect(row).toMatchObject({ status: 'failed', attempts: 5, last_error: 'SMTP недоступен' });
   });
 });

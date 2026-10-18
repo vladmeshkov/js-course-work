@@ -80,7 +80,7 @@ export function listForClient(clientId) {
 export async function setFrozen(operatorId, accountId, frozen, reason) {
   if (frozen && !String(reason ?? '').trim()) throw new BusinessError('Укажите основание блокировки');
   return withTransaction(async (db) => {
-    const { rows: [account] } = await db.query('SELECT id, status, kind FROM accounts WHERE id = $1 FOR UPDATE', [accountId]);
+    const { rows: [account] } = await db.query('SELECT id, status, kind FROM accounts WHERE id = ? FOR UPDATE', [accountId]);
     if (!account || account.kind === 'internal') throw new BusinessError('Счёт не найден');
     if (account.status === 'closed') throw new BusinessError('Счёт закрыт');
     await accountModel.setStatus(db, accountId, frozen ? 'frozen' : 'open');
@@ -113,21 +113,21 @@ export async function openForUser(userId, { kind, currency }) {
 export async function closeForUser(userId, accountId) {
   const client = await clientModel.findByUserId(userId);
   return withTransaction(async (db) => {
-    const { rows: [account] } = await db.query('SELECT * FROM accounts WHERE id = $1 FOR UPDATE', [accountId]);
+    const { rows: [account] } = await db.query('SELECT * FROM accounts WHERE id = ? FOR UPDATE', [accountId]);
     if (!client || !account || account.owner_client_id !== client.id || !['current', 'savings'].includes(account.kind)) throw new BusinessError('Счёт не найден');
     if (account.status !== 'open') throw new BusinessError('Закрыть можно только действующий счёт');
     if (account.balance !== 0) throw new BusinessError('Закрыть можно только счёт с нулевым остатком');
     const checks = [
-      ["SELECT 1 FROM holds WHERE account_id = $1 AND status = 'active'", 'На счёте есть зарезервированные суммы'],
-      ["SELECT 1 FROM cards WHERE account_id = $1 AND status <> 'closed'", 'К счёту привязана карта: сначала закройте её'],
-      ["SELECT 1 FROM deposits WHERE payout_account_id = $1 AND status = 'active'", 'Счёт связан с действующим вкладом'],
-      ["SELECT 1 FROM loans WHERE payout_account_id = $1 AND status = 'active'", 'Счёт связан с действующим кредитом'],
-      ["SELECT 1 FROM autopayments a JOIN payment_templates t ON t.id = a.template_id WHERE t.from_account_id = $1 AND a.active", 'К счёту привязан автоплатёж']
+      ["SELECT 1 FROM holds WHERE account_id = ? AND status = 'active'", 'На счёте есть зарезервированные суммы'],
+      ["SELECT 1 FROM cards WHERE account_id = ? AND status <> 'closed'", 'К счёту привязана карта: сначала закройте её'],
+      ["SELECT 1 FROM deposits WHERE payout_account_id = ? AND status = 'active'", 'Счёт связан с действующим вкладом'],
+      ["SELECT 1 FROM loans WHERE payout_account_id = ? AND status = 'active'", 'Счёт связан с действующим кредитом'],
+      ["SELECT 1 FROM autopayments a JOIN payment_templates t ON t.id = a.template_id WHERE t.from_account_id = ? AND a.active", 'К счёту привязан автоплатёж']
     ];
     for (const [sql, message] of checks) {
       if ((await db.query(sql, [accountId])).rowCount) throw new BusinessError(message);
     }
-    await db.query("UPDATE accounts SET status = 'closed', closed_at = now() WHERE id = $1", [accountId]);
+    await db.query("UPDATE accounts SET status = 'closed', closed_at = UTC_TIMESTAMP(3) WHERE id = ?", [accountId]);
     await auditService.log({ userId, action: 'account.close', entity: 'account', entityId: accountId }, db);
   });
 }

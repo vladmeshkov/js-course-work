@@ -77,7 +77,7 @@ export async function createTransfer(userId, input) {
   if (risk.decision === 'review') {
     await withTransaction(async (db) => {
       await transferModel.setStatus(intent.id, 'review', db);
-      await db.query('INSERT INTO holds (account_id, amount, intent_id) VALUES ($1, $2, $3)', [from.id, input.amount + fee, intent.id]);
+      await db.query('INSERT INTO holds (account_id, amount, intent_id) VALUES (?, ?, ?)', [from.id, input.amount + fee, intent.id]);
       await fraudService.recordCase(db, intent, risk);
       await auditService.log({ userId, action: 'transfer.held', entity: 'transfer', entityId: intent.id, details: { score: risk.score } }, db);
       await notify(userId, { type: 'transfer', title: 'Перевод на проверке', body: `Перевод ${money(input.amount, from.currency)} задержан для проверки. Деньги на счёте зарезервированы.`, link: `/accounts/${from.id}` }, db);

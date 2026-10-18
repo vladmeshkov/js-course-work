@@ -1,13 +1,13 @@
-// Строит ER-диаграмму draw.io по реальной базе данных PostgreSQL (information_schema).
+// Строит ER-диаграмму draw.io по реальной базе данных MySQL (information_schema).
 // Использование: npm run er:drawio. Результат: docs/diagrams/er.drawio (по странице на модуль и общая схема).
 import { readdirSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import pg from 'pg';
+import mysql from 'mysql2/promise';
 import { Page, file } from './lib/drawio.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+const pool = await mysql.createPool({ uri: process.env.DATABASE_URL, decimalNumbers: true });
 
 // Модуль таблицы определяется по SQL-файлу, в котором она создана
 const MODULES = {
@@ -22,29 +22,25 @@ for (const f of readdirSync(path.join(root, 'db/sql')).sort()) {
   for (const m of readFileSync(path.join(root, 'db/sql', f), 'utf8').matchAll(/CREATE TABLE (\w+)/g)) moduleOf.set(m[1], MODULES[key]);
 }
 
-const { rows: cols } = await pool.query(`
-  SELECT c.table_name, c.column_name, c.data_type, c.character_maximum_length AS len, c.numeric_precision AS prec, c.numeric_scale AS scale, c.is_nullable
+const [cols] = await pool.query(`
+  SELECT c.table_name AS table_name, c.column_name AS column_name, c.column_type AS column_type, c.is_nullable AS is_nullable
   FROM information_schema.columns c JOIN information_schema.tables t ON t.table_name = c.table_name AND t.table_schema = c.table_schema
-  WHERE c.table_schema = 'public' AND t.table_type = 'BASE TABLE' ORDER BY c.table_name, c.ordinal_position`);
-const { rows: pks } = await pool.query(`
-  SELECT kcu.table_name, kcu.column_name FROM information_schema.table_constraints tc
-  JOIN information_schema.key_column_usage kcu ON kcu.constraint_name = tc.constraint_name AND kcu.table_schema = tc.table_schema
-  WHERE tc.constraint_type = 'PRIMARY KEY' AND tc.table_schema = 'public'`);
-const { rows: fks } = await pool.query(`
-  SELECT kcu.table_name, kcu.column_name, ccu.table_name AS ref_table, ccu.column_name AS ref_column
-  FROM information_schema.table_constraints tc
-  JOIN information_schema.key_column_usage kcu ON kcu.constraint_name = tc.constraint_name AND kcu.table_schema = tc.table_schema
-  JOIN information_schema.constraint_column_usage ccu ON ccu.constraint_name = tc.constraint_name AND ccu.table_schema = tc.table_schema
-  WHERE tc.constraint_type = 'FOREIGN KEY' AND tc.table_schema = 'public'`);
+  WHERE c.table_schema = DATABASE() AND t.table_type = 'BASE TABLE' ORDER BY c.table_name, c.ordinal_position`);
+const [pks] = await pool.query(`
+  SELECT table_name AS table_name, column_name AS column_name FROM information_schema.key_column_usage
+  WHERE table_schema = DATABASE() AND constraint_name = 'PRIMARY'`);
+const [fks] = await pool.query(`
+  SELECT table_name AS table_name, column_name AS column_name, referenced_table_name AS ref_table, referenced_column_name AS ref_column
+  FROM information_schema.key_column_usage
+  WHERE table_schema = DATABASE() AND referenced_table_name IS NOT NULL`);
 await pool.end();
 
-const SKIP = new Set(['schema_migrations', 'session']); // служебные таблицы
+const SKIP = new Set(['schema_migrations', 'sessions', 'account_number_seq']); // служебные таблицы
 const tables = new Map();
 for (const c of cols) {
   if (SKIP.has(c.table_name)) continue;
   if (!tables.has(c.table_name)) tables.set(c.table_name, []);
-  const type = c.data_type === 'character varying' ? `varchar(${c.len})` : c.data_type === 'numeric' ? `numeric(${c.prec},${c.scale})` : c.data_type.replace('timestamp with time zone', 'timestamptz').replace('timestamp without time zone', 'timestamp');
-  tables.get(c.table_name).push({ name: c.column_name, type, nullable: c.is_nullable === 'YES' });
+  tables.get(c.table_name).push({ name: c.column_name, type: c.column_type, nullable: c.is_nullable === 'YES' });
 }
 const pkSet = new Set(pks.map((p) => `${p.table_name}.${p.column_name}`));
 const fkMap = new Map(fks.map((f) => [`${f.table_name}.${f.column_name}`, f]));
@@ -57,7 +53,7 @@ const WIDTH = 250;
 const HEADER = 30;
 
 /** Тип в записи, привычной по MySQL Workbench. */
-const shortType = (t) => t.toUpperCase().replace('CHARACTER', 'CHAR').replace('NUMERIC', 'DECIMAL').replace('INTEGER', 'INT').replace('TIMESTAMPTZ', 'TIMESTAMPTZ');
+const shortType = (t) => t.toUpperCase().replace(/ UNSIGNED/, ' UNSIGNED');
 
 /**
  * Таблица в стиле MySQL Workbench: синий заголовок, значки столбцов (жёлтый ромб PK, красный FK,

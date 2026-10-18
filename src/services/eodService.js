@@ -23,7 +23,7 @@ export function closeDay(userId) {
   return withTransaction(async (db) => {
     const { rows: [state] } = await db.query('SELECT bank_date FROM bank_state FOR UPDATE');
     const date = addDays(state.bank_date, 1);
-    await db.query('UPDATE bank_state SET bank_date = $1', [date]);
+    await db.query('UPDATE bank_state SET bank_date = ?', [date]);
 
     const deposits = await depositService.processDeposits(db, date);
     const loans = await loanService.processLoans(db, date);

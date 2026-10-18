@@ -1,17 +1,19 @@
 -- Почта: очередь исходящих писем (transactional outbox) и согласие клиента на дублирование уведомлений
 
-ALTER TABLE users ADD COLUMN notify_email boolean NOT NULL DEFAULT true;
+ALTER TABLE users ADD COLUMN notify_email BOOLEAN NOT NULL DEFAULT TRUE;
 
 CREATE TABLE mail_outbox (
-  id          bigserial PRIMARY KEY,
-  user_id     bigint REFERENCES users (id),
-  to_email    text NOT NULL,
-  subject     text NOT NULL,
-  body        text NOT NULL,
-  status      text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'sent', 'failed')),
-  attempts    smallint NOT NULL DEFAULT 0,
-  last_error  text,
-  created_at  timestamptz NOT NULL DEFAULT now(),
-  sent_at     timestamptz
+  id          BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  user_id     BIGINT NULL,
+  to_email    VARCHAR(254) NOT NULL,
+  subject     VARCHAR(300) NOT NULL,
+  body        TEXT NOT NULL,
+  status      VARCHAR(10) NOT NULL DEFAULT 'pending',
+  attempts    SMALLINT NOT NULL DEFAULT 0,
+  last_error  VARCHAR(500) NULL,
+  created_at  DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  sent_at     DATETIME(3) NULL,
+  FOREIGN KEY (user_id) REFERENCES users (id),
+  CONSTRAINT mail_outbox_status_check CHECK (status IN ('pending', 'sent', 'failed'))
 );
-CREATE INDEX mail_outbox_pending_idx ON mail_outbox (id) WHERE status = 'pending';
+CREATE INDEX mail_outbox_pending_idx ON mail_outbox (status, id);

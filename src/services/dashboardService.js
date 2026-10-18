@@ -19,25 +19,26 @@ export async function forClient(userId) {
     totalByn += await ratesService.toBynOfficial(a.currency, a.balance);
   }
 
+  const ids = accounts.length ? accounts.map((a) => a.id) : [0];
   const { rows: operations } = await query(
     `SELECT p.id, p.currency, p.bank_date, d.type, d.description,
-            CASE WHEN p.credit_account_id = ANY($1::bigint[]) THEN p.amount ELSE -p.amount END AS signed
+            CASE WHEN p.credit_account_id IN (?) THEN p.amount ELSE -p.amount END AS signed
      FROM postings p JOIN documents d ON d.id = p.document_id
-     WHERE (p.credit_account_id = ANY($1::bigint[]) OR p.debit_account_id = ANY($1::bigint[]))
+     WHERE (p.credit_account_id IN (?) OR p.debit_account_id IN (?))
        AND d.type NOT IN ('deposit_open', 'deposit_return', 'loan_issue')
      ORDER BY p.id DESC LIMIT 6`,
-    [accounts.map((a) => a.id)]);
+    [ids, ids, ids]);
 
-  const { rows: [cards] } = await query("SELECT count(*)::int AS n FROM cards WHERE client_id = $1 AND status <> 'closed'", [client.id]);
+  const { rows: [cards] } = await query("SELECT count(*) AS n FROM cards WHERE client_id = ? AND status <> 'closed'", [client.id]);
   const { rows: [deposits] } = await query(
-    `SELECT count(*)::int AS n, COALESCE(sum(a.balance), 0) AS total
-     FROM deposits d JOIN accounts a ON a.id = d.account_id WHERE d.client_id = $1 AND d.status = 'active'`, [client.id]);
+    `SELECT count(*) AS n, COALESCE(sum(a.balance), 0) AS total
+     FROM deposits d JOIN accounts a ON a.id = d.account_id WHERE d.client_id = ? AND d.status = 'active'`, [client.id]);
   const { rows: [loans] } = await query(
-    `SELECT count(*)::int AS n, COALESCE(sum(principal_balance), 0) AS debt FROM loans WHERE client_id = $1 AND status = 'active'`, [client.id]);
+    `SELECT count(*) AS n, COALESCE(sum(principal_balance), 0) AS debt FROM loans WHERE client_id = ? AND status = 'active'`, [client.id]);
   const { rows: [nextPayment] } = await query(
     `SELECT s.due_date, s.principal + s.interest + s.penalty AS total, s.status
      FROM loan_schedule s JOIN loans l ON l.id = s.loan_id
-     WHERE l.client_id = $1 AND l.status = 'active' AND s.status IN ('planned', 'overdue') ORDER BY s.due_date LIMIT 1`, [client.id]);
+     WHERE l.client_id = ? AND l.status = 'active' AND s.status IN ('planned', 'overdue') ORDER BY s.due_date LIMIT 1`, [client.id]);
   const { rows: [maxDeposit] } = await query('SELECT max(rate_percent) AS rate FROM deposit_products WHERE active');
   const { rows: [minLoan] } = await query('SELECT min(rate_percent) AS rate FROM loan_products WHERE active');
 

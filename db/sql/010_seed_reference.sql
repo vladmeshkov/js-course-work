@@ -39,7 +39,7 @@ INSERT INTO currencies (code, numeric_code, name) VALUES
 
 INSERT INTO rate_spreads (currency) VALUES ('USD'), ('EUR'), ('RUB');
 
-INSERT INTO settings (key, value, description) VALUES
+INSERT INTO settings (`key`, value, description) VALUES
   ('transfer.daily_limit',       '500000', 'Суточный лимит переводов клиента, в копейках BYN'),
   ('transfer.otp_threshold',     '10000',  'Сумма перевода, с которой нужен код подтверждения, в копейках BYN'),
   ('transfer.fee_percent',       '0',      'Комиссия за перевод внутри банка, %'),

@@ -18,7 +18,7 @@ describe('карты', () => {
     const c = await createClientWithAccount(100000);
     const card = await issue(c);
     expect(isValidCardNumber(card.number)).toBe(true);
-    const { rows: [row] } = await pool.query('SELECT * FROM cards WHERE id = $1', [card.id]);
+    const { rows: [row] } = await pool.query('SELECT * FROM cards WHERE id = ?', [card.id]);
     expect(row.number_enc).not.toContain(card.number);
     expect(decrypt(row.number_enc)).toBe(card.number);
     expect(row.cvv_hash).not.toContain(card.cvv);
@@ -78,7 +78,7 @@ describe('карты', () => {
     const old = await issue(c);
     const fresh = await reissue(c.userId, old.id, '4321');
     expect(fresh.number).not.toBe(old.number);
-    const { rows } = await pool.query('SELECT id, status FROM cards WHERE client_id = $1 ORDER BY id', [c.clientId]);
+    const { rows } = await pool.query('SELECT id, status FROM cards WHERE client_id = ? ORDER BY id', [c.clientId]);
     expect(rows.map((r) => r.status)).toEqual(['closed', 'active']);
     await expect(purchase(c.userId, old.id, { amount: 100, online: false })).rejects.toThrow(/закрыта/);
     await closeCard(c.userId, fresh.id);

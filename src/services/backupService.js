@@ -1,4 +1,4 @@
-import { execFile } from 'node:child_process';
+import { execFile, spawn } from 'node:child_process';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import { mkdir, readdir, rm, stat } from 'node:fs/promises';
@@ -13,25 +13,25 @@ import * as auditService from './auditService.js';
 const run = promisify(execFile);
 
 /*
- * Резервное копирование. Копия создаётся утилитой pg_dump в формате custom и сразу шифруется AES-256-GCM
+ * Резервное копирование. Копия создаётся утилитой mysqldump (SQL-скрипт со схемой, триггерами и данными) и сразу шифруется AES-256-GCM
  * тем же ключом DATA_KEY, что и персональные данные: файл копии без ключа прочитать нельзя.
  * Формат файла: 12 байт IV, шифртекст, 16 байт тега аутентификации.
- * Восстановление выполняет pg_restore в одной транзакции.
+ * Восстановление выполняет клиент mysql: таблицы пересоздаются из копии.
  */
 
-const EXT = '.dump.enc';
+const EXT = '.sql.enc';
 
 function tool(name) {
-  const bin = config.backup.pgBinDir;
+  const bin = config.backup.mysqlBinDir;
   const exe = process.platform === 'win32' ? `${name}.exe` : name;
   return bin ? path.join(bin, exe) : exe;
 }
 
-/** Параметры подключения для утилит PostgreSQL: пароль передаётся через окружение, а не в командной строке. */
+/** Параметры подключения для утилит MySQL: пароль передаётся через окружение, а не в командной строке. */
 function connection() {
   const url = new URL(config.databaseUrl);
-  const args = ['--host', url.hostname, '--port', url.port || '5432', '--username', decodeURIComponent(url.username), '--dbname', url.pathname.slice(1)];
-  return { args, env: { ...process.env, PGPASSWORD: decodeURIComponent(url.password) } };
+  const args = ['--host', url.hostname, '--port', url.port || '3306', '--user', decodeURIComponent(url.username)];
+  return { args, database: url.pathname.slice(1), env: { ...process.env, MYSQL_PWD: decodeURIComponent(url.password) } };
 }
 
 async function runTool(name, args, env) {
@@ -39,10 +39,24 @@ async function runTool(name, args, env) {
     await run(tool(name), args, { env, maxBuffer: 1024 * 1024 * 20 });
   } catch (error) {
     if (error.code === 'ENOENT') {
-      throw new BusinessError(`Не найдена программа ${name}. Добавьте каталог bin установленного PostgreSQL в PATH или задайте PG_BIN_DIR в .env`);
+      throw new BusinessError(`Не найдена программа ${name}. Добавьте каталог bin установленного MySQL в PATH или задайте MYSQL_BIN_DIR в .env`);
     }
     throw new BusinessError(`Ошибка ${name}: ${String(error.stderr || error.message).trim().slice(0, 300)}`);
   }
+}
+
+/** Применяет SQL-файл клиентом mysql (файл подаётся на стандартный ввод). */
+function runSqlFile(args, env, file) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(tool('mysql'), args, { env, stdio: ['pipe', 'ignore', 'pipe'] });
+    let stderr = '';
+    child.stderr.on('data', (chunk) => { stderr += chunk; });
+    child.on('error', (error) => reject(error.code === 'ENOENT'
+      ? new BusinessError('Не найдена программа mysql. Добавьте каталог bin установленного MySQL в PATH или задайте MYSQL_BIN_DIR в .env')
+      : error));
+    child.on('close', (code) => (code === 0 ? resolve() : reject(new BusinessError(`Ошибка mysql: ${stderr.trim().slice(0, 300)}`))));
+    fs.createReadStream(file).pipe(child.stdin);
+  });
 }
 
 async function encryptFile(source, target) {
@@ -80,10 +94,10 @@ export async function createBackup(userId = null) {
   await mkdir(dir(), { recursive: true });
   const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
   const name = `talerbank-${stamp}${EXT}`;
-  const tmp = path.join(os.tmpdir(), `talerbank-${crypto.randomUUID()}.dump`);
-  const { args, env } = connection();
+  const tmp = path.join(os.tmpdir(), `talerbank-${crypto.randomUUID()}.sql`);
+  const { args, database, env } = connection();
   try {
-    await runTool('pg_dump', [...args, '--format=custom', '--no-owner', '--file', tmp], env);
+    await runTool('mysqldump', [...args, '--single-transaction', '--routines', '--triggers', '--no-tablespaces', '--set-gtid-purged=OFF', '--default-character-set=utf8mb4', '--result-file', tmp, database], env);
     await encryptFile(tmp, path.join(dir(), name));
   } finally {
     await rm(tmp, { force: true });
@@ -115,7 +129,7 @@ export async function pruneBackups() {
 }
 
 function safeName(name) {
-  if (!/^talerbank-[\dT-]+\.dump\.enc$/.test(String(name))) throw new AppError('Некорректное имя копии', 400);
+  if (!/^talerbank-[\dT-]+\.sql\.enc$/.test(String(name))) throw new AppError('Некорректное имя копии', 400);
   return name;
 }
 
@@ -123,11 +137,11 @@ function safeName(name) {
 export async function restoreBackup(userId, name) {
   const file = path.join(dir(), safeName(name));
   if (!fs.existsSync(file)) throw new AppError('Копия не найдена', 404);
-  const tmp = path.join(os.tmpdir(), `talerbank-${crypto.randomUUID()}.dump`);
-  const { args, env } = connection();
+  const tmp = path.join(os.tmpdir(), `talerbank-${crypto.randomUUID()}.sql`);
+  const { args, database, env } = connection();
   try {
     await decryptFile(file, tmp);
-    await runTool('pg_restore', [...args, '--clean', '--if-exists', '--no-owner', '--single-transaction', tmp], env);
+    await runSqlFile([...args, '--default-character-set=utf8mb4', database], env, tmp);
   } finally {
     await rm(tmp, { force: true });
   }

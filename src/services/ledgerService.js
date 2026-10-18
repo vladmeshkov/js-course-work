@@ -1,4 +1,4 @@
-import { withTransaction } from '../db/pool.js';
+import { withTransaction, isDuplicate } from '../db/pool.js';
 import { BusinessError } from '../lib/errors.js';
 import * as accountModel from '../models/accountModel.js';
 
@@ -35,7 +35,7 @@ async function postInTransaction(db, request) {
   }
 
   if (idempotencyKey) {
-    const { rows } = await db.query('SELECT id FROM documents WHERE idempotency_key = $1', [idempotencyKey]);
+    const { rows } = await db.query('SELECT id FROM documents WHERE idempotency_key = ?', [idempotencyKey]);
     if (rows[0]) return { documentId: rows[0].id, duplicate: true };
   }
 
@@ -67,16 +67,16 @@ async function postInTransaction(db, request) {
   const { rows: [state] } = await db.query('SELECT bank_date FROM bank_state');
   let documentId;
   try {
-    const { rows } = await db.query(
+    const { insertId } = await db.query(
       `INSERT INTO documents (type, idempotency_key, initiated_by, bank_date, description, reverses_id)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+       VALUES (?, ?, ?, ?, ?, ?)`,
       [type, idempotencyKey, initiatedBy, state.bank_date, description, reversesId]
     );
-    documentId = rows[0].id;
+    documentId = insertId;
   } catch (error) {
     // параллельный повторный запрос с тем же ключом: возвращаем уже созданный документ
-    if (error.code === '23505' && idempotencyKey) {
-      const { rows } = await db.query('SELECT id FROM documents WHERE idempotency_key = $1', [idempotencyKey]);
+    if (isDuplicate(error) && idempotencyKey) {
+      const { rows } = await db.query('SELECT id FROM documents WHERE idempotency_key = ?', [idempotencyKey]);
       return { documentId: rows[0].id, duplicate: true };
     }
     throw error;
@@ -85,7 +85,7 @@ async function postInTransaction(db, request) {
   for (const e of entries) {
     await db.query(
       `INSERT INTO postings (document_id, debit_account_id, credit_account_id, amount, currency, bank_date)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
+       VALUES (?, ?, ?, ?, ?, ?)`,
       [documentId, e.debit, e.credit, e.amount, e.currency, state.bank_date]
     );
   }
@@ -100,11 +100,11 @@ async function postInTransaction(db, request) {
  */
 export function reverse(documentId, options = {}) {
   return withTransaction(async (db) => {
-    const { rows: [doc] } = await db.query('SELECT id, status FROM documents WHERE id = $1 FOR UPDATE', [documentId]);
+    const { rows: [doc] } = await db.query('SELECT id, status FROM documents WHERE id = ? FOR UPDATE', [documentId]);
     if (!doc) throw new BusinessError('Документ не найден');
     if (doc.status === 'reversed') throw new BusinessError('Документ уже сторнирован');
     const { rows: postings } = await db.query(
-      'SELECT debit_account_id, credit_account_id, amount, currency FROM postings WHERE document_id = $1', [documentId]);
+      'SELECT debit_account_id, credit_account_id, amount, currency FROM postings WHERE document_id = ?', [documentId]);
     const result = await postInTransaction(db, {
       type: 'storno',
       description: options.reason ?? `Сторно документа ${documentId}`,
@@ -113,20 +113,20 @@ export function reverse(documentId, options = {}) {
       skipFundsCheck: true,
       entries: postings.map((p) => ({ debit: p.credit_account_id, credit: p.debit_account_id, amount: p.amount, currency: p.currency }))
     });
-    await db.query("UPDATE documents SET status = 'reversed' WHERE id = $1", [documentId]);
+    await db.query("UPDATE documents SET status = 'reversed' WHERE id = ?", [documentId]);
     return result;
   });
 }
 
 /**
  * Остаток по проводкам. Нужен для сверки с кэшем accounts.balance.
- * @param {import('pg').PoolClient | {query: Function}} db
+ * @param {{query: Function}} db
  */
 export async function balanceFromPostings(db, accountId) {
   const { rows } = await db.query(
-    `SELECT COALESCE(SUM(CASE WHEN credit_account_id = $1 THEN amount ELSE -amount END), 0) AS balance
-     FROM postings WHERE credit_account_id = $1 OR debit_account_id = $1`,
-    [accountId]
+    `SELECT COALESCE(SUM(CASE WHEN credit_account_id = ? THEN amount ELSE -amount END), 0) AS balance
+     FROM postings WHERE credit_account_id = ? OR debit_account_id = ?`,
+    [accountId, accountId, accountId]
   );
   return Number(rows[0].balance);
 }

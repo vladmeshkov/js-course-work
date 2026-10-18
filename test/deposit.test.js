@@ -9,7 +9,7 @@ import { createClientWithAccount, addAccount, getAccount, closePool } from './he
 
 afterAll(closePool);
 
-const productId = async (name) => (await pool.query('SELECT id FROM deposit_products WHERE name = $1', [name])).rows[0].id;
+const productId = async (name) => (await pool.query('SELECT id FROM deposit_products WHERE name = ?', [name])).rows[0].id;
 const today = async () => (await pool.query('SELECT bank_date FROM bank_state')).rows[0].bank_date;
 const run = (date) => withTransaction((db) => processDeposits(db, date));
 
@@ -60,12 +60,12 @@ describe('вклады', () => {
     const dep = await openDeposit(c.userId, { productId: await productId('Талер 12'), sourceAccountId: c.accountId, amount: 200000 });
     const first = addMonths(dep.opened_date, 1);
     await run(first);
-    expect((await pool.query('SELECT periods_done FROM deposits WHERE id = $1', [dep.id])).rows[0].periods_done).toBe(1);
+    expect((await pool.query('SELECT periods_done FROM deposits WHERE id = ?', [dep.id])).rows[0].periods_done).toBe(1);
     const expected = interestForPeriod(200000, 11.5, dep.opened_date, first);
     expect((await getAccount(dep.account_id)).balance).toBe(200000 + expected);
     // повторный запуск за ту же дату ничего не делает
     await run(first);
-    expect((await pool.query('SELECT periods_done FROM deposits WHERE id = $1', [dep.id])).rows[0].periods_done).toBe(1);
+    expect((await pool.query('SELECT periods_done FROM deposits WHERE id = ?', [dep.id])).rows[0].periods_done).toBe(1);
     // второй месяц считается уже с капитализированной базой
     const second = addMonths(dep.opened_date, 2);
     await run(second);
@@ -77,7 +77,7 @@ describe('вклады', () => {
     const c = await createClientWithAccount(300000);
     const dep = await openDeposit(c.userId, { productId: await productId('Талер 6'), sourceAccountId: c.accountId, amount: 100000 });
     await run(dep.maturity_date);
-    const { rows: [d] } = await pool.query('SELECT status, interest_total FROM deposits WHERE id = $1', [dep.id]);
+    const { rows: [d] } = await pool.query('SELECT status, interest_total FROM deposits WHERE id = ?', [dep.id]);
     expect(d.status).toBe('closed');
     expect(d.interest_total).toBeGreaterThan(4000);
     expect((await getAccount(c.accountId)).balance).toBe(200000 + 100000 + d.interest_total);
@@ -99,7 +99,7 @@ describe('вклады', () => {
     const c = await createClientWithAccount(300000);
     const dep = await openDeposit(c.userId, { productId: await productId('Талер 12'), sourceAccountId: c.accountId, amount: 200000 });
     await run(addMonths(dep.opened_date, 1));
-    const paid = (await pool.query('SELECT interest_total FROM deposits WHERE id = $1', [dep.id])).rows[0].interest_total;
+    const paid = (await pool.query('SELECT interest_total FROM deposits WHERE id = ?', [dep.id])).rows[0].interest_total;
     expect(paid).toBeGreaterThan(0);
 
     const quote = await earlyCloseQuote(c.userId, dep.id);
@@ -108,7 +108,7 @@ describe('вклады', () => {
     // клиент получил тело вклада плюс проценты по ставке до востребования, не больше
     const demand = interestForPeriod(200000, 0.1, dep.opened_date, await today());
     expect((await getAccount(c.accountId)).balance).toBe(100000 + 200000 + demand);
-    const { rows: [d] } = await pool.query('SELECT status FROM deposits WHERE id = $1', [dep.id]);
+    const { rows: [d] } = await pool.query('SELECT status FROM deposits WHERE id = ?', [dep.id]);
     expect(d.status).toBe('early_closed');
     await expect(closeEarly(c.userId, dep.id)).rejects.toThrow(/уже закрыт/);
   });

@@ -19,20 +19,21 @@ afterAll(async () => {
 
 describe('резервное копирование', () => {
   it('создаёт зашифрованную копию, которая восстанавливает базу', async () => {
-    await pool.query("INSERT INTO settings (key, value, description) VALUES ('test.marker', 'до копии', 'тест') ON CONFLICT (key) DO UPDATE SET value = 'до копии'");
+    await pool.query("INSERT INTO settings (`key`, value, description) VALUES ('test.marker', 'до копии', 'тест') ON DUPLICATE KEY UPDATE value = 'до копии'");
     const { name, size } = await createBackup();
     expect(size).toBeGreaterThan(1000);
     const raw = await readFile(path.join(dir, name));
-    // pg_dump в формате custom начинается с «PGDMP»: после шифрования этого заголовка в файле быть не должно
-    expect(raw.subarray(0, 5).toString()).not.toBe('PGDMP');
+    // дамп mysqldump начинается с «-- MySQL dump»: после шифрования этого заголовка в файле быть не должно
+    expect(raw.subarray(0, 8).toString()).not.toBe('-- MySQL');
+    expect(raw.includes(Buffer.from('CREATE TABLE'))).toBe(false);
     expect(raw.includes(Buffer.from('до копии'))).toBe(false);
     expect((await listBackups()).map((b) => b.name)).toContain(name);
 
-    await pool.query("UPDATE settings SET value = 'после копии' WHERE key = 'test.marker'");
+    await pool.query("UPDATE settings SET value = 'после копии' WHERE `key` = 'test.marker'");
     await restoreBackup(null, name);
-    const { rows } = await pool.query("SELECT value FROM settings WHERE key = 'test.marker'");
+    const { rows } = await pool.query("SELECT value FROM settings WHERE `key` = 'test.marker'");
     expect(rows[0].value).toBe('до копии');
-    await pool.query("DELETE FROM settings WHERE key = 'test.marker'");
+    await pool.query("DELETE FROM settings WHERE `key` = 'test.marker'");
   });
 
   it('обнаруживает повреждённый файл и неверное имя', async () => {

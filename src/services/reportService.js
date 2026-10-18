@@ -34,17 +34,17 @@ export async function trialBalance({ from, to, currency = 'BYN' } = {}) {
   if (from > to) throw new ValidationError({ from: 'Дата начала позже даты окончания' });
   const { rows } = await query(
     `WITH moves AS (
-       SELECT a.balance_code AS code, p.bank_date, p.amount AS debit, 0::bigint AS credit
-         FROM postings p JOIN accounts a ON a.id = p.debit_account_id WHERE p.currency = $1
+       SELECT a.balance_code AS code, p.bank_date, p.amount AS debit, 0 AS credit
+         FROM postings p JOIN accounts a ON a.id = p.debit_account_id WHERE p.currency = ?
        UNION ALL
-       SELECT a.balance_code, p.bank_date, 0::bigint, p.amount
-         FROM postings p JOIN accounts a ON a.id = p.credit_account_id WHERE p.currency = $1)
+       SELECT a.balance_code, p.bank_date, 0, p.amount
+         FROM postings p JOIN accounts a ON a.id = p.credit_account_id WHERE p.currency = ?)
      SELECT code,
-       COALESCE(SUM(CASE WHEN bank_date < $2 THEN credit - debit END), 0) AS opening,
-       COALESCE(SUM(CASE WHEN bank_date BETWEEN $2 AND $3 THEN debit END), 0) AS debit_turn,
-       COALESCE(SUM(CASE WHEN bank_date BETWEEN $2 AND $3 THEN credit END), 0) AS credit_turn
-     FROM moves WHERE bank_date <= $3 GROUP BY code ORDER BY code`,
-    [currency, from, to]);
+       COALESCE(SUM(CASE WHEN bank_date < ? THEN credit - debit END), 0) AS opening,
+       COALESCE(SUM(CASE WHEN bank_date BETWEEN ? AND ? THEN debit END), 0) AS debit_turn,
+       COALESCE(SUM(CASE WHEN bank_date BETWEEN ? AND ? THEN credit END), 0) AS credit_turn
+     FROM moves WHERE bank_date <= ? GROUP BY code ORDER BY code`,
+    [currency, currency, from, from, to, from, to, to]);
   const lines = rows.map((r) => {
     const opening = Number(r.opening);
     const debit = Number(r.debit_turn);
@@ -69,7 +69,7 @@ export function trialBalanceCsv(report) {
 export async function portfolio() {
   const today = await bankDate();
   const { rows: [loans] } = await query(
-    `SELECT count(*)::int AS cnt, COALESCE(sum(principal_balance), 0) AS principal FROM loans WHERE status = 'active'`);
+    `SELECT count(*) AS cnt, COALESCE(sum(principal_balance), 0) AS principal FROM loans WHERE status = 'active'`);
   const { rows: overdue } = await query(
     `SELECT l.id, l.principal_balance, min(s.due_date) AS first_due
      FROM loans l JOIN loan_schedule s ON s.loan_id = l.id AND s.status = 'overdue' WHERE l.status = 'active' GROUP BY l.id`);
@@ -84,14 +84,14 @@ export async function portfolio() {
   }
   const principal = Number(loans.principal);
   const { rows: deposits } = await query(
-    `SELECT d.currency, count(*)::int AS cnt, COALESCE(sum(a.balance), 0) AS total
+    `SELECT d.currency, count(*) AS cnt, COALESCE(sum(a.balance), 0) AS total
      FROM deposits d JOIN accounts a ON a.id = d.account_id WHERE d.status = 'active' GROUP BY d.currency ORDER BY d.currency`);
   const since = addDays(today, -30);
   const { rows: [ops] } = await query(
-    `SELECT count(DISTINCT d.id)::int AS cnt FROM documents d WHERE d.bank_date >= $1 AND d.type IN ('transfer_own', 'transfer_client', 'payment', 'card_purchase')`, [since]);
+    `SELECT count(DISTINCT d.id) AS cnt FROM documents d WHERE d.bank_date >= ? AND d.type IN ('transfer_own', 'transfer_client', 'payment', 'card_purchase')`, [since]);
   const { rows: byType } = await query(
-    `SELECT d.type, count(*)::int AS cnt, COALESCE(sum(p.amount) FILTER (WHERE p.currency = 'BYN'), 0) AS byn
-     FROM documents d JOIN postings p ON p.document_id = d.id WHERE d.bank_date >= $1 GROUP BY d.type ORDER BY cnt DESC`, [since]);
+    `SELECT d.type, count(*) AS cnt, COALESCE(sum(CASE WHEN p.currency = 'BYN' THEN p.amount END), 0) AS byn
+     FROM documents d JOIN postings p ON p.document_id = d.id WHERE d.bank_date >= ? GROUP BY d.type ORDER BY cnt DESC`, [since]);
   const { rows: income } = await query(
     `SELECT currency, balance FROM accounts WHERE purpose = 'income' AND balance <> 0 ORDER BY currency`);
   const { rows: expense } = await query(

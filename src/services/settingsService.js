@@ -36,7 +36,7 @@ const META = {
 
 /** Настройки для экрана: значение переведено в рубли, где нужно. */
 export async function list() {
-  const { rows } = await query('SELECT key, value FROM settings');
+  const { rows } = await query('SELECT `key`, value FROM settings');
   const byKey = new Map(rows.map((r) => [r.key, r.value]));
   const groups = new Map();
   for (const [key, meta] of Object.entries(META)) {
@@ -76,9 +76,9 @@ export async function update(userId, values) {
   return withTransaction(async (db) => {
     let changed = 0;
     for (const { key, stored } of changes) {
-      const { rows: [old] } = await db.query('SELECT value FROM settings WHERE key = $1 FOR UPDATE', [key]);
+      const { rows: [old] } = await db.query('SELECT value FROM settings WHERE `key` = ? FOR UPDATE', [key]);
       if (old && old.value !== stored) {
-        await db.query('UPDATE settings SET value = $2, updated_at = now() WHERE key = $1', [key, stored]);
+        await db.query('UPDATE settings SET value = ?, updated_at = UTC_TIMESTAMP(3) WHERE `key` = ?', [stored, key]);
         await auditService.log({ userId, action: 'settings.update', entity: 'setting', entityId: key, details: { from: old.value, to: stored } }, db);
         changed += 1;
       }
@@ -109,7 +109,7 @@ export async function updateSpreads(userId, values) {
   if (Object.keys(errors).length) throw new ValidationError(errors);
   await withTransaction(async (db) => {
     for (const p of parsed) {
-      const { rowCount } = await db.query('UPDATE rate_spreads SET buy_percent = $2, sell_percent = $3 WHERE currency = $1', [p.currency, p.buy, p.sell]);
+      const { rowCount } = await db.query('UPDATE rate_spreads SET buy_percent = ?, sell_percent = ? WHERE currency = ?', [p.buy, p.sell, p.currency]);
       if (rowCount) await auditService.log({ userId, action: 'rates.spread', entity: 'currency', entityId: p.currency, details: { buy: p.buy, sell: p.sell } }, db);
     }
   });

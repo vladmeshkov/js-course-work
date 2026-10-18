@@ -37,8 +37,8 @@ export async function refreshRates(fetchFn = fetch) {
   for (const currency of FOREIGN) {
     await pool.query(
       `INSERT INTO exchange_rates (currency, rate_date, rate, scale)
-       VALUES ($1, (SELECT bank_date FROM bank_state), $2, $3)
-       ON CONFLICT (currency, rate_date) DO UPDATE SET rate = EXCLUDED.rate, scale = EXCLUDED.scale`,
+       VALUES (?, (SELECT bank_date FROM bank_state), ?, ?)
+       ON DUPLICATE KEY UPDATE rate = VALUES(rate), scale = VALUES(scale)`,
       [currency, used[currency].rate, used[currency].scale]
     );
   }
@@ -51,9 +51,10 @@ export async function refreshRates(fetchFn = fetch) {
  */
 export async function currentRates(db = pool) {
   const { rows } = await db.query(
-    `SELECT DISTINCT ON (r.currency) r.currency, r.rate, r.scale, s.buy_percent, s.sell_percent
+    `SELECT r.currency, r.rate, r.scale, s.buy_percent, s.sell_percent
      FROM exchange_rates r JOIN rate_spreads s ON s.currency = r.currency
-     ORDER BY r.currency, r.rate_date DESC`
+     WHERE r.rate_date = (SELECT MAX(e.rate_date) FROM exchange_rates e WHERE e.currency = r.currency)
+     ORDER BY r.currency`
   );
   const map = new Map([['BYN', { perUnit: 1, buyPercent: 0, sellPercent: 0 }]]);
   for (const r of rows) {

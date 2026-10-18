@@ -54,7 +54,7 @@ export async function changeRole(adminId, userId, roleCode) {
   const user = await userModel.findById(userId);
   if (!user) throw new AppError('Пользователь не найден', 404);
   if ((user.role_code === 'client') !== (roleCode === 'client')) throw new BusinessError('Клиента нельзя сделать сотрудником и наоборот');
-  await query('UPDATE users SET role_id = (SELECT id FROM roles WHERE code = $2) WHERE id = $1', [userId, roleCode]);
+  await query('UPDATE users SET role_id = (SELECT id FROM roles WHERE code = ?) WHERE id = ?', [roleCode, userId]);
   await auditService.log({ userId: adminId, action: 'user.role', entity: 'user', entityId: userId, details: { from: user.role_code, to: roleCode } });
 }
 
@@ -62,14 +62,14 @@ export async function changeRole(adminId, userId, roleCode) {
 export async function auditLog({ login = '', action = '', result = '', days = 0 } = {}, limit = 200) {
   const params = [];
   const where = [];
-  if (login) { params.push(`%${login.toLowerCase()}%`); where.push(`lower(u.login) LIKE $${params.length}`); }
-  if (action) { params.push(`${action}%`); where.push(`a.action LIKE $${params.length}`); }
-  if (result) { params.push(result); where.push(`a.result = $${params.length}`); }
-  if (days) { params.push(days); where.push(`a.at >= now() - make_interval(days => $${params.length})`); }
+  if (login) { params.push(`%${login.toLowerCase()}%`); where.push('lower(u.login) LIKE ?'); }
+  if (action) { params.push(`${action}%`); where.push('a.action LIKE ?'); }
+  if (result) { params.push(result); where.push('a.result = ?'); }
+  if (days) { params.push(days); where.push('a.at >= UTC_TIMESTAMP(3) - INTERVAL ? DAY'); }
   params.push(limit);
   const { rows } = await query(
     `SELECT a.id, a.at, a.action, a.entity, a.entity_id, a.result, a.ip, a.details, u.login
      FROM audit_log a LEFT JOIN users u ON u.id = a.user_id
-     ${where.length ? 'WHERE ' + where.join(' AND ') : ''} ORDER BY a.id DESC LIMIT $${params.length}`, params);
+     ${where.length ? 'WHERE ' + where.join(' AND ') : ''} ORDER BY a.id DESC LIMIT ?`, params);
   return rows;
 }

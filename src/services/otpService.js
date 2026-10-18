@@ -14,10 +14,10 @@ const MAX_ATTEMPTS = 3;
  */
 export async function issue(userId, purpose, db = { query }) {
   const code = randomCode(6);
-  await db.query('UPDATE otp_codes SET used_at = now() WHERE user_id = $1 AND purpose = $2 AND used_at IS NULL', [userId, purpose]);
+  await db.query('UPDATE otp_codes SET used_at = UTC_TIMESTAMP(3) WHERE user_id = ? AND purpose = ? AND used_at IS NULL', [userId, purpose]);
   await db.query(
     `INSERT INTO otp_codes (user_id, purpose, code_hash, expires_at)
-     VALUES ($1, $2, $3, now() + make_interval(mins => $4))`,
+     VALUES (?, ?, ?, UTC_TIMESTAMP(3) + INTERVAL ? MINUTE)`,
     [userId, purpose, lookupHash(`${userId}:${purpose}:${code}`), TTL_MINUTES]
   );
   return code;
@@ -30,7 +30,7 @@ export async function issue(userId, purpose, db = { query }) {
 export async function verify(userId, purpose, code, db = { query }) {
   const { rows } = await db.query(
     `SELECT id, code_hash, attempts FROM otp_codes
-     WHERE user_id = $1 AND purpose = $2 AND used_at IS NULL AND expires_at > now()
+     WHERE user_id = ? AND purpose = ? AND used_at IS NULL AND expires_at > UTC_TIMESTAMP(3)
      ORDER BY id DESC LIMIT 1 FOR UPDATE`,
     [userId, purpose]
   );
@@ -39,10 +39,10 @@ export async function verify(userId, purpose, code, db = { query }) {
   if (lookupHash(`${userId}:${purpose}:${String(code ?? '').trim()}`) !== row.code_hash) {
     const attempts = row.attempts + 1;
     // после последней попытки код гасится
-    await db.query('UPDATE otp_codes SET attempts = $2::int, used_at = CASE WHEN $2::int >= $3::int THEN now() ELSE NULL END WHERE id = $1',
-      [row.id, attempts, MAX_ATTEMPTS]);
+    await db.query('UPDATE otp_codes SET attempts = ?, used_at = CASE WHEN ? >= ? THEN UTC_TIMESTAMP(3) ELSE NULL END WHERE id = ?',
+      [attempts, attempts, MAX_ATTEMPTS, row.id]);
     const left = MAX_ATTEMPTS - attempts;
     throw new AppError(left > 0 ? `Неверный код. Осталось попыток: ${left}` : 'Неверный код. Попытки исчерпаны, запросите новый', 400, 'otp_wrong');
   }
-  await db.query('UPDATE otp_codes SET used_at = now() WHERE id = $1', [row.id]);
+  await db.query('UPDATE otp_codes SET used_at = UTC_TIMESTAMP(3) WHERE id = ?', [row.id]);
 }

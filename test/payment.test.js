@@ -7,7 +7,7 @@ import { createClientWithAccount, getAccount, closePool } from './helpers.js';
 
 afterAll(closePool);
 
-const providerId = async (name) => (await pool.query('SELECT id FROM payment_providers WHERE name = $1', [name])).rows[0].id;
+const providerId = async (name) => (await pool.query('SELECT id FROM payment_providers WHERE name = ?', [name])).rows[0].id;
 const today = async () => String((await pool.query('SELECT bank_date FROM bank_state')).rows[0].bank_date).slice(0, 10);
 const runAuto = (date) => withTransaction((db) => processAutopayments(db, date));
 
@@ -28,7 +28,7 @@ describe('оплата услуг', () => {
     const pid = await providerId('Энергосбыт');
     const p = await pay(c.userId, { providerId: pid, fromAccountId: c.accountId, amount: 12550, requisite: '12345678' });
     expect((await getAccount(c.accountId)).balance).toBe(50000 - 12550);
-    const { rows: [prov] } = await pool.query("SELECT balance FROM accounts WHERE purpose = $1", [`provider_${pid}`]);
+    const { rows: [prov] } = await pool.query("SELECT balance FROM accounts WHERE purpose = ?", [`provider_${pid}`]);
     expect(prov.balance).toBeGreaterThanOrEqual(12550);
     const r = await getReceipt(c.userId, p.id);
     expect(r.provider_name).toBe('Энергосбыт');
@@ -94,7 +94,7 @@ describe('шаблоны и автоплатежи', () => {
       await runAuto(date);
       date = addDays(date, 1);
     }
-    const { rows: [a] } = await pool.query('SELECT active, fail_count, last_result FROM autopayments WHERE id = $1', [auto.id]);
+    const { rows: [a] } = await pool.query('SELECT active, fail_count, last_result FROM autopayments WHERE id = ?', [auto.id]);
     expect(a.fail_count).toBe(3);
     expect(a.active).toBe(false);
     expect(a.last_result).toContain('Недостаточно');

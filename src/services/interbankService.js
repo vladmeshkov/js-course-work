@@ -53,7 +53,7 @@ export async function createTransfer(userId, input) {
   let bank = null;
   if (!isValidIban(iban)) errors.iban = 'Неверный номер счёта: проверьте символы и контрольные цифры';
   else {
-    bank = (await query('SELECT * FROM external_banks WHERE code = $1', [bankCodeOf(iban)])).rows[0];
+    bank = (await query('SELECT * FROM external_banks WHERE code = ?', [bankCodeOf(iban)])).rows[0];
     if (!bank) errors.iban = 'Банк получателя не найден. Для переводов внутри ТалерБанка используйте перевод клиенту банка';
   }
   const name = String(input.name ?? '').trim();
@@ -73,12 +73,13 @@ export async function createTransfer(userId, input) {
 
   // риск оценивается сразу, решение (задержка на проверку) применяется после подтверждения кодом
   const risk = await fraudService.evaluateInterbank({ userId, clientId: client.id, counterpartyIban: iban, amountByn: input.amount });
-  const { rows: [transfer] } = await query(
+  const { insertId } = await query(
     `INSERT INTO interbank_transfers (user_id, account_id, direction, bank_code, counterparty_name, counterparty_iban, amount, fee, purpose, status, expires_at,
                                       risk_score, risk_reasons, risk_decision, risk_special)
-     VALUES ($1, $2, 'out', $3, $4, $5, $6, $7, $8, 'pending_otp', now() + interval '10 minutes', $9, $10, $11, $12) RETURNING *`,
+     VALUES (?, ?, 'out', ?, ?, ?, ?, ?, ?, 'pending_otp', UTC_TIMESTAMP(3) + INTERVAL 10 MINUTE, ?, ?, ?, ?)`,
     [userId, from.id, bank.code, name, iban, input.amount, fee, String(input.purpose ?? '').trim().slice(0, 140),
       risk.score, JSON.stringify(risk.reasons), risk.decision, risk.special]);
+  const transfer = (await query('SELECT * FROM interbank_transfers WHERE id = ?', [insertId])).rows[0];
   const otpCode = await otpService.issue(userId, `interbank:${transfer.id}`);
   return { transfer, otpCode, bank };
 }
@@ -86,7 +87,7 @@ export async function createTransfer(userId, input) {
 export async function findForUser(userId, id, db = { query }) {
   const { rows } = await db.query(
     `SELECT t.*, b.name AS bank_name, a.iban AS from_iban FROM interbank_transfers t
-     JOIN external_banks b ON b.code = t.bank_code JOIN accounts a ON a.id = t.account_id WHERE t.id = $1 AND t.user_id = $2`, [id, userId]);
+     JOIN external_banks b ON b.code = t.bank_code JOIN accounts a ON a.id = t.account_id WHERE t.id = ? AND t.user_id = ?`, [id, userId]);
   return rows[0];
 }
 
@@ -98,62 +99,62 @@ export async function confirm(userId, id, code) {
   if (new Date(transfer.expires_at) < new Date()) throw new BusinessError('Время подтверждения истекло. Оформите перевод заново');
   await otpService.verify(userId, `interbank:${id}`, code);
   return withTransaction(async (db) => {
-    const { rows: [locked] } = await db.query('SELECT * FROM interbank_transfers WHERE id = $1 FOR UPDATE', [id]);
+    const { rows: [locked] } = await db.query('SELECT * FROM interbank_transfers WHERE id = ? FOR UPDATE', [id]);
     if (locked.status !== 'pending_otp') throw new BusinessError('Перевод уже обработан');
     const [account] = Object.values(Object.fromEntries(await accountModel.lockAll(db, [locked.account_id])));
     const held = await accountModel.heldAmount(db, account.id);
     if (account.balance - held - account.min_balance < locked.amount + locked.fee) throw new BusinessError('Недостаточно средств с учётом комиссии', 'insufficient_funds');
-    const { rows: [hold] } = await db.query('INSERT INTO holds (account_id, amount) VALUES ($1, $2) RETURNING id', [account.id, locked.amount + locked.fee]);
+    const { insertId: holdId } = await db.query('INSERT INTO holds (account_id, amount) VALUES (?, ?)', [account.id, locked.amount + locked.fee]);
     const risk = { score: locked.risk_score, reasons: locked.risk_reasons, decision: locked.risk_decision, special: locked.risk_special };
     if (risk.decision === 'review') {
       // подозрительный платёж: деньги зарезервированы, решение принимает специалист по мониторингу
-      await db.query("UPDATE interbank_transfers SET status = 'review', hold_id = $2 WHERE id = $1", [id, hold.id]);
+      await db.query("UPDATE interbank_transfers SET status = 'review', hold_id = ? WHERE id = ?", [holdId, id]);
       await fraudService.recordInterbankCase(db, locked, risk);
       await notify(userId, { type: 'transfer', title: 'Перевод на проверке', body: `Перевод ${money(locked.amount)} получателю ${locked.counterparty_name} задержан для проверки. Деньги на счёте зарезервированы.`, link: '/transfers/interbank' }, db);
       await auditService.log({ userId, action: 'interbank.held', entity: 'interbank', entityId: id, details: { score: risk.score } }, db);
-      return { ...locked, status: 'review', hold_id: hold.id };
+      return { ...locked, status: 'review', hold_id: holdId };
     }
     if (risk.special) await fraudService.recordInterbankCase(db, locked, risk);
-    await db.query("UPDATE interbank_transfers SET status = 'queued', hold_id = $2 WHERE id = $1", [id, hold.id]);
+    await db.query("UPDATE interbank_transfers SET status = 'queued', hold_id = ? WHERE id = ?", [holdId, id]);
     await notify(userId, { type: 'transfer', title: 'Перевод в другой банк принят', body: `${money(locked.amount)} получателю ${locked.counterparty_name}. Отправится при закрытии операционного дня.`, link: '/transfers/interbank' }, db);
     await auditService.log({ userId, action: 'interbank.queued', entity: 'interbank', entityId: id, details: { amount: locked.amount } }, db);
-    return { ...locked, status: 'queued', hold_id: hold.id };
+    return { ...locked, status: 'queued', hold_id: holdId };
   });
 }
 
 /** Отмена: пока платёж не ушёл в клиринг, его можно отозвать. */
 export async function cancel(userId, id) {
   return withTransaction(async (db) => {
-    const { rows: [t] } = await db.query('SELECT * FROM interbank_transfers WHERE id = $1 AND user_id = $2 FOR UPDATE', [id, userId]);
+    const { rows: [t] } = await db.query('SELECT * FROM interbank_transfers WHERE id = ? AND user_id = ? FOR UPDATE', [id, userId]);
     if (!t) throw new AppError('Перевод не найден', 404);
     if (!['pending_otp', 'queued'].includes(t.status)) throw new BusinessError('Этот перевод уже нельзя отменить');
-    if (t.hold_id) await db.query("UPDATE holds SET status = 'released', closed_at = now() WHERE id = $1", [t.hold_id]);
-    await db.query("UPDATE interbank_transfers SET status = 'cancelled' WHERE id = $1", [id]);
+    if (t.hold_id) await db.query("UPDATE holds SET status = 'released', closed_at = UTC_TIMESTAMP(3) WHERE id = ?", [t.hold_id]);
+    await db.query("UPDATE interbank_transfers SET status = 'cancelled' WHERE id = ?", [id]);
     await auditService.log({ userId, action: 'interbank.cancel', entity: 'interbank', entityId: id }, db);
   });
 }
 
 /**
  * Клиринг: отправка очереди одним пакетом при закрытии операционного дня.
- * @param {import('pg').PoolClient} db
+ * @param {{query: Function}} db
  * @param {string} date банковская дата пакета
  * @returns {Promise<{sent:number, rejected:number, total:number}>}
  */
 export async function processClearing(db, date) {
   const { rows: queued } = await db.query("SELECT * FROM interbank_transfers WHERE status = 'queued' AND direction = 'out' ORDER BY id FOR UPDATE");
   if (!queued.length) return { sent: 0, rejected: 0, total: 0 };
-  const { rows: [batch] } = await db.query(
-    'INSERT INTO clearing_batches (bank_date) VALUES ($1) ON CONFLICT (bank_date) DO UPDATE SET bank_date = EXCLUDED.bank_date RETURNING id', [date]);
+  await db.query('INSERT INTO clearing_batches (bank_date) VALUES (?) ON DUPLICATE KEY UPDATE bank_date = VALUES(bank_date)', [date]);
+  const { rows: [batch] } = await db.query('SELECT id FROM clearing_batches WHERE bank_date = ?', [date]);
   const correspondent = await ensureInternalAccount(db, 'correspondent', 'BYN');
   const income = await ensureInternalAccount(db, 'income', 'BYN');
   const stats = { sent: 0, rejected: 0, total: 0 };
-  const owner = async (accountId) => (await db.query('SELECT c.user_id FROM accounts a JOIN clients c ON c.id = a.owner_client_id WHERE a.id = $1', [accountId])).rows[0]?.user_id;
+  const owner = async (accountId) => (await db.query('SELECT c.user_id FROM accounts a JOIN clients c ON c.id = a.owner_client_id WHERE a.id = ?', [accountId])).rows[0]?.user_id;
 
   for (const t of queued) {
-    await db.query("UPDATE holds SET status = 'released', closed_at = now() WHERE id = $1", [t.hold_id]);
-    const { rows: [bank] } = await db.query('SELECT active, name FROM external_banks WHERE code = $1', [t.bank_code]);
+    await db.query("UPDATE holds SET status = 'released', closed_at = UTC_TIMESTAMP(3) WHERE id = ?", [t.hold_id]);
+    const { rows: [bank] } = await db.query('SELECT active, name FROM external_banks WHERE code = ?', [t.bank_code]);
     if (!bank.active) {
-      await db.query("UPDATE interbank_transfers SET status = 'rejected', reject_reason = $2, batch_id = $3 WHERE id = $1", [t.id, 'Банк получателя не принимает платежи', batch.id]);
+      await db.query("UPDATE interbank_transfers SET status = 'rejected', reject_reason = ?, batch_id = ? WHERE id = ?", ['Банк получателя не принимает платежи', batch.id, t.id]);
       await notify(await owner(t.account_id), { type: 'transfer', title: 'Перевод в другой банк отклонён', body: `${bank.name} не принимает платежи. Деньги разблокированы на вашем счёте.`, link: '/transfers/interbank' }, db);
       stats.rejected += 1;
       continue;
@@ -163,12 +164,12 @@ export async function processClearing(db, date) {
     const { documentId } = await ledgerService.post({
       type: 'interbank_out', description: `Перевод в ${bank.name}: ${t.counterparty_name}${t.purpose ? '. ' + t.purpose : ''}`, initiatedBy: t.user_id, entries
     }, db);
-    await db.query("UPDATE interbank_transfers SET status = 'sent', document_id = $2, batch_id = $3, sent_date = $4 WHERE id = $1", [t.id, documentId, batch.id, date]);
+    await db.query("UPDATE interbank_transfers SET status = 'sent', document_id = ?, batch_id = ?, sent_date = ? WHERE id = ?", [documentId, batch.id, date, t.id]);
     await notify(await owner(t.account_id), { type: 'transfer', title: 'Перевод в другой банк отправлен', body: `${money(t.amount)} получателю ${t.counterparty_name}, ${bank.name}. Комиссия ${money(t.fee)}.`, link: '/transfers/interbank' }, db);
     stats.sent += 1;
     stats.total += t.amount;
   }
-  await db.query('UPDATE clearing_batches SET transfers = $2, rejected = $3, total = $4 WHERE id = $1', [batch.id, stats.sent, stats.rejected, stats.total]);
+  await db.query('UPDATE clearing_batches SET transfers = ?, rejected = ?, total = ? WHERE id = ?', [stats.sent, stats.rejected, stats.total, batch.id]);
   return stats;
 }
 
@@ -182,7 +183,7 @@ export async function registerIncoming(operatorId, { iban, bankCode, name, amoun
   const clean = String(iban ?? '').replace(/\s/g, '').toUpperCase();
   const account = isValidIban(clean) ? await accountModel.findByIban(clean) : null;
   if (!account || !['current', 'savings'].includes(account.kind) || account.currency !== 'BYN' || account.status === 'closed') errors.iban = 'Счёт клиента в BYN не найден';
-  const bank = (await query('SELECT * FROM external_banks WHERE code = $1', [bankCode])).rows[0];
+  const bank = (await query('SELECT * FROM external_banks WHERE code = ?', [bankCode])).rows[0];
   if (!bank) errors.bankCode = 'Выберите банк отправителя';
   if (String(name ?? '').trim().length < 3) errors.name = 'Укажите отправителя';
   if (!Number.isSafeInteger(amount) || amount <= 0) errors.amount = 'Введите сумму больше нуля';
@@ -193,20 +194,20 @@ export async function registerIncoming(operatorId, { iban, bankCode, name, amoun
       type: 'interbank_in', description: `Поступление из ${bank.name}: ${String(name).trim()}${purpose ? '. ' + String(purpose).trim() : ''}`, initiatedBy: operatorId,
       entries: [{ debit: correspondent.id, credit: account.id, amount, currency: 'BYN' }]
     }, db);
-    const { rows: [t] } = await db.query(
+    const { insertId: transferId } = await db.query(
       `INSERT INTO interbank_transfers (user_id, account_id, direction, bank_code, counterparty_name, counterparty_iban, amount, purpose, status, document_id, sent_date)
-       VALUES ($1, $2, 'in', $3, $4, $5, $6, $7, 'sent', $8, (SELECT bank_date FROM bank_state)) RETURNING id`,
+       VALUES (?, ?, 'in', ?, ?, ?, ?, ?, 'sent', ?, (SELECT bank_date FROM bank_state))`,
       [operatorId, account.id, bank.code, String(name).trim(), `BY00${bank.code}0000000000000000000000`.slice(0, 28), amount, String(purpose ?? '').trim().slice(0, 140), documentId]);
     await notifyAccountOwner(account.id, { type: 'transfer', title: 'Поступил перевод из другого банка', body: `${money(amount)} от ${String(name).trim()}, ${bank.name}`, link: `/accounts/${account.id}` }, db);
-    await auditService.log({ userId: operatorId, action: 'interbank.incoming', entity: 'interbank', entityId: t.id, details: { amount } }, db);
-    return t;
+    await auditService.log({ userId: operatorId, action: 'interbank.incoming', entity: 'interbank', entityId: transferId, details: { amount } }, db);
+    return { id: transferId };
   });
 }
 
 export async function listForUser(userId) {
   const { rows } = await query(
     `SELECT t.*, b.name AS bank_name FROM interbank_transfers t JOIN external_banks b ON b.code = t.bank_code
-     WHERE t.user_id = $1 AND t.direction = 'out' ORDER BY t.id DESC LIMIT 30`, [userId]);
+     WHERE t.user_id = ? AND t.direction = 'out' ORDER BY t.id DESC LIMIT 30`, [userId]);
   return rows;
 }
 

@@ -34,7 +34,7 @@ const productId = async () => (await pool.query("SELECT id FROM loan_products WH
 /** Клиент с хорошим профилем, у которого можно оформить кредит. */
 async function goodClient(balance = 0) {
   const c = await createClientWithAccount(balance);
-  await pool.query("UPDATE clients SET birth_date = '1990-05-05' WHERE id = $1", [c.clientId]);
+  await pool.query("UPDATE clients SET birth_date = '1990-05-05' WHERE id = ?", [c.clientId]);
   return c;
 }
 
@@ -46,7 +46,7 @@ const input = async (c, extra = {}) => ({
 /** Подписывает договор с кодом, который удалось получить из базы (хэш подменяем известным кодом). */
 async function signContract(c, application) {
   await requestSignCode(c.userId, application.id);
-  await pool.query('UPDATE otp_codes SET code_hash = $1 WHERE user_id = $2 AND purpose = $3 AND used_at IS NULL',
+  await pool.query('UPDATE otp_codes SET code_hash = ? WHERE user_id = ? AND purpose = ? AND used_at IS NULL',
     [lookupHash(`${c.userId}:loan:${application.id}:123456`), c.userId, `loan:${application.id}`]);
   return sign(c.userId, application.id, '123456');
 }
@@ -61,7 +61,7 @@ describe('заявка и скоринг', () => {
 
   it('крупная сумма уходит на ручное рассмотрение, специалист одобряет или отклоняет', async () => {
     const officer = (await pool.query("SELECT id FROM users u WHERE role_id = (SELECT id FROM roles WHERE code = 'credit_officer') LIMIT 1")).rows[0]
-      ?? { id: (await withTransaction(async (db) => (await db.query("INSERT INTO users (login, password_hash, role_id) VALUES ('officer.t', 'x', (SELECT id FROM roles WHERE code = 'credit_officer')) RETURNING id")).rows[0])).id };
+      ?? { id: await withTransaction(async (db) => (await db.query("INSERT INTO users (login, password_hash, role_id) VALUES ('officer.t', 'x', (SELECT id FROM roles WHERE code = 'credit_officer'))")).insertId) };
     const c = await goodClient();
     const a = await apply(c.userId, await input(c, { amount: 2500000, termMonths: 36, income: 900000 }));
     expect(a.status).toBe('manual_review');
@@ -71,7 +71,7 @@ describe('заявка и скоринг', () => {
     const c2 = await goodClient();
     const b = await apply(c2.userId, await input(c2, { amount: 2500000, termMonths: 36, income: 900000 }));
     await decide(officer.id, b.id, { approve: false, comment: 'Недостаточно подтверждённого дохода' });
-    expect((await pool.query('SELECT status FROM loan_applications WHERE id = $1', [b.id])).rows[0].status).toBe('rejected');
+    expect((await pool.query('SELECT status FROM loan_applications WHERE id = ?', [b.id])).rows[0].status).toBe('rejected');
   });
 
   it('отказывает при долговой нагрузке выше 40 %', async () => {
@@ -137,7 +137,7 @@ describe('выдача и обслуживание', () => {
 
     // прошло пять дней: банковская дата сдвинулась, пеня начислена
     const later = addDays(due, 5);
-    await pool.query('UPDATE bank_state SET bank_date = $1', [later]);
+    await pool.query('UPDATE bank_state SET bank_date = ?', [later]);
     await run(later);
     state = await getLoan(c.userId, loan.id);
     const row = state.schedule[0];
@@ -148,7 +148,7 @@ describe('выдача и обслуживание', () => {
     // клиент пополнил счёт: следующее закрытие дня списывает платёж вместе с пеней
     await cashIn(c.accountId, 100000);
     const next = addDays(later, 1);
-    await pool.query('UPDATE bank_state SET bank_date = $1', [next]);
+    await pool.query('UPDATE bank_state SET bank_date = ?', [next]);
     await run(next);
     state = await getLoan(c.userId, loan.id);
     expect(state.schedule[0].status).toBe('paid');

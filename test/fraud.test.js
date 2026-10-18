@@ -27,7 +27,7 @@ describe('антифрод', () => {
     expect(r.executed).toBe(false);
     expect((await getAccount(a.accountId)).balance).toBe(2000000);
     expect((await getAccount(b.accountId)).balance).toBe(0);
-    const { rows: [h] } = await pool.query("SELECT amount, status FROM holds WHERE intent_id = $1", [r.intent.id]);
+    const { rows: [h] } = await pool.query("SELECT amount, status FROM holds WHERE intent_id = ?", [r.intent.id]);
     expect(h).toMatchObject({ amount: 400000, status: 'active' });
   });
 
@@ -43,7 +43,7 @@ describe('антифрод', () => {
     expect((await getAccount(a.accountId)).balance).toBe(1600000);
     expect((await getAccount(b.accountId)).balance).toBe(400000);
     await expect(reviewHeldTransfer(officer.id, fraudCase.id, { approve: true })).rejects.toThrow(/уже рассмотрен/);
-    const { rows: [h] } = await pool.query("SELECT status FROM holds WHERE intent_id = $1", [r.intent.id]);
+    const { rows: [h] } = await pool.query("SELECT status FROM holds WHERE intent_id = ?", [r.intent.id]);
     expect(h.status).toBe('released');
   });
 
@@ -55,7 +55,7 @@ describe('антифрод', () => {
     const officer = (await pool.query("SELECT id FROM users LIMIT 1")).rows[0];
     await reviewHeldTransfer(officer.id, fraudCase.id, { approve: false, comment: 'Подозрение на мошенничество' });
     expect((await getAccount(a.accountId)).balance).toBe(2000000);
-    expect((await pool.query('SELECT status FROM transfer_intents WHERE id = $1', [r.intent.id])).rows[0].status).toBe('rejected');
+    expect((await pool.query('SELECT status FROM transfer_intents WHERE id = ?', [r.intent.id])).rows[0].status).toBe('rejected');
     // деньги снова доступны
     const c = await createClientWithAccount(0);
     const ok = await createTransfer(a.userId, { kind: 'client', fromAccountId: a.accountId, toIban: await ibanOf(c.accountId), amount: 5000 });

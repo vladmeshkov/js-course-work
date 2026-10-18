@@ -17,51 +17,121 @@ const Lf = (o, t = 0.5) => [o.x, o.y + o.h * t];
 const Rt = (o, t = 0.5) => [o.x + o.w, o.y + o.h * t];
 
 /* =====================  Варианты использования  ===================== */
-// Одна диаграмма в книжной ориентации: слева гость и клиент, справа сотрудники банка.
-// Общие варианты («include») стоят в столбце клиента рядом с теми вариантами, которые их включают.
+// По правилам методички: актёр — должность, вариант использования — эллипс с глаголом,
+// «include» идёт от базового варианта к включаемому, «extend» — от расширяющего к базовому,
+// обобщение (Клиент — Гость) — линия с пустым треугольником к родителю.
+// Столбцы: A — основные действия клиента, B — включаемые и расширяющие, C — действия сотрудников.
 function useCases() {
   const d = new Diagram('Варианты использования');
-  const rx = 125, ry = 24, P = 74, top0 = 80;
-  const cy = (r) => top0 + r * P;
-  const cxA = 285, cxB = 625;
-  d.frame({ x: 140, y: 30, w: 620, h: cy(12.4) - 30, title: 'Система ТалерБанк', center: true });
-  const A = [
-    'Просмотр курсов валют\nи калькуляторы', 'Регистрация\n(подача анкеты)', 'Подача заявки на кредит', 'Скоринг заявки',
-    'Подписание договора\nи погашение кредита', 'Подтверждение кодом', 'Перевод между счетами,\nклиентам и в другие банки', 'Оплата услуг, шаблоны\nи автоплатежи',
-    'Оформление и закрытие\nвклада', 'Открытие и закрытие счёта', 'Выпуск карты, блокировка\nи лимиты', 'Выписки и справки (PDF)'
-  ].map((t, r) => ({ cx: [3, 5].includes(r) ? cxA + 25 : cxA, cy: cy(r), rx: [3, 5].includes(r) ? 100 : rx, ry, text: t }));
-  const actorL = (x, r0, r1, name, rows) => {
-    const mid = (cy(r0) + cy(r1)) / 2;
-    d.actor({ cx: x, y: mid - 37, name });
-    for (const r of rows) {
-      const e = A[r]; const above = e.cy < mid ? 8 : e.cy > mid ? -8 : 0;
-      d.line({ pts: [[x + 16, mid], [e.cx - e.rx * 0.96, e.cy + above]], arrow: null });
+  const rx = 88, ry = 23, P = 56, y0 = 90;
+  const cxA = 215, cxB = 471, cxC = 727, axL = 40, axR = 960;
+  const Y = (r) => y0 + r * P;
+  const mk = (cx, r, text) => ({ cx, cy: Y(r), rx, ry, text });
+  d.frame({ x: 105, y: 30, w: 745, h: Y(19.15) - 30, title: 'Система ТалерБанк', center: true });
+
+  const a = {
+    rates: mk(cxA, 0, 'Просмотреть\nкурсы валют'), reg: mk(cxA, 1, 'Зарегистрироваться'), acc: mk(cxA, 2, 'Открыть счёт'),
+    xfer: mk(cxA, 4, 'Перевести деньги'), pay: mk(cxA, 6, 'Оплатить услугу'), dep: mk(cxA, 8, 'Оформить вклад'),
+    loan: mk(cxA, 10, 'Оформить кредит'), repay: mk(cxA, 12, 'Погасить кредит'), card: mk(cxA, 14, 'Выпустить карту'),
+    stmt: mk(cxA, 16, 'Получить выписку')
+  };
+  const b = {
+    conv: mk(cxB, 0, 'Рассчитать\nконвертацию'), form: mk(cxB, 1, 'Заполнить анкету'), iban: mk(cxB, 2, 'Сформировать\nномер IBAN'),
+    fx: mk(cxB, 3, 'Конвертировать\nвалюту'), hold: mk(cxB, 4, 'Передать\nна проверку'), code: mk(cxB, 5, 'Подтвердить\nоперацию кодом'),
+    auto: mk(cxB, 6, 'Настроить\nавтоплатёж'), tpl: mk(cxB, 7, 'Сохранить\nшаблон платежа'),
+    calc: mk(cxB, 8, 'Рассчитать доход\nпо вкладу'), early: mk(cxB, 9, 'Закрыть вклад\nдосрочно'),
+    score: mk(cxB, 10, 'Оценить кредито-\nспособность'), sched: mk(cxB, 11, 'Составить график\nплатежей'),
+    prepay: mk(cxB, 12, 'Погасить\nдосрочно'), block: mk(cxB, 14, 'Заблокировать\nкарту'), limit: mk(cxB, 15, 'Установить\nлимиты'),
+    pdf: mk(cxB, 16, 'Сформировать\nPDF-файл')
+  };
+  const c = {
+    check: mk(cxC, 1, 'Проверить анкету\nклиента'), lock: mk(cxC, 2, 'Заблокировать\nсчёт клиента'), cash: mk(cxC, 3, 'Принять и выдать\nналичные'),
+    fraud: mk(cxC, 4, 'Разобрать\nзадержанный перевод'), special: mk(cxC, 5.45, 'Назначить особый\nконтроль'),
+    review: mk(cxC, 10, 'Рассмотреть заявку\nна кредит'), issue: mk(cxC, 11.45, 'Выдать средства\nпо кредиту'),
+    rates: mk(cxC, 13, 'Задать курсы\nи тарифы'), users: mk(cxC, 14, 'Управлять\nпользователями'), audit: mk(cxC, 15, 'Просмотреть\nжурнал аудита'),
+    report: mk(cxC, 16, 'Сформировать\nотчёты'), eod: mk(cxC, 17, 'Закрыть\nоперационный день'), backup: mk(cxC, 18.45, 'Создать\nрезервную копию')
+  };
+  for (const g of [a, b, c]) Object.values(g).forEach((e) => d.ellipse(e));
+
+  // точка на границе эллипса в сторону заданной точки
+  const edge = (e, [tx, ty]) => {
+    const dx = tx - e.cx, dy = ty - e.cy; const k = 1 / Math.hypot(dx / e.rx, dy / e.ry);
+    return [e.cx + dx * k, e.cy + dy * k];
+  };
+  const link = (from, to, kind) => {
+    const p = edge(from, [to.cx, to.cy]); const q = edge(to, [from.cx, from.cy]);
+    const horiz = Math.abs(p[1] - q[1]) < 3;
+    const mx = (p[0] + q[0]) / 2, my = (p[1] + q[1]) / 2;
+    const vertical = Math.abs(p[0] - q[0]) < 3;
+    d.line({
+      pts: [p, q], dashed: true, arrow: 'open', label: `«${kind}»`, italic: true, size: 14,
+      at: vertical ? { x: mx + 8, y: my + 5, anchor: 'start' } : { x: mx, y: my - (horiz ? 6 : 5) }
+    });
+  };
+  const inc = (from, to) => link(from, to, 'include');
+  const ext = (from, to) => link(from, to, 'extend');
+
+  // включение: от базового варианта к включаемому
+  inc(a.reg, b.form); inc(a.acc, b.iban); inc(a.xfer, b.code); inc(a.pay, b.code); inc(a.dep, b.calc);
+  inc(a.loan, b.score); inc(a.loan, b.sched); inc(c.review, b.score); inc(b.hold, c.fraud); inc(c.eod, c.backup);
+  // расширение: от расширяющего варианта к базовому
+  ext(b.conv, a.rates); ext(b.fx, a.xfer); ext(b.hold, a.xfer); ext(b.auto, a.pay); ext(b.tpl, a.pay); ext(b.early, a.dep);
+  ext(b.prepay, a.repay); ext(b.block, a.card); ext(b.limit, a.card); ext(b.pdf, a.stmt);
+  ext(c.special, c.fraud); ext(c.issue, c.review);
+
+  // актёры слева: Гость и Клиент (обобщение)
+  const actor = (cx, rMid, name) => { d.actor({ cx, y: Y(rMid) - 37, name }); return Y(rMid); };
+  const gy = actor(axL, 0.5, 'Гость');
+  const cy = actor(axL, 9, 'Клиент');
+  d.line({ pts: [[axL, cy - 37], [axL, Y(0.5) - 37 + 102]], arrow: 'hollow' });
+  const assoc = (ax, ay, e, side, ends) => {
+    const start = [ax + side * 22, ay];
+    const q = [e.cx - side * e.rx, e.cy];
+    d.line({ pts: [start, q], arrow: null });
+    return { start, q, ends };
+  };
+  const g = [assoc(axL, gy, a.rates, 1), assoc(axL, gy, a.reg, 1)];
+  ['acc', 'xfer', 'pay', 'dep', 'loan', 'repay', 'card', 'stmt'].forEach((k) => assoc(axL, cy, a[k], 1));
+  void g;
+  // сотрудники справа
+  const staff = (name, rMid, cases) => {
+    const sy = actor(axR, rMid, name);
+    for (const e of cases) {
+      const start = [axR - 22, sy]; d.line({ pts: [start, [e.cx + e.rx, e.cy]], arrow: null });
     }
   };
-  actorL(70, 0, 1, 'Гость', [0, 1]);
-  actorL(70, 2, 11, 'Клиент', [0, 2, 4, 6, 7, 8, 9, 10, 11]);
-  A.forEach((e) => d.ellipse(e));
-  const inc = (i, j) => {
-    const a = A[i], b = A[j]; const down = b.cy > a.cy;
-    const x = cxA + 25 + 60 * (down ? 1 : 1);
-    d.line({ pts: [[x, a.cy + (down ? a.ry : -a.ry)], [x, b.cy + (down ? -b.ry : b.ry)]], dashed: true, arrow: 'open', label: '«include»', italic: true, at: { x: x + 8, y: (a.cy + b.cy) / 2 + 5, anchor: 'start' } });
+  staff('Операционист', 2, [c.check, c.lock, c.cash]);
+  staff('Специалист по\nмониторингу', 4.5, [c.fraud, c.special]);
+  staff('Кредитный\nспециалист', 10.5, [c.review, c.issue]);
+  staff('Администратор', 15.7, [c.rates, c.users, c.audit, c.report, c.eod, c.backup]);
+
+  d.checkCrossings = () => {
+    const segs = d.items.filter((i) => i.t === 'line').map((l) => l.pts);
+    const bad = [];
+    const ccw = (A, B2, C) => (C[1] - A[1]) * (B2[0] - A[0]) - (B2[1] - A[1]) * (C[0] - A[0]);
+    const inter = (p1, p2, p3, p4) => {
+      const d1 = ccw(p3, p4, p1), d2 = ccw(p3, p4, p2), d3 = ccw(p1, p2, p3), d4 = ccw(p1, p2, p4);
+      return d1 * d2 < -1e-6 && d3 * d4 < -1e-6;
+    };
+    for (let i = 0; i < segs.length; i++) for (let j = i + 1; j < segs.length; j++) {
+      if (inter(segs[i][0], segs[i][1], segs[j][0], segs[j][1])) bad.push(['линия×линия', i, j, segs[i][0], segs[j][0]]);
+    }
+    const ells = d.items.filter((i) => i.t === 'ellipse');
+    segs.forEach((s, i) => {
+      for (const e of ells) {
+        for (let t = 0.05; t < 0.96; t += 0.05) {
+          const x = s[0][0] + (s[1][0] - s[0][0]) * t, y = s[0][1] + (s[1][1] - s[0][1]) * t;
+          if (((x - e.cx) / e.rx) ** 2 + ((y - e.cy) / e.ry) ** 2 < 0.97) { bad.push(['линия×эллипс', i, e.text]); break; }
+        }
+      }
+    });
+    return bad;
   };
-  inc(2, 3); inc(4, 5); inc(6, 5);
-  const B = [
-    [0, 'Проверка анкет клиентов', 'op'], [1, 'Касса и блокировка счетов', 'op'], [3, 'Рассмотрение заявки\nна кредит', 'cr'], [5, 'Разбор задержанных\nпереводов', 'mon'],
-    [6.6, 'Курсы, спред и тарифы', 'ad'], [7.6, 'Пользователи и роли', 'ad'], [8.6, 'Журнал аудита', 'ad'], [9.6, 'Резервные копии', 'ad'], [10.6, 'Отчёты и ведомость', 'ad'], [11.6, 'Закрытие операционного дня', 'ad']
-  ].map(([r, t, who]) => ({ cx: cxB, cy: cy(r), rx, ry, text: t, who }));
-  const groups = { op: 'Операционист', cr: 'Кредитный\nспециалист', mon: 'Специалист по\nмониторингу', ad: 'Администратор' };
-  for (const [who, name] of Object.entries(groups)) {
-    const es = B.filter((e) => e.who === who);
-    const mid = (es[0].cy + es.at(-1).cy) / 2;
-    d.actor({ cx: 830, y: mid - 37, name });
-    es.forEach((e) => d.line({ pts: [[830 - 16, mid], [e.cx + e.rx * 0.96, e.cy + (e.cy < mid ? 8 : e.cy > mid ? -8 : 0)]], arrow: null }));
-  }
-  B.forEach((e) => d.ellipse(e));
   return d;
 }
 const ucAll = useCases();
+const ucBad = ucAll.checkCrossings();
+if (ucBad.length) console.warn('Вариант использования: пересечения', JSON.stringify(ucBad));
 
 /* =====================  Диаграммы последовательности  ===================== */
 /** steps: {m:[от, до, текст, 'ret'|'self']} | {alt:'условие'} | {els:'условие'} | {end:true} */
@@ -172,7 +242,7 @@ function actLoan() {
   d.mark({ kind: 'end', cx: c0, cy: 625 });
   arrow(d, [Lf(d2), [c0 + 10, 625]], 'выше 30 %: отказ', { x: (d2.x + c0) / 2, y: 618 });
   const a5 = act(d, c2, 625, 'Рассмотрение заявки\nкредитным специалистом', 250);
-  arrow(d, [Rt(d2), Lf(a5)], 'до 30 %', { x: (d2.x + d2.w + a5.x) / 2, y: 618 });
+  arrow(d, [Rt(d2), Lf(a5)], 'от 8 до 30 %', { x: (d2.x + d2.w + a5.x) / 2, y: 618 });
   const a4 = act(d, c1, 790, 'Заявка одобрена', 220);
   arrow(d, [B(d2), T(a4)], 'до 8 %,\nсумма в лимите', { x: c1 + 8, y: 700, anchor: 'start' });
   const d3 = dec(d, c2, 760, 'Решение', 170, 80);

@@ -33,7 +33,7 @@ describe('межбанковские переводы', () => {
     expect(r.transfer.status).toBe('pending_otp');
     const big = await createTransfer(c.userId, { fromAccountId: c.accountId, iban: extIban('DRZH'), name: 'Иван Петров', amount: 40000 });
     expect(big.transfer.fee).toBe(200);
-    const { rows } = await pool.query("SELECT count(*)::int AS n FROM holds WHERE account_id = $1", [c.accountId]);
+    const { rows } = await pool.query("SELECT count(*) AS n FROM holds WHERE account_id = ?", [c.accountId]);
     expect(rows[0].n).toBe(0);
     const wrong = r.otpCode === '000000' ? '111111' : '000000';
     await expect(confirm(c.userId, r.transfer.id, wrong)).rejects.toMatchObject({ code: 'otp_wrong' });
@@ -61,7 +61,7 @@ describe('межбанковские переводы', () => {
     const [row] = await listForUser(c.userId);
     expect(row.status).toBe('sent');
     expect(row.batch_id).not.toBeNull();
-    const { rows: [h] } = await pool.query('SELECT status FROM holds WHERE id = $1', [row.hold_id]);
+    const { rows: [h] } = await pool.query('SELECT status FROM holds WHERE id = ?', [row.hold_id]);
     expect(h.status).toBe('released');
     for (const r of await trialBalance(pool)) expect(r.ok).toBe(true);
     // повторный клиринг ничего не отправляет
@@ -76,7 +76,7 @@ describe('межбанковские переводы', () => {
     expect(row.id).toBe(t.id);
     expect(row.status).toBe('rejected');
     expect((await getAccount(c.accountId)).balance).toBe(100000);
-    const { rows: [h] } = await pool.query('SELECT status FROM holds WHERE id = $1', [row.hold_id]);
+    const { rows: [h] } = await pool.query('SELECT status FROM holds WHERE id = ?', [row.hold_id]);
     expect(h.status).toBe('released');
   });
 
@@ -141,21 +141,21 @@ describe('антифрод для переводов в другие банки'
   it('подозрительный перевод задерживается: деньги зарезервированы, случай в очереди, клиринг его не отправляет', async () => {
     const { c, t } = await heldTransfer();
     expect(t.status).toBe('review');
-    const { rows: [h] } = await pool.query("SELECT amount, status FROM holds WHERE id = $1", [t.hold_id]);
+    const { rows: [h] } = await pool.query("SELECT amount, status FROM holds WHERE id = ?", [t.hold_id]);
     expect(h).toMatchObject({ amount: 400000 + t.fee, status: 'active' });
     const fraudCase = (await fraudQueue()).find((x) => x.interbank_id === t.id);
     expect(fraudCase).toMatchObject({ interbank: true, status: 'open' });
     expect(fraudCase.score).toBeGreaterThanOrEqual(60);
     await clear();
     expect((await getAccount(c.accountId)).balance).toBe(2000000);
-    expect((await pool.query('SELECT status FROM interbank_transfers WHERE id = $1', [t.id])).rows[0].status).toBe('review');
+    expect((await pool.query('SELECT status FROM interbank_transfers WHERE id = ?', [t.id])).rows[0].status).toBe('review');
   });
 
   it('специалист одобряет: платёж встаёт в очередь клиринга и уходит при закрытии дня', async () => {
     const { c, t } = await heldTransfer();
     const fraudCase = (await fraudQueue()).find((x) => x.interbank_id === t.id);
     await fraudReview(await officer(), fraudCase.id, { approve: true }, async () => { throw new Error('не должно вызываться'); });
-    expect((await pool.query('SELECT status FROM interbank_transfers WHERE id = $1', [t.id])).rows[0].status).toBe('queued');
+    expect((await pool.query('SELECT status FROM interbank_transfers WHERE id = ?', [t.id])).rows[0].status).toBe('queued');
     await clear();
     expect((await getAccount(c.accountId)).balance).toBeLessThan(2000000 - 400000);
   });
@@ -165,9 +165,9 @@ describe('антифрод для переводов в другие банки'
     const fraudCase = (await fraudQueue()).find((x) => x.interbank_id === t.id);
     await expect(fraudReview(await officer(), fraudCase.id, { approve: false, comment: '' }, null)).rejects.toMatchObject({ fields: { comment: expect.any(String) } });
     await fraudReview(await officer(), fraudCase.id, { approve: false, comment: 'Подозрение на мошенничество' }, null);
-    const { rows: [row] } = await pool.query('SELECT status, reject_reason FROM interbank_transfers WHERE id = $1', [t.id]);
+    const { rows: [row] } = await pool.query('SELECT status, reject_reason FROM interbank_transfers WHERE id = ?', [t.id]);
     expect(row).toMatchObject({ status: 'rejected', reject_reason: 'Подозрение на мошенничество' });
-    expect((await pool.query('SELECT status FROM holds WHERE id = $1', [t.hold_id])).rows[0].status).toBe('released');
+    expect((await pool.query('SELECT status FROM holds WHERE id = ?', [t.hold_id])).rows[0].status).toBe('released');
     expect((await getAccount(c.accountId)).balance).toBe(2000000);
   });
 });

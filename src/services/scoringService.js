@@ -24,7 +24,7 @@ export async function trainAndActivate({ samples = 6000, seed = 2026 } = {}) {
   const { rows: [last] } = await query('SELECT COALESCE(max(version), 0) AS v FROM scoring_models');
   const version = last.v + 1;
   await query('UPDATE scoring_models SET active = false WHERE active');
-  await query('INSERT INTO scoring_models (version, coefficients, metrics, samples, active) VALUES ($1, $2, $3, $4, true)',
+  await query('INSERT INTO scoring_models (version, coefficients, metrics, samples, active) VALUES (?, ?, ?, ?, true)',
     [version, JSON.stringify(model), JSON.stringify(metrics), samples]);
   return { version, metrics, model };
 }

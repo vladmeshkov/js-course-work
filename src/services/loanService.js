@@ -137,7 +137,7 @@ export function decide(officerId, applicationId, { approve, comment }) {
     if (application.status !== 'manual_review') throw new BusinessError('Заявка уже рассмотрена');
     if (!approve && !String(comment ?? '').trim()) throw new ValidationError({ comment: 'Укажите причину отказа' });
     await loanModel.decideApplication(db, applicationId, { status: approve ? 'approved' : 'rejected', comment: String(comment ?? '').trim() || null, userId: officerId });
-    await notify((await db.query('SELECT user_id FROM clients WHERE id = $1', [application.client_id])).rows[0].user_id, { type: 'loan', title: approve ? 'Кредит одобрен' : 'Отказ по заявке на кредит', body: approve ? `Заявка № ${applicationId}. Подпишите договор, чтобы получить деньги.` : `Заявка № ${applicationId}. Причина: ${String(comment).trim()}`, link: `/loans/applications/${applicationId}` }, db);
+    await notify((await db.query('SELECT user_id FROM clients WHERE id = ?', [application.client_id])).rows[0].user_id, { type: 'loan', title: approve ? 'Кредит одобрен' : 'Отказ по заявке на кредит', body: approve ? `Заявка № ${applicationId}. Подпишите договор, чтобы получить деньги.` : `Заявка № ${applicationId}. Причина: ${String(comment).trim()}`, link: `/loans/applications/${applicationId}` }, db);
     await auditService.log({ userId: officerId, action: approve ? 'loan.approve' : 'loan.reject', entity: 'loan_application', entityId: applicationId }, db);
   });
 }
@@ -274,7 +274,7 @@ export async function processLoans(db, date) {
       if (!left.length && loan.principal_balance === 0) {
         patch.status = 'closed';
         patch.closed_date = date;
-        await db.query("UPDATE accounts SET status = 'closed', closed_at = now() WHERE id = $1", [loan.account_id]);
+        await db.query("UPDATE accounts SET status = 'closed', closed_at = UTC_TIMESTAMP(3) WHERE id = ?", [loan.account_id]);
         stats.closed += 1;
       }
       await loanModel.updateLoan(db, loan.id, patch);
@@ -299,7 +299,7 @@ export async function repayFull(userId, loanId) {
     await ledgerService.post({ type: 'loan_payoff', description: `Полное погашение кредита, договор № ${loan.id}`, initiatedBy: userId, entries }, db);
     await loanModel.cancelPlanned(db, loan.id);
     await loanModel.updateLoan(db, loan.id, { principal_balance: 0, status: 'closed', closed_date: today, last_paid_date: today });
-    await db.query("UPDATE accounts SET status = 'closed', closed_at = now() WHERE id = $1", [loan.account_id]);
+    await db.query("UPDATE accounts SET status = 'closed', closed_at = UTC_TIMESTAMP(3) WHERE id = ?", [loan.account_id]);
     await notify(userId, { type: 'loan', title: 'Кредит погашен', body: `Договор № ${loan.id}: списано ${money(q.total)}`, link: '/loans' }, db);
     await auditService.log({ userId, action: 'loan.payoff', entity: 'loan', entityId: loan.id, details: { total: q.total } }, db);
     return q;
@@ -358,11 +358,11 @@ export async function sendReminders(db, date) {
   const { rows } = await db.query(
     `SELECT s.id, s.loan_id, s.due_date, s.principal, s.interest, c.user_id
      FROM loan_schedule s JOIN loans l ON l.id = s.loan_id JOIN clients c ON c.id = l.client_id
-     WHERE s.status = 'planned' AND NOT s.reminded AND l.status = 'active' AND s.due_date > $1 AND s.due_date <= $2::date + 3
+     WHERE s.status = 'planned' AND NOT s.reminded AND l.status = 'active' AND s.due_date > ? AND s.due_date <= ? + 3
      ORDER BY s.id`, [date, date]);
   for (const r of rows) {
     await notify(r.user_id, { type: 'loan', title: 'Скоро платёж по кредиту', body: `Договор № ${r.loan_id}: ${money(r.principal + r.interest)} до ${String(r.due_date).slice(0, 10)}. Проверьте остаток на счёте.`, link: `/loans/${r.loan_id}` }, db);
-    await db.query('UPDATE loan_schedule SET reminded = true WHERE id = $1', [r.id]);
+    await db.query('UPDATE loan_schedule SET reminded = true WHERE id = ?', [r.id]);
   }
   return rows.length;
 }

@@ -157,7 +157,7 @@ describe('перевод другому клиенту', () => {
 
   it('клиент без проверенной анкеты переводить не может', async () => {
     const c = await createClientWithAccount(1000);
-    await pool.query("UPDATE clients SET kyc_status = 'submitted' WHERE id = $1", [c.clientId]);
+    await pool.query("UPDATE clients SET kyc_status = 'submitted' WHERE id = ?", [c.clientId]);
     await expect(createTransfer(c.userId, { kind: 'own', fromAccountId: c.accountId, toAccountId: c.accountId, amount: 1 }))
       .rejects.toThrow(/проверки анкеты/);
   });

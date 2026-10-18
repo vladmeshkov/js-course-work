@@ -1,4 +1,4 @@
-INSERT INTO settings (key, value, description) VALUES
+INSERT INTO settings (`key`, value, description) VALUES
   ('fraud.large_amount',        '300000', 'Крупная сумма перевода в BYN, копейки (балл правила +40)'),
   ('fraud.new_recipient_amount','100000', 'Перевод новому получателю от этой суммы в BYN, копейки (+30)'),
   ('fraud.velocity_count',      '4',      'Число переводов за период, с которого срабатывает правило частоты (+30)'),

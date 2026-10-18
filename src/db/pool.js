@@ -1,12 +1,57 @@
-import pg from 'pg';
+import mysql from 'mysql2/promise';
 import { config } from '../config/index.js';
 
-// Суммы хранятся в копейках (BIGINT) и помещаются в безопасный диапазон Number.
-pg.types.setTypeParser(20, (value) => Number(value));
-// DATE возвращаем строкой 'ГГГГ-ММ-ДД', чтобы не зависеть от часового пояса.
-pg.types.setTypeParser(1082, (value) => value);
+/**
+ * Пул соединений MySQL. Суммы хранятся в копейках (BIGINT) и помещаются в безопасный диапазон Number,
+ * DECIMAL (результат SUM) приводится к числу, DATE остаётся строкой «ГГГГ-ММ-ДД», чтобы не зависеть от часового пояса,
+ * TINYINT(1) возвращается как boolean. Время хранится в UTC.
+ */
+const rawPool = mysql.createPool({
+  uri: config.databaseUrl,
+  charset: 'utf8mb4',
+  timezone: 'Z',
+  connectionLimit: 10,
+  supportBigNumbers: true,
+  bigNumberStrings: false,
+  decimalNumbers: true,
+  flags: ['+FOUND_ROWS'],
+  namedPlaceholders: false,
+  typeCast(field, next) {
+    if (field.type === 'DATE') return field.string();
+    if (field.type === 'TINY' && field.length === 1) {
+      const value = field.string();
+      return value === null ? null : value === '1';
+    }
+    return next();
+  }
+});
 
-export const pool = new pg.Pool({ connectionString: config.databaseUrl });
+// Каждое соединение работает в UTC и с уровнем изоляции READ COMMITTED (строки блокируются через SELECT ... FOR UPDATE).
+rawPool.pool.on('connection', (connection) => {
+  connection.query("SET time_zone = '+00:00', transaction_isolation = 'READ-COMMITTED'");
+});
+
+/**
+ * Приводит ответ mysql2 к единому виду { rows, rowCount, insertId }.
+ * Для SELECT rows содержит строки, для INSERT, UPDATE и DELETE rowCount равен числу затронутых строк.
+ */
+function adapt([result]) {
+  if (Array.isArray(result)) return { rows: result, rowCount: result.length, insertId: 0 };
+  return { rows: [], rowCount: result.affectedRows ?? 0, insertId: Number(result.insertId ?? 0) };
+}
+
+/** Обёртка над соединением или пулом: db.query(sql, params) с плейсхолдерами «?», массивы раскрываются в IN (?). */
+function wrap(target) {
+  return { query: async (sql, params = []) => adapt(await target.query(sql, params)) };
+}
+
+export const pool = {
+  ...wrap(rawPool),
+  /** Закрывает все соединения. */
+  end: () => rawPool.end(),
+  /** Соединение для служебных задач (миграции, резервное копирование). */
+  getConnection: () => rawPool.getConnection()
+};
 
 /**
  * Выполняет запрос вне транзакции.
@@ -21,20 +66,23 @@ export function query(text, params) {
  * Выполняет функцию в одной транзакции. При исключении транзакция откатывается.
  * Каждая денежная операция должна выполняться через эту функцию.
  * @template T
- * @param {(client: import('pg').PoolClient) => Promise<T>} work
+ * @param {(db: { query: (sql: string, params?: any[]) => Promise<{ rows: any[], rowCount: number, insertId: number }> }) => Promise<T>} work
  * @returns {Promise<T>}
  */
 export async function withTransaction(work) {
-  const client = await pool.connect();
+  const connection = await rawPool.getConnection();
   try {
-    await client.query('BEGIN');
-    const result = await work(client);
-    await client.query('COMMIT');
+    await connection.beginTransaction();
+    const result = await work(wrap(connection));
+    await connection.commit();
     return result;
   } catch (error) {
-    await client.query('ROLLBACK');
+    await connection.rollback();
     throw error;
   } finally {
-    client.release();
+    connection.release();
   }
 }
+
+/** Нарушение уникальности (повторная запись с тем же значением). */
+export const isDuplicate = (error) => error?.code === 'ER_DUP_ENTRY';

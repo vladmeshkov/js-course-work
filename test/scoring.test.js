@@ -84,7 +84,7 @@ describe('решение по модели', () => {
 
   it('заявка на кредит сохраняет вероятность дефолта и версию модели; без модели работает балльная карта', async () => {
     const c = await createClientWithAccount(0);
-    await pool.query("UPDATE clients SET birth_date = '1990-05-05' WHERE id = $1", [c.clientId]);
+    await pool.query("UPDATE clients SET birth_date = '1990-05-05' WHERE id = ?", [c.clientId]);
     const productId = (await pool.query("SELECT id FROM loan_products WHERE name LIKE 'Потребительский «Талер»'")).rows[0].id;
     const request = { productId, amount: 300000, termMonths: 12, scheduleType: 'annuity', targetAccountId: c.accountId, income: 300000, obligations: 0, experienceMonths: 60, dependents: 0 };
     const withModel = await apply(c.userId, request);

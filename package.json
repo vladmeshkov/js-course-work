@@ -16,7 +16,6 @@
     "scoring:train": "node --env-file=.env scripts/train-scoring.js",
     "er:drawio": "node --env-file=.env scripts/er-drawio.js",
     "uml:drawio": "node scripts/uml-drawio.js",
-    "er:mysql": "node --env-file=.env scripts/er-mysql.js",
     "uml:classes": "node scripts/class-diagrams.js",
     "uml:views": "node scripts/uml-views.js",
     "db:schema": "node scripts/build-schema.js",
@@ -26,15 +25,13 @@
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
-    "connect-pg-simple": "^10.0.0",
-    "ejs": "^7.0.1",
     "express": "^5.3.0",
     "express-rate-limit": "^8.7.1",
     "express-session": "^1.19.0",
     "helmet": "^8.3.0",
+    "mysql2": "^3.24.6",
     "nodemailer": "^10.1.0",
     "pdfkit": "^0.20.2",
-    "pg": "^8.23.1",
     "qrcode": "^1.5.4"
   },
   "devDependencies": {
