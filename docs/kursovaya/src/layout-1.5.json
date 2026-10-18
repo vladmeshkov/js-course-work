@@ -1,18 +1,13 @@
 {
  "order": [
+  "dep",
   "uc",
   "seq",
   "act",
   "st",
-  "comp",
-  "dep"
+  "comp"
  ],
  "modes": {
-  "uc": "B",
-  "seq": "B",
-  "act": "A",
-  "st": "A",
-  "comp": "A",
-  "dep": "A"
+  "dep": "B"
  }
 }

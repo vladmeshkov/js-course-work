@@ -134,79 +134,99 @@ const ucBad = ucAll.checkCrossings();
 if (ucBad.length) console.warn('Вариант использования: пересечения', JSON.stringify(ucBad));
 
 /* =====================  Диаграммы последовательности  ===================== */
-/** steps: {m:[от, до, текст, 'ret'|'self']} | {alt:'условие'} | {els:'условие'} | {end:true} */
-function sequence(name, names, steps, pitch = 150) {
-  const d = new Diagram(name);
-  const x0 = 30; const headW = pitch - 24; const headY = 20; const headH = names.some((n) => n.includes('\n')) ? 48 : 34;
-  const cx = (i) => x0 + headW / 2 + i * pitch;
-  const lifeTop = headY + headH;
-  let y = lifeTop + 46;
-  const out = [];
-  const frames = [];
-  const stack = [];
-  for (const s of steps) {
-    if (s.alt) { stack.push({ y: y - 22, parts: [{ y: y - 22, text: s.alt }] }); y += 14; continue; }
-    if (s.els) { stack.at(-1).parts.push({ y: y - 20, text: s.els }); y += 18; continue; }
-    if (s.end) { const f = stack.pop(); f.bottom = y - 10; frames.push(f); y += 16; continue; }
-    const [a, b, text, kind] = s.m;
-    const nl = text.split('\n').length;
-    y += (nl - 1) * 19;
-    out.push({ a, b, text, kind, y });
-    y += kind === 'self' ? 62 : 50;
-  }
-  const bottom = y;
-  const fx = x0 - 14; const fw = (names.length - 1) * pitch + headW + 28;
-  for (const f of frames) {
-    d.frame({ x: fx, y: f.y, w: fw, h: f.bottom - f.y, stroke: '#000', dashed: false });
-    d.rect({ x: fx, y: f.y, w: 44, h: 22, text: 'alt', size: 14, bold: true });
-    f.parts.forEach((p, k) => {
-      d.text({ x: fx + 54, y: p.y + 16, text: p.text, size: 15, italic: true, bold: false });
-      if (k > 0) d.line({ pts: [[fx, p.y - 4], [fx + fw, p.y - 4]], arrow: null, dashed: true });
-    });
-  }
-  names.forEach((n, i) => {
-    d.rect({ x: cx(i) - headW / 2, y: headY, w: headW, h: headH, text: n, bold: true });
-    d.line({ pts: [[cx(i), lifeTop], [cx(i), bottom]], arrow: null, dashed: true });
-  });
-  for (const m of out) {
-    const nl = m.text.split('\n').length;
-    if (m.kind === 'self') {
-      const x = cx(m.a);
-      d.line({ pts: [[x, m.y], [x + 46, m.y], [x + 46, m.y + 26], [x, m.y + 26]], arrow: 'filled', label: m.text, at: { x: x + 54, y: m.y + 14 - (nl - 1) * 9, anchor: 'start' }, italic: false });
+// По методичке: объект изображается прямоугольником «имя : Класс» (подчёркнуто, у анонимного объекта только «: Класс»),
+// инициатор взаимодействия (актёр) стоит слева, линия жизни пунктирная, период активности показан фокусом управления,
+// сообщения подписаны именами операций с круглыми скобками, рефлексивное сообщение рисуется на фокусе управления.
+// Каждый поток управления показан на отдельной диаграмме (панели одного рисунка).
+const call = (from, to, name, calls = [], ret = false) => ({ from, to, name, calls, ret });
+const selfCall = (on, name) => ({ self: on, name });
+
+/** Рисует одну диаграмму последовательности в прямоугольнике «sd …» с левым верхним углом (x0, y0). Возвращает высоту. */
+function sequencePanel(d, x0, y0, title, parts, steps, width) {
+  const ROW = 40; const HEAD_Y = y0 + 40;
+  const pitch = width / parts.length;
+  const cx = (key) => x0 + pitch * (parts.findIndex((p) => p.key === key) + 0.5);
+  const firstY = HEAD_Y + 122;
+  const marks = []; const acts = new Map(parts.map((p) => [p.key, []]));
+  let y = firstY;
+  const run = (step) => {
+    if (step.self) {
+      marks.push({ self: step.self, name: step.name, y });
+      y += ROW + 20;
+      return;
+    }
+    const yCall = y;
+    marks.push({ from: step.from, to: step.to, name: step.name, y: yCall });
+    y += ROW;
+    for (const c of step.calls) run(c);
+    let yEnd = y - ROW + 14;
+    if (step.ret) { marks.push({ from: step.to, to: step.from, name: '', y, ret: true }); yEnd = y + 6; y += ROW - 6; }
+    acts.get(step.to).push([yCall - 6, yEnd]);
+  };
+  for (const s of steps) run(s);
+  const bottom = y + 10;
+  // фокус управления инициатора занимает весь период взаимодействия
+  for (const p of parts.filter((q) => q.actor)) acts.get(p.key).push([firstY - 6, bottom - 18]);
+
+  d.frame({ x: x0, y: y0, w: width, h: bottom - y0, stroke: '#000', dashed: false, fill: 'none' });
+  d.rect({ x: x0, y: y0, w: Math.max(150, title.length * 8.6 + 44), h: 26, text: `sd ${title}`, size: 15, bold: true });
+  for (const p of parts) {
+    const x = cx(p.key);
+    if (p.actor) {
+      d.actor({ cx: x, y: HEAD_Y, name: p.label });
+      d.line({ pts: [[x, HEAD_Y + 106], [x, bottom - 6]], arrow: null, dashed: true });
     } else {
-      const xa = cx(m.a) + (m.b > m.a ? 4 : -4); const xb = cx(m.b) + (m.b > m.a ? -4 : 4);
-      d.line({ pts: [[xa, m.y], [xb, m.y]], arrow: m.kind === 'ret' ? 'open' : 'filled', dashed: m.kind === 'ret', label: m.text, at: { x: (xa + xb) / 2, y: m.y - 7 - (nl - 1) * 19 }, italic: false });
+      const w = Math.min(pitch - 18, p.label.length * 8.4 + 26);
+      d.rect({ x: x - w / 2, y: HEAD_Y + 40, w, h: 36, text: p.label, size: 16, underline: true });
+      d.line({ pts: [[x, HEAD_Y + 76], [x, bottom - 6]], arrow: null, dashed: true });
+    }
+    for (const [a, b] of acts.get(p.key)) d.rect({ x: x - 6, y: a, w: 12, h: b - a, text: '' });
+  }
+  for (const m of marks) {
+    if (m.self) {
+      const x = cx(m.self);
+      d.rect({ x: x + 6, y: m.y + 8, w: 12, h: 26, text: '' });
+      d.line({ pts: [[x + 6, m.y + 8], [x + 44, m.y + 8], [x + 44, m.y + 28], [x + 18, m.y + 28]], arrow: 'filled', label: m.name, at: { x: x + 52, y: m.y + 23, anchor: 'start' }, italic: false });
+    } else {
+      const right = cx(m.to) > cx(m.from);
+      const xa = cx(m.from) + (right ? 6 : -6); const xb = cx(m.to) + (right ? -6 : 6);
+      d.line({ pts: [[xa, m.y], [xb, m.y]], arrow: m.ret ? 'open' : 'filled', dashed: Boolean(m.ret), label: m.name || undefined, at: { x: (xa + xb) / 2, y: m.y - 7 }, italic: false });
     }
   }
-  return d;
+  return bottom - y0;
 }
 
-const seqLoan = sequence('Заявка на кредит',
-  ['Клиент', 'Loan-\nController', 'Loan-\nService', 'Scoring-\nService', 'Кредитный\nспециалист', 'Otp-\nService', 'Ledger-\nService'], [
-    { m: [0, 1, 'Заявка: сумма,\nсрок, доход'] },
-    { m: [1, 2, 'apply()'] },
-    { m: [2, 2, 'График платежей,\nдолговая нагрузка', 'self'] },
-    { m: [2, 3, 'assess()'] },
-    { m: [3, 2, 'вероятность дефолта', 'ret'] },
-    { alt: '[вероятность дефолта до 8 %]' },
-    { m: [2, 1, 'заявка одобрена', 'ret'] },
-    { els: '[до 30 %: ручное рассмотрение]' },
-    { m: [2, 4, 'заявка в очереди'] },
-    { m: [4, 2, 'decide(одобрить)', 'ret'] },
-    { els: '[выше порога]' },
-    { m: [2, 1, 'отказ по заявке', 'ret'] },
-    { end: true },
-    { m: [0, 1, 'Подписать договор'] },
-    { m: [1, 2, 'requestSignCode()'] },
-    { m: [2, 5, 'issue()'] },
-    { m: [5, 2, 'код (письмом)', 'ret'] },
-    { m: [0, 1, 'Код из письма'] },
-    { m: [1, 2, 'sign()'] },
-    { m: [2, 5, 'verify()'] },
-    { m: [2, 6, 'post(выдача кредита)'] },
-    { m: [2, 1, 'кредит выдан', 'ret'] },
-    { m: [1, 0, 'Деньги на счёте', 'ret'] }
-  ], 138);
+function seqLoan() {
+  const d = new Diagram('Оформление кредита');
+  const W = 1040; let y = 16;
+  const panels = [
+    ['Подача заявки и скоринг', [
+      { key: 'cl', label: 'Клиент', actor: true }, { key: 'ct', label: ':LoanController' }, { key: 'sv', label: ':LoanService' },
+      { key: 'sc', label: ':ScoringService' }, { key: 'md', label: ':LoanModel' }
+    ], [call('cl', 'ct', 'create()', [call('ct', 'sv', 'apply()', [
+      selfCall('sv', 'buildSchedule()'), selfCall('sv', 'scoreApplication()'),
+      call('sv', 'sc', 'activeModel()'), call('sv', 'sc', 'assess()'), call('sv', 'md', 'insertApplication()')
+    ])])]],
+    ['Ручное рассмотрение заявки (вероятность дефолта от 8 до 30 %)', [
+      { key: 'of', label: 'Кредитный\nспециалист', actor: true }, { key: 'ct', label: ':StaffLoanController' }, { key: 'sv', label: ':LoanService' },
+      { key: 'md', label: ':LoanModel' }
+    ], [call('of', 'ct', 'decide()', [call('ct', 'sv', 'decide()', [
+      call('sv', 'md', 'lockApplication()'), call('sv', 'md', 'decideApplication()')
+    ])])]],
+    ['Подписание договора и выдача кредита (заявка одобрена)', [
+      { key: 'cl', label: 'Клиент', actor: true }, { key: 'ct', label: ':LoanController' }, { key: 'sv', label: ':LoanService' },
+      { key: 'ot', label: ':OtpService' }, { key: 'md', label: ':LoanModel' }, { key: 'lg', label: ':LedgerService' }
+    ], [
+      call('cl', 'ct', 'sendCode()', [call('ct', 'sv', 'requestSignCode()', [call('sv', 'ot', 'issue()')])]),
+      call('cl', 'ct', 'sign()', [call('ct', 'sv', 'sign()', [
+        call('sv', 'ot', 'verify()'), call('sv', 'md', 'lockApplication()'), call('sv', 'md', 'insertLoan()'),
+        call('sv', 'md', 'insertInstallments()'), call('sv', 'lg', 'post()'), call('sv', 'md', 'setApplicationStatus()')
+      ])])
+    ]]
+  ];
+  for (const [title, parts, steps] of panels) y += sequencePanel(d, 20, y, title, parts, steps, W) + 18;
+  return d;
+}
 
 /* =====================  Диаграммы деятельности  ===================== */
 function lanes(d, titles, width, height, top = 30) {
@@ -340,7 +360,7 @@ function deployment() {
 }
 
 const pages = [
-  ['uc', ucAll], ['seq-loan', seqLoan], ['act-loan', actLoan()], ['st-loan', stLoanApp()], ['components', components()], ['deployment', deployment()]
+  ['uc', ucAll], ['seq-loan', seqLoan()], ['act-loan', actLoan()], ['st-loan', stLoanApp()], ['components', components()], ['deployment', deployment()]
 ];
 writeFileSync(path.join(outDir, 'views.drawio'), `<?xml version="1.0" encoding="UTF-8"?>\n<mxfile host="app.diagrams.net" type="device">${pages.map(([, p]) => p.drawio()).join('')}</mxfile>\n`);
 for (const [n, p] of pages) writeFileSync(path.join(outDir, `view-${n}.svg`), p.svg());

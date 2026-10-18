@@ -85,7 +85,7 @@ export class Diagram {
   itemSvg(i) {
     const dash = i.dashed ? ' stroke-dasharray="6 4"' : '';
     switch (i.t) {
-      case 'rect': return `<rect x="${i.x}" y="${i.y}" width="${i.w}" height="${i.h}" rx="${i.round}" fill="${i.fill}" stroke="${i.stroke}"${dash}/>${i.text ? this.multi(i.text, i.x + i.w / 2, i.y + i.h / 2, i.size, i.bold ? ' font-weight="bold"' : '') : ''}`;
+      case 'rect': return `<rect x="${i.x}" y="${i.y}" width="${i.w}" height="${i.h}" rx="${i.round}" fill="${i.fill}" stroke="${i.stroke}"${dash}/>${i.text ? this.multi(i.text, i.x + i.w / 2, i.y + i.h / 2, i.size, `${i.bold ? ' font-weight="bold"' : ''}${i.underline ? ' text-decoration="underline"' : ''}`) : ''}`;
       case 'ellipse': return `<ellipse cx="${i.cx}" cy="${i.cy}" rx="${i.rx}" ry="${i.ry}" fill="${i.fill}" stroke="${i.stroke}"${dash}/>${i.text ? this.multi(i.text, i.cx, i.cy, i.size) : ''}`;
       case 'diamond': return `<polygon points="${i.cx},${i.cy - i.h / 2} ${i.cx + i.w / 2},${i.cy} ${i.cx},${i.cy + i.h / 2} ${i.cx - i.w / 2},${i.cy}" fill="${i.fill}" stroke="${i.stroke}"/>${i.text ? this.multi(i.text, i.cx, i.cy, i.size) : ''}`;
       case 'mark': return i.kind === 'start'
@@ -140,7 +140,7 @@ export class Diagram {
     const items = [...this.items.filter((i) => i.t === 'frame'), ...this.items.filter((i) => i.t !== 'frame' && i.t !== 'line')];
     for (const i of items) {
       switch (i.t) {
-        case 'rect': add(html(i.text ?? ''), base(i.size, `rounded=${i.round ? 1 : 0};arcSize=${Math.min(50, Math.round(i.round * 100 / Math.min(i.w, i.h)))};fillColor=${i.fill};strokeColor=${i.stroke};${i.dashed ? 'dashed=1;' : ''}${i.bold ? 'fontStyle=1;' : ''}`), i.x, i.y, i.w, i.h); break;
+        case 'rect': add(html(i.text ?? ''), base(i.size, `rounded=${i.round ? 1 : 0};arcSize=${Math.min(50, Math.round(i.round * 100 / Math.min(i.w, i.h)))};fillColor=${i.fill};strokeColor=${i.stroke};${i.dashed ? 'dashed=1;' : ''}${(i.bold ? 1 : 0) + (i.underline ? 4 : 0) ? `fontStyle=${(i.bold ? 1 : 0) + (i.underline ? 4 : 0)};` : ''}`), i.x, i.y, i.w, i.h); break;
         case 'ellipse': add(html(i.text ?? ''), base(i.size, `ellipse;fillColor=${i.fill};strokeColor=${i.stroke};`), i.cx - i.rx, i.cy - i.ry, i.rx * 2, i.ry * 2); break;
         case 'diamond': add(html(i.text ?? ''), base(i.size, `rhombus;fillColor=${i.fill};strokeColor=${i.stroke};`), i.cx - i.w / 2, i.cy - i.h / 2, i.w, i.h); break;
         case 'mark': add('', i.kind === 'start' ? 'ellipse;fillColor=#000000;strokeColor=#000000;html=1;' : 'ellipse;shape=endState;fillColor=#000000;strokeColor=#000000;html=1;', i.cx - i.r, i.cy - i.r, i.r * 2, i.r * 2); break;
