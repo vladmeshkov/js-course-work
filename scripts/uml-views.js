@@ -276,7 +276,7 @@ function actLoan() {
   arrow(d, [[c0, 120], [c0, a1.y]]);
   const a2 = act(d, c1, 275, 'Расчёт графика платежей\nи долговой нагрузки (ДН)', 260);
   arrow(d, [Rt(a1), [c1, 175], [c1, a2.y]]);
-  const d1 = dec(d, c1, 385, 'ДН выше\n40 %?');
+  const d1 = dec(d, c1, 385, 'ДН выше\n40 %');
   arrow(d, [B(a2), T(d1)]);
   d.mark({ kind: 'end', cx: c0, cy: 385 });
   arrow(d, [Lf(d1), [c0 + 10, 385]], 'да: отказ', { x: (d1.x + c0) / 2, y: 378 });

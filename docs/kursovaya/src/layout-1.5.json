@@ -2,17 +2,17 @@
  "order": [
   "uc",
   "seq",
-  "act",
-  "st",
   "comp",
-  "dep"
+  "act",
+  "dep",
+  "st"
  ],
  "modes": {
   "uc": "B",
   "seq": "A",
-  "act": "A",
-  "st": "A",
   "comp": "A",
-  "dep": "A"
+  "act": "A",
+  "dep": "A",
+  "st": "A"
  }
 }

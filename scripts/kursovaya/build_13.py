@@ -109,6 +109,9 @@ def main():
     tmp = tempfile.mkdtemp(prefix='build13_')
     raw = os.path.join(tmp, 'raw.docx')
     build(raw)
+    sys.path.insert(0, HERE)
+    from common import polish
+    polish(raw)
     sys.argv = ['split_tables.py']
     sys.path.insert(0, HERE)
     import split_tables

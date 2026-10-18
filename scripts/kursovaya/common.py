@@ -71,3 +71,39 @@ def replace_in_runs(doc, old, new):
         for r in p.runs:
             if old in r.text and r._r.find(qn('w:drawing')) is None:
                 r.text = r.text.replace(old, new)
+
+
+_SHORT = r'(?:в|к|с|у|о|и|а|я|на|по|за|из|от|до|не|ни|об|во|со|ко|то|бы|же|ли|но|для|при|над|под)'
+
+
+def polish(path):
+    """Типографика записки: в таблицах каждая ячейка начинается с заглавной буквы, предлоги и союзы не отрываются
+    от следующего слова, тире и двоеточие в «1 : M» не переносятся отдельно. Меняются только тексты (w:t), рисунки не затрагиваются."""
+    import re
+    d = docx.Document(path)
+    body = d.element.body
+    nb = ' '
+    for t in body.iter(qn('w:t')):
+        s = t.text or ''
+        s = re.sub(r'(?<![\wА-Яа-яЁё])(' + _SHORT + r') (?=\S)', lambda m: m.group(1) + nb, s, flags=re.I)
+        s = re.sub(r' (?=– )', nb, s)
+        s = re.sub(r'(?<=\d) : (?=[\dMМ])', nb + ':' + nb, s)
+        s = re.sub(r'(?<=\d) (?=%)', nb, s)
+        if s != t.text:
+            t.text = s
+            t.set('{http://www.w3.org/XML/1.0/namespace}space', 'preserve') if False else t.set('{http://www.w3.org/XML/1998/namespace}space', 'preserve')
+    for tc in body.iter(qn('w:tc')):
+        first = next((tt for tt in tc.iter(qn('w:t')) if (tt.text or '').strip() and not (tt.text or '').startswith(' @@')), None)
+        if first is not None:
+            text = first.text
+            i = len(text) - len(text.lstrip())
+            if i < len(text) and 'а' <= text[i] <= 'я' or (i < len(text) and text[i] == 'ё'):
+                first.text = text[:i] + text[i].upper() + text[i + 1:]
+        for p in tc.iter(qn('w:p')):
+            pPr = p.find(qn('w:pPr'))
+            if pPr is None:
+                pPr = OxmlElement('w:pPr'); p.insert(0, pPr)
+            for jc in pPr.findall(qn('w:jc')):
+                pPr.remove(jc)
+            jc = OxmlElement('w:jc'); jc.set(qn('w:val'), 'left'); pPr.append(jc)
+    d.save(path)
