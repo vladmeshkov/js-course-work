@@ -1,86 +1,78 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="1528" viewBox="0 0 1100 1528" font-family="Times New Roman, serif">
+<svg xmlns="http://www.w3.org/2000/svg" width="1620" height="1456" viewBox="0 0 1620 1456" font-family="Times New Roman, serif">
 <rect width="100%" height="100%" fill="#ffffff"/>
-<rect x="20" y="16" width="1040" height="492" fill="none" stroke="#000"/>
-<rect x="20" y="526" width="1040" height="332" fill="none" stroke="#000"/>
-<rect x="20" y="876" width="1040" height="612" fill="none" stroke="#000"/>
-<path d="M124,162 L124,502" fill="none" stroke="#000" stroke-dasharray="6 4"/>
-<path d="M332,132 L332,502" fill="none" stroke="#000" stroke-dasharray="6 4"/>
-<path d="M540,132 L540,502" fill="none" stroke="#000" stroke-dasharray="6 4"/>
-<path d="M748,132 L748,502" fill="none" stroke="#000" stroke-dasharray="6 4"/>
-<path d="M956,132 L956,502" fill="none" stroke="#000" stroke-dasharray="6 4"/>
-<path d="M130,178 L326,178" fill="none" stroke="#000"/><polygon points="326,178 314,183 314,173" fill="#000" stroke="#000"/><rect x="190.72" y="155" width="74.56" height="22" fill="#fff" opacity="0.92"/><text x="228" y="171" font-size="16" text-anchor="middle">create()</text>
-<path d="M338,218 L534,218" fill="none" stroke="#000"/><polygon points="534,218 522,223 522,213" fill="#000" stroke="#000"/><rect x="402.88" y="195" width="66.24000000000001" height="22" fill="#fff" opacity="0.92"/><text x="436" y="211" font-size="16" text-anchor="middle">apply()</text>
-<path d="M546,266 L584,266 L584,286 L558,286" fill="none" stroke="#000"/><polygon points="558,286 570,281 570,291" fill="#000" stroke="#000"/><rect x="589" y="265" width="132.8" height="22" fill="#fff" opacity="0.92"/><text x="592" y="281" font-size="16" text-anchor="start">buildSchedule()</text>
-<path d="M546,326 L584,326 L584,346 L558,346" fill="none" stroke="#000"/><polygon points="558,346 570,341 570,351" fill="#000" stroke="#000"/><rect x="589" y="325" width="157.76" height="22" fill="#fff" opacity="0.92"/><text x="592" y="341" font-size="16" text-anchor="start">scoreApplication()</text>
-<path d="M546,378 L742,378" fill="none" stroke="#000"/><polygon points="742,378 730,383 730,373" fill="#000" stroke="#000"/><rect x="585.92" y="355" width="116.16" height="22" fill="#fff" opacity="0.92"/><text x="644" y="371" font-size="16" text-anchor="middle">activeModel()</text>
-<path d="M546,418 L742,418" fill="none" stroke="#000"/><polygon points="742,418 730,423 730,413" fill="#000" stroke="#000"/><rect x="606.72" y="395" width="74.56" height="22" fill="#fff" opacity="0.92"/><text x="644" y="411" font-size="16" text-anchor="middle">assess()</text>
-<path d="M546,458 L950,458" fill="none" stroke="#000"/><polygon points="950,458 938,463 938,453" fill="#000" stroke="#000"/><rect x="664.96" y="435" width="166.08" height="22" fill="#fff" opacity="0.92"/><text x="748" y="451" font-size="16" text-anchor="middle">insertApplication()</text>
-<path d="M150,672 L150,852" fill="none" stroke="#000" stroke-dasharray="6 4"/>
-<path d="M410,642 L410,852" fill="none" stroke="#000" stroke-dasharray="6 4"/>
-<path d="M670,642 L670,852" fill="none" stroke="#000" stroke-dasharray="6 4"/>
-<path d="M930,642 L930,852" fill="none" stroke="#000" stroke-dasharray="6 4"/>
-<path d="M156,688 L404,688" fill="none" stroke="#000"/><polygon points="404,688 392,693 392,683" fill="#000" stroke="#000"/><rect x="242.72" y="665" width="74.56" height="22" fill="#fff" opacity="0.92"/><text x="280" y="681" font-size="16" text-anchor="middle">decide()</text>
-<path d="M416,728 L664,728" fill="none" stroke="#000"/><polygon points="664,728 652,733 652,723" fill="#000" stroke="#000"/><rect x="502.72" y="705" width="74.56" height="22" fill="#fff" opacity="0.92"/><text x="540" y="721" font-size="16" text-anchor="middle">decide()</text>
-<path d="M676,768 L924,768" fill="none" stroke="#000"/><polygon points="924,768 912,773 912,763" fill="#000" stroke="#000"/><rect x="725.28" y="745" width="149.44" height="22" fill="#fff" opacity="0.92"/><text x="800" y="761" font-size="16" text-anchor="middle">lockApplication()</text>
-<path d="M676,808 L924,808" fill="none" stroke="#000"/><polygon points="924,808 912,813 912,803" fill="#000" stroke="#000"/><rect x="716.96" y="785" width="166.08" height="22" fill="#fff" opacity="0.92"/><text x="800" y="801" font-size="16" text-anchor="middle">decideApplication()</text>
-<path d="M106.66666666666667,1022 L106.66666666666667,1482" fill="none" stroke="#000" stroke-dasharray="6 4"/>
-<path d="M280,992 L280,1482" fill="none" stroke="#000" stroke-dasharray="6 4"/>
-<path d="M453.33333333333337,992 L453.33333333333337,1482" fill="none" stroke="#000" stroke-dasharray="6 4"/>
-<path d="M626.6666666666667,992 L626.6666666666667,1482" fill="none" stroke="#000" stroke-dasharray="6 4"/>
-<path d="M800,992 L800,1482" fill="none" stroke="#000" stroke-dasharray="6 4"/>
-<path d="M973.3333333333334,992 L973.3333333333334,1482" fill="none" stroke="#000" stroke-dasharray="6 4"/>
-<path d="M112.66666666666667,1038 L274,1038" fill="none" stroke="#000"/><polygon points="274,1038 262,1043 262,1033" fill="#000" stroke="#000"/><rect x="147.73333333333335" y="1015" width="91.2" height="22" fill="#fff" opacity="0.92"/><text x="193.33333333333334" y="1031" font-size="16" text-anchor="middle">sendCode()</text>
-<path d="M286,1078 L447.33333333333337,1078" fill="none" stroke="#000"/><polygon points="447.33333333333337,1078 435.33333333333337,1083 435.33333333333337,1073" fill="#000" stroke="#000"/><rect x="291.9466666666667" y="1055" width="149.44" height="22" fill="#fff" opacity="0.92"/><text x="366.6666666666667" y="1071" font-size="16" text-anchor="middle">requestSignCode()</text>
-<path d="M459.33333333333337,1118 L620.6666666666667,1118" fill="none" stroke="#000"/><polygon points="620.6666666666667,1118 608.6666666666667,1123 608.6666666666667,1113" fill="#000" stroke="#000"/><rect x="506.88" y="1095" width="66.24000000000001" height="22" fill="#fff" opacity="0.92"/><text x="540" y="1111" font-size="16" text-anchor="middle">issue()</text>
-<path d="M112.66666666666667,1158 L274,1158" fill="none" stroke="#000"/><polygon points="274,1158 262,1163 262,1153" fill="#000" stroke="#000"/><rect x="164.37333333333333" y="1135" width="57.92" height="22" fill="#fff" opacity="0.92"/><text x="193.33333333333334" y="1151" font-size="16" text-anchor="middle">sign()</text>
-<path d="M286,1198 L447.33333333333337,1198" fill="none" stroke="#000"/><polygon points="447.33333333333337,1198 435.33333333333337,1203 435.33333333333337,1193" fill="#000" stroke="#000"/><rect x="337.7066666666667" y="1175" width="57.92" height="22" fill="#fff" opacity="0.92"/><text x="366.6666666666667" y="1191" font-size="16" text-anchor="middle">sign()</text>
-<path d="M459.33333333333337,1238 L620.6666666666667,1238" fill="none" stroke="#000"/><polygon points="620.6666666666667,1238 608.6666666666667,1243 608.6666666666667,1233" fill="#000" stroke="#000"/><rect x="502.72" y="1215" width="74.56" height="22" fill="#fff" opacity="0.92"/><text x="540" y="1231" font-size="16" text-anchor="middle">verify()</text>
-<path d="M459.33333333333337,1278 L794,1278" fill="none" stroke="#000"/><polygon points="794,1278 782,1283 782,1273" fill="#000" stroke="#000"/><rect x="551.9466666666667" y="1255" width="149.44" height="22" fill="#fff" opacity="0.92"/><text x="626.6666666666667" y="1271" font-size="16" text-anchor="middle">lockApplication()</text>
-<path d="M459.33333333333337,1318 L794,1318" fill="none" stroke="#000"/><polygon points="794,1318 782,1323 782,1313" fill="#000" stroke="#000"/><rect x="572.7466666666668" y="1295" width="107.84" height="22" fill="#fff" opacity="0.92"/><text x="626.6666666666667" y="1311" font-size="16" text-anchor="middle">insertLoan()</text>
-<path d="M459.33333333333337,1358 L794,1358" fill="none" stroke="#000"/><polygon points="794,1358 782,1363 782,1353" fill="#000" stroke="#000"/><rect x="539.4666666666667" y="1335" width="174.4" height="22" fill="#fff" opacity="0.92"/><text x="626.6666666666667" y="1351" font-size="16" text-anchor="middle">insertInstallments()</text>
-<path d="M459.33333333333337,1398 L967.3333333333334,1398" fill="none" stroke="#000"/><polygon points="967.3333333333334,1398 955.3333333333334,1403 955.3333333333334,1393" fill="#000" stroke="#000"/><rect x="684.3733333333333" y="1375" width="57.92" height="22" fill="#fff" opacity="0.92"/><text x="713.3333333333334" y="1391" font-size="16" text-anchor="middle">post()</text>
-<path d="M459.33333333333337,1438 L794,1438" fill="none" stroke="#000"/><polygon points="794,1438 782,1443 782,1433" fill="#000" stroke="#000"/><rect x="531.1466666666668" y="1415" width="191.04000000000002" height="22" fill="#fff" opacity="0.92"/><text x="626.6666666666667" y="1431" font-size="16" text-anchor="middle">setApplicationStatus()</text>
-<rect x="20" y="16" width="241.79999999999998" height="26" rx="0" fill="#fff" stroke="#000"/><text x="140.89999999999998" y="34.1" font-size="15" text-anchor="middle" font-weight="bold">sd Подача заявки и скоринг</text>
-<circle cx="124" cy="67" r="11" fill="#fff" stroke="#000"/><path d="M124,78 V108 M106,88 H142 M124,108 L110,130 M124,108 L138,130" stroke="#000" fill="none"/><text x="124" y="153.44" font-size="16" text-anchor="middle" font-weight="bold">Клиент</text>
-<rect x="118" y="172" width="12" height="318" rx="0" fill="#fff" stroke="#000"/>
-<rect x="256" y="96" width="152" height="36" rx="0" fill="#fff" stroke="#000"/><text x="332" y="119.44" font-size="16" text-anchor="middle" text-decoration="underline">:LoanController</text>
-<rect x="326" y="172" width="12" height="300" rx="0" fill="#fff" stroke="#000"/>
-<rect x="476.6" y="96" width="126.80000000000001" height="36" rx="0" fill="#fff" stroke="#000"/><text x="540" y="119.44" font-size="16" text-anchor="middle" text-decoration="underline">:LoanService</text>
-<rect x="534" y="212" width="12" height="260" rx="0" fill="#fff" stroke="#000"/>
-<rect x="672" y="96" width="152" height="36" rx="0" fill="#fff" stroke="#000"/><text x="748" y="119.44" font-size="16" text-anchor="middle" text-decoration="underline">:ScoringService</text>
-<rect x="742" y="372" width="12" height="20" rx="0" fill="#fff" stroke="#000"/>
-<rect x="742" y="412" width="12" height="20" rx="0" fill="#fff" stroke="#000"/>
-<rect x="901" y="96" width="110" height="36" rx="0" fill="#fff" stroke="#000"/><text x="956" y="119.44" font-size="16" text-anchor="middle" text-decoration="underline">:LoanModel</text>
-<rect x="950" y="452" width="12" height="20" rx="0" fill="#fff" stroke="#000"/>
-<rect x="546" y="266" width="12" height="26" rx="0" fill="#fff" stroke="#000"/>
-<rect x="546" y="326" width="12" height="26" rx="0" fill="#fff" stroke="#000"/>
-<rect x="20" y="526" width="568.6" height="26" rx="0" fill="#fff" stroke="#000"/><text x="304.3" y="544.1" font-size="15" text-anchor="middle" font-weight="bold">sd Ручное рассмотрение заявки (вероятность дефолта от 8 до 30 %)</text>
-<circle cx="150" cy="577" r="11" fill="#fff" stroke="#000"/><path d="M150,588 V618 M132,598 H168 M150,618 L136,640 M150,618 L164,640" stroke="#000" fill="none"/><text x="150" y="653.94" font-size="16" text-anchor="middle" font-weight="bold">Кредитный</text><text x="150" y="672.94" font-size="16" text-anchor="middle" font-weight="bold">специалист</text>
-<rect x="144" y="682" width="12" height="158" rx="0" fill="#fff" stroke="#000"/>
-<rect x="313" y="606" width="194" height="36" rx="0" fill="#fff" stroke="#000"/><text x="410" y="629.44" font-size="16" text-anchor="middle" text-decoration="underline">:StaffLoanController</text>
-<rect x="404" y="682" width="12" height="140" rx="0" fill="#fff" stroke="#000"/>
-<rect x="606.6" y="606" width="126.80000000000001" height="36" rx="0" fill="#fff" stroke="#000"/><text x="670" y="629.44" font-size="16" text-anchor="middle" text-decoration="underline">:LoanService</text>
-<rect x="664" y="722" width="12" height="100" rx="0" fill="#fff" stroke="#000"/>
-<rect x="875" y="606" width="110" height="36" rx="0" fill="#fff" stroke="#000"/><text x="930" y="629.44" font-size="16" text-anchor="middle" text-decoration="underline">:LoanModel</text>
-<rect x="924" y="762" width="12" height="20" rx="0" fill="#fff" stroke="#000"/>
-<rect x="924" y="802" width="12" height="20" rx="0" fill="#fff" stroke="#000"/>
-<rect x="20" y="876" width="508.4" height="26" rx="0" fill="#fff" stroke="#000"/><text x="274.2" y="894.1" font-size="15" text-anchor="middle" font-weight="bold">sd Подписание договора и выдача кредита (заявка одобрена)</text>
-<circle cx="106.66666666666667" cy="927" r="11" fill="#fff" stroke="#000"/><path d="M106.66666666666667,938 V968 M88.66666666666667,948 H124.66666666666667 M106.66666666666667,968 L92.66666666666667,990 M106.66666666666667,968 L120.66666666666667,990" stroke="#000" fill="none"/><text x="106.66666666666667" y="1013.44" font-size="16" text-anchor="middle" font-weight="bold">Клиент</text>
-<rect x="100.66666666666667" y="1032" width="12" height="438" rx="0" fill="#fff" stroke="#000"/>
-<rect x="204" y="956" width="152" height="36" rx="0" fill="#fff" stroke="#000"/><text x="280" y="979.44" font-size="16" text-anchor="middle" text-decoration="underline">:LoanController</text>
-<rect x="274" y="1032" width="12" height="100" rx="0" fill="#fff" stroke="#000"/>
-<rect x="274" y="1152" width="12" height="300" rx="0" fill="#fff" stroke="#000"/>
-<rect x="389.9333333333334" y="956" width="126.80000000000001" height="36" rx="0" fill="#fff" stroke="#000"/><text x="453.33333333333337" y="979.44" font-size="16" text-anchor="middle" text-decoration="underline">:LoanService</text>
-<rect x="447.33333333333337" y="1072" width="12" height="60" rx="0" fill="#fff" stroke="#000"/>
-<rect x="447.33333333333337" y="1192" width="12" height="260" rx="0" fill="#fff" stroke="#000"/>
-<rect x="567.4666666666667" y="956" width="118.4" height="36" rx="0" fill="#fff" stroke="#000"/><text x="626.6666666666667" y="979.44" font-size="16" text-anchor="middle" text-decoration="underline">:OtpService</text>
-<rect x="620.6666666666667" y="1112" width="12" height="20" rx="0" fill="#fff" stroke="#000"/>
-<rect x="620.6666666666667" y="1232" width="12" height="20" rx="0" fill="#fff" stroke="#000"/>
-<rect x="745" y="956" width="110" height="36" rx="0" fill="#fff" stroke="#000"/><text x="800" y="979.44" font-size="16" text-anchor="middle" text-decoration="underline">:LoanModel</text>
-<rect x="794" y="1272" width="12" height="20" rx="0" fill="#fff" stroke="#000"/>
-<rect x="794" y="1312" width="12" height="20" rx="0" fill="#fff" stroke="#000"/>
-<rect x="794" y="1352" width="12" height="20" rx="0" fill="#fff" stroke="#000"/>
-<rect x="794" y="1432" width="12" height="20" rx="0" fill="#fff" stroke="#000"/>
-<rect x="901.5333333333333" y="956" width="143.60000000000002" height="36" rx="0" fill="#fff" stroke="#000"/><text x="973.3333333333333" y="979.44" font-size="16" text-anchor="middle" text-decoration="underline">:LedgerService</text>
-<rect x="967.3333333333334" y="1392" width="12" height="20" rx="0" fill="#fff" stroke="#000"/>
+<rect x="20" y="16" width="1560" height="1400" fill="none" stroke="#000"/>
+<path d="M117.5,162 L117.5,1410" fill="none" stroke="#000" stroke-dasharray="6 4"/>
+<path d="M312.5,132 L312.5,1410" fill="none" stroke="#000" stroke-dasharray="6 4"/>
+<path d="M507.5,132 L507.5,1410" fill="none" stroke="#000" stroke-dasharray="6 4"/>
+<path d="M702.5,132 L702.5,1410" fill="none" stroke="#000" stroke-dasharray="6 4"/>
+<path d="M897.5,132 L897.5,1410" fill="none" stroke="#000" stroke-dasharray="6 4"/>
+<path d="M1092.5,132 L1092.5,1410" fill="none" stroke="#000" stroke-dasharray="6 4"/>
+<path d="M1287.5,132 L1287.5,1410" fill="none" stroke="#000" stroke-dasharray="6 4"/>
+<path d="M1482.5,162 L1482.5,1410" fill="none" stroke="#000" stroke-dasharray="6 4"/>
+<path d="M123.5,178 L306.5,178" fill="none" stroke="#000"/><polygon points="306.5,178 294.5,183 294.5,173" fill="#000" stroke="#000"/><rect x="161.07999999999998" y="155" width="107.84" height="22" fill="#fff" opacity="0.92"/><text x="215" y="171" font-size="16" text-anchor="middle">1 : create()</text>
+<path d="M318.5,218 L501.5,218" fill="none" stroke="#000"/><polygon points="501.5,218 489.5,223 489.5,213" fill="#000" stroke="#000"/><rect x="360.24" y="195" width="99.52000000000001" height="22" fill="#fff" opacity="0.92"/><text x="410" y="211" font-size="16" text-anchor="middle">2 : apply()</text>
+<path d="M513.5,266 L551.5,266 L551.5,286 L525.5,286" fill="none" stroke="#000"/><polygon points="525.5,286 537.5,281 537.5,291" fill="#000" stroke="#000"/><rect x="556.5" y="265" width="166.08" height="22" fill="#fff" opacity="0.92"/><text x="559.5" y="281" font-size="16" text-anchor="start">3 : buildSchedule()</text>
+<path d="M513.5,326 L551.5,326 L551.5,346 L525.5,346" fill="none" stroke="#000"/><polygon points="525.5,346 537.5,341 537.5,351" fill="#000" stroke="#000"/><rect x="556.5" y="325" width="191.04000000000002" height="22" fill="#fff" opacity="0.92"/><text x="559.5" y="341" font-size="16" text-anchor="start">4 : scoreApplication()</text>
+<path d="M513.5,378 L696.5,378" fill="none" stroke="#000"/><polygon points="696.5,378 684.5,383 684.5,373" fill="#000" stroke="#000"/><rect x="530.28" y="355" width="149.44" height="22" fill="#fff" opacity="0.92"/><text x="605" y="371" font-size="16" text-anchor="middle">5 : activeModel()</text>
+<path d="M513.5,418 L696.5,418" fill="none" stroke="#000"/><polygon points="696.5,418 684.5,423 684.5,413" fill="#000" stroke="#000"/><rect x="551.08" y="395" width="107.84" height="22" fill="#fff" opacity="0.92"/><text x="605" y="411" font-size="16" text-anchor="middle">6 : assess()</text>
+<path d="M513.5,506 L891.5,506" fill="none" stroke="#000"/><polygon points="891.5,506 879.5,511 879.5,501" fill="#000" stroke="#000"/><rect x="602.8199999999999" y="483" width="199.36" height="22" fill="#fff" opacity="0.92"/><text x="702.5" y="499" font-size="16" text-anchor="middle">7 : insertApplication()</text>
+<path d="M513.5,656 L891.5,656" fill="none" stroke="#000"/><polygon points="891.5,656 879.5,661 879.5,651" fill="#000" stroke="#000"/><rect x="602.8199999999999" y="633" width="199.36" height="22" fill="#fff" opacity="0.92"/><text x="702.5" y="649" font-size="16" text-anchor="middle">8 : insertApplication()</text>
+<path d="M1476.5,696 L513.5,696" fill="none" stroke="#000"/><polygon points="513.5,696 525.5,691 525.5,701" fill="#000" stroke="#000"/><rect x="941.08" y="673" width="107.84" height="22" fill="#fff" opacity="0.92"/><text x="995" y="689" font-size="16" text-anchor="middle">9 : decide()</text>
+<path d="M513.5,736 L891.5,736" fill="none" stroke="#000"/><polygon points="891.5,736 879.5,741 879.5,731" fill="#000" stroke="#000"/><rect x="606.98" y="713" width="191.04000000000002" height="22" fill="#fff" opacity="0.92"/><text x="702.5" y="729" font-size="16" text-anchor="middle">10 : lockApplication()</text>
+<path d="M513.5,776 L891.5,776" fill="none" stroke="#000"/><polygon points="891.5,776 879.5,781 879.5,771" fill="#000" stroke="#000"/><rect x="598.66" y="753" width="207.68" height="22" fill="#fff" opacity="0.92"/><text x="702.5" y="769" font-size="16" text-anchor="middle">11 : decideApplication()</text>
+<path d="M513.5,878 L891.5,878" fill="none" stroke="#000"/><polygon points="891.5,878 879.5,883 879.5,873" fill="#000" stroke="#000"/><rect x="598.66" y="855" width="207.68" height="22" fill="#fff" opacity="0.92"/><text x="702.5" y="871" font-size="16" text-anchor="middle">12 : insertApplication()</text>
+<path d="M123.5,966 L306.5,966" fill="none" stroke="#000"/><polygon points="306.5,966 294.5,971 294.5,961" fill="#000" stroke="#000"/><rect x="148.6" y="943" width="132.8" height="22" fill="#fff" opacity="0.92"/><text x="215" y="959" font-size="16" text-anchor="middle">13 : sendCode()</text>
+<path d="M318.5,1006 L501.5,1006" fill="none" stroke="#000"/><polygon points="501.5,1006 489.5,1011 489.5,1001" fill="#000" stroke="#000"/><rect x="314.48" y="983" width="191.04000000000002" height="22" fill="#fff" opacity="0.92"/><text x="410" y="999" font-size="16" text-anchor="middle">14 : requestSignCode()</text>
+<path d="M513.5,1046 L1086.5,1046" fill="none" stroke="#000"/><polygon points="1086.5,1046 1074.5,1051 1074.5,1041" fill="#000" stroke="#000"/><rect x="746.08" y="1023" width="107.84" height="22" fill="#fff" opacity="0.92"/><text x="800" y="1039" font-size="16" text-anchor="middle">15 : issue()</text>
+<path d="M123.5,1086 L306.5,1086" fill="none" stroke="#000"/><polygon points="306.5,1086 294.5,1091 294.5,1081" fill="#000" stroke="#000"/><rect x="165.24" y="1063" width="99.52000000000001" height="22" fill="#fff" opacity="0.92"/><text x="215" y="1079" font-size="16" text-anchor="middle">16 : sign()</text>
+<path d="M318.5,1126 L501.5,1126" fill="none" stroke="#000"/><polygon points="501.5,1126 489.5,1131 489.5,1121" fill="#000" stroke="#000"/><rect x="360.24" y="1103" width="99.52000000000001" height="22" fill="#fff" opacity="0.92"/><text x="410" y="1119" font-size="16" text-anchor="middle">17 : sign()</text>
+<path d="M513.5,1166 L1086.5,1166" fill="none" stroke="#000"/><polygon points="1086.5,1166 1074.5,1171 1074.5,1161" fill="#000" stroke="#000"/><rect x="741.92" y="1143" width="116.16" height="22" fill="#fff" opacity="0.92"/><text x="800" y="1159" font-size="16" text-anchor="middle">18 : verify()</text>
+<path d="M513.5,1206 L891.5,1206" fill="none" stroke="#000"/><polygon points="891.5,1206 879.5,1211 879.5,1201" fill="#000" stroke="#000"/><rect x="606.98" y="1183" width="191.04000000000002" height="22" fill="#fff" opacity="0.92"/><text x="702.5" y="1199" font-size="16" text-anchor="middle">19 : lockApplication()</text>
+<path d="M513.5,1246 L891.5,1246" fill="none" stroke="#000"/><polygon points="891.5,1246 879.5,1251 879.5,1241" fill="#000" stroke="#000"/><rect x="627.78" y="1223" width="149.44" height="22" fill="#fff" opacity="0.92"/><text x="702.5" y="1239" font-size="16" text-anchor="middle">20 : insertLoan()</text>
+<path d="M513.5,1286 L891.5,1286" fill="none" stroke="#000"/><polygon points="891.5,1286 879.5,1291 879.5,1281" fill="#000" stroke="#000"/><rect x="594.5" y="1263" width="216" height="22" fill="#fff" opacity="0.92"/><text x="702.5" y="1279" font-size="16" text-anchor="middle">21 : insertInstallments()</text>
+<path d="M513.5,1326 L1281.5,1326" fill="none" stroke="#000"/><polygon points="1281.5,1326 1269.5,1331 1269.5,1321" fill="#000" stroke="#000"/><rect x="847.74" y="1303" width="99.52000000000001" height="22" fill="#fff" opacity="0.92"/><text x="897.5" y="1319" font-size="16" text-anchor="middle">22 : post()</text>
+<path d="M513.5,1366 L891.5,1366" fill="none" stroke="#000"/><polygon points="891.5,1366 879.5,1371 879.5,1361" fill="#000" stroke="#000"/><rect x="586.18" y="1343" width="232.64000000000001" height="22" fill="#fff" opacity="0.92"/><text x="702.5" y="1359" font-size="16" text-anchor="middle">23 : setApplicationStatus()</text>
+<rect x="20" y="16" width="198.79999999999998" height="26" rx="0" fill="#fff" stroke="#000"/><text x="119.39999999999999" y="34.1" font-size="15" text-anchor="middle" font-weight="bold">sd Оформление кредита</text>
+<circle cx="117.5" cy="67" r="11" fill="#fff" stroke="#000"/><path d="M117.5,78 V108 M99.5,88 H135.5 M117.5,108 L103.5,130 M117.5,108 L131.5,130" stroke="#000" fill="none"/><text x="117.5" y="153.44" font-size="16" text-anchor="middle" font-weight="bold">Клиент</text>
+<rect x="111.5" y="172" width="12" height="1226" rx="0" fill="#fff" stroke="#000"/>
+<rect x="236.5" y="96" width="152" height="36" rx="0" fill="#fff" stroke="#000"/><text x="312.5" y="119.44" font-size="16" text-anchor="middle" text-decoration="underline">:LoanController</text>
+<rect x="306.5" y="172" width="12" height="260" rx="0" fill="#fff" stroke="#000"/>
+<rect x="306.5" y="960" width="12" height="100" rx="0" fill="#fff" stroke="#000"/>
+<rect x="306.5" y="1080" width="12" height="300" rx="0" fill="#fff" stroke="#000"/>
+<rect x="444.1" y="96" width="126.80000000000001" height="36" rx="0" fill="#fff" stroke="#000"/><text x="507.5" y="119.44" font-size="16" text-anchor="middle" text-decoration="underline">:LoanService</text>
+<rect x="501.5" y="212" width="12" height="220" rx="0" fill="#fff" stroke="#000"/>
+<rect x="501.5" y="690" width="12" height="100" rx="0" fill="#fff" stroke="#000"/>
+<rect x="501.5" y="1000" width="12" height="60" rx="0" fill="#fff" stroke="#000"/>
+<rect x="501.5" y="1120" width="12" height="260" rx="0" fill="#fff" stroke="#000"/>
+<rect x="626.5" y="96" width="152" height="36" rx="0" fill="#fff" stroke="#000"/><text x="702.5" y="119.44" font-size="16" text-anchor="middle" text-decoration="underline">:ScoringService</text>
+<rect x="696.5" y="372" width="12" height="20" rx="0" fill="#fff" stroke="#000"/>
+<rect x="696.5" y="412" width="12" height="20" rx="0" fill="#fff" stroke="#000"/>
+<rect x="842.5" y="96" width="110" height="36" rx="0" fill="#fff" stroke="#000"/><text x="897.5" y="119.44" font-size="16" text-anchor="middle" text-decoration="underline">:LoanModel</text>
+<rect x="891.5" y="500" width="12" height="20" rx="0" fill="#fff" stroke="#000"/>
+<rect x="891.5" y="650" width="12" height="20" rx="0" fill="#fff" stroke="#000"/>
+<rect x="891.5" y="730" width="12" height="20" rx="0" fill="#fff" stroke="#000"/>
+<rect x="891.5" y="770" width="12" height="20" rx="0" fill="#fff" stroke="#000"/>
+<rect x="891.5" y="872" width="12" height="20" rx="0" fill="#fff" stroke="#000"/>
+<rect x="891.5" y="1200" width="12" height="20" rx="0" fill="#fff" stroke="#000"/>
+<rect x="891.5" y="1240" width="12" height="20" rx="0" fill="#fff" stroke="#000"/>
+<rect x="891.5" y="1280" width="12" height="20" rx="0" fill="#fff" stroke="#000"/>
+<rect x="891.5" y="1360" width="12" height="20" rx="0" fill="#fff" stroke="#000"/>
+<rect x="1033.3" y="96" width="118.4" height="36" rx="0" fill="#fff" stroke="#000"/><text x="1092.5" y="119.44" font-size="16" text-anchor="middle" text-decoration="underline">:OtpService</text>
+<rect x="1086.5" y="1040" width="12" height="20" rx="0" fill="#fff" stroke="#000"/>
+<rect x="1086.5" y="1160" width="12" height="20" rx="0" fill="#fff" stroke="#000"/>
+<rect x="1215.7" y="96" width="143.60000000000002" height="36" rx="0" fill="#fff" stroke="#000"/><text x="1287.5" y="119.44" font-size="16" text-anchor="middle" text-decoration="underline">:LedgerService</text>
+<rect x="1281.5" y="1320" width="12" height="20" rx="0" fill="#fff" stroke="#000"/>
+<circle cx="1482.5" cy="67" r="11" fill="#fff" stroke="#000"/><path d="M1482.5,78 V108 M1464.5,88 H1500.5 M1482.5,108 L1468.5,130 M1482.5,108 L1496.5,130" stroke="#000" fill="none"/><text x="1482.5" y="143.94" font-size="16" text-anchor="middle" font-weight="bold">Кредитный</text><text x="1482.5" y="162.94" font-size="16" text-anchor="middle" font-weight="bold">специалист</text>
+<rect x="1476.5" y="172" width="12" height="1226" rx="0" fill="#fff" stroke="#000"/>
+<rect x="28" y="458" width="1544" height="80" rx="0" fill="none" stroke="#000"/>
+<rect x="28" y="458" width="58" height="24" rx="0" fill="#fff" stroke="#000"/><text x="57" y="474.76" font-size="14" text-anchor="middle" font-weight="bold">alt1</text>
+<text x="96" y="476" font-size="15" text-anchor="start" font-style="italic">[отказ: долговая нагрузка выше 40 % или вероятность дефолта выше 30 %]</text>
+<text x="96" y="578" font-size="15" text-anchor="start" font-style="italic">[иначе: вероятность дефолта до 30 %]</text>
+<rect x="28" y="608" width="1544" height="200" rx="0" fill="none" stroke="#000"/>
+<rect x="28" y="608" width="58" height="24" rx="0" fill="#fff" stroke="#000"/><text x="57" y="624.76" font-size="14" text-anchor="middle" font-weight="bold">alt2</text>
+<text x="96" y="626" font-size="15" text-anchor="start" font-style="italic">[ручное рассмотрение: вероятность от 8 до 30 % или сумма выше лимита]</text>
+<text x="96" y="848" font-size="15" text-anchor="start" font-style="italic">[иначе: автоодобрение, вероятность до 8 % и сумма в пределах лимита]</text>
+<text x="96" y="936" font-size="15" text-anchor="start" font-style="italic">[заявка одобрена: подписание договора]</text>
+<rect x="513.5" y="266" width="12" height="26" rx="0" fill="#fff" stroke="#000"/>
+<rect x="513.5" y="326" width="12" height="26" rx="0" fill="#fff" stroke="#000"/>
 </svg>

@@ -149,14 +149,18 @@ function sequencePanel(d, x0, y0, title, parts, steps, width) {
   const firstY = HEAD_Y + 122;
   const marks = []; const acts = new Map(parts.map((p) => [p.key, []]));
   let y = firstY;
+  let n = 0;
   const run = (step) => {
+    if (step.open) { marks.push({ open: step.open, guard: step.guard, y }); y += 48; return; }
+    if (step.close) { marks.push({ close: true, y: y - 8 }); y += 14; return; }
+    if (step.text) { marks.push({ text: step.text, y: y + 4 }); y += 48; return; }
     if (step.self) {
-      marks.push({ self: step.self, name: step.name, y });
+      marks.push({ self: step.self, name: `${++n} : ${step.name}`, y });
       y += ROW + 20;
       return;
     }
     const yCall = y;
-    marks.push({ from: step.from, to: step.to, name: step.name, y: yCall });
+    marks.push({ from: step.from, to: step.to, name: `${++n} : ${step.name}`, y: yCall });
     y += ROW;
     for (const c of step.calls) run(c);
     let yEnd = y - ROW + 14;
@@ -182,7 +186,18 @@ function sequencePanel(d, x0, y0, title, parts, steps, width) {
     }
     for (const [a, b] of acts.get(p.key)) d.rect({ x: x - 6, y: a, w: 12, h: b - a, text: '' });
   }
+  const opens = [];
   for (const m of marks) {
+    if (m.open) opens.push(m);
+    else if (m.close) {
+      const o = opens.pop();
+      d.rect({ x: x0 + 8, y: o.y, w: width - 16, h: m.y - o.y, text: '', fill: 'none' });
+      d.rect({ x: x0 + 8, y: o.y, w: 58, h: 24, text: o.open, size: 14, bold: true });
+      d.text({ x: x0 + 76, y: o.y + 18, text: o.guard, size: 15, italic: true });
+    } else if (m.text) d.text({ x: x0 + 76, y: m.y + 14, text: m.text, size: 15, italic: true });
+  }
+  for (const m of marks) {
+    if (m.open || m.close || m.text) continue;
     if (m.self) {
       const x = cx(m.self);
       d.rect({ x: x + 6, y: m.y + 8, w: 12, h: 26, text: '' });
@@ -198,33 +213,34 @@ function sequencePanel(d, x0, y0, title, parts, steps, width) {
 
 function seqLoan() {
   const d = new Diagram('Оформление кредита');
-  const W = 1040; let y = 16;
-  const panels = [
-    ['Подача заявки и скоринг', [
-      { key: 'cl', label: 'Клиент', actor: true }, { key: 'ct', label: ':LoanController' }, { key: 'sv', label: ':LoanService' },
-      { key: 'sc', label: ':ScoringService' }, { key: 'md', label: ':LoanModel' }
-    ], [call('cl', 'ct', 'create()', [call('ct', 'sv', 'apply()', [
-      selfCall('sv', 'buildSchedule()'), selfCall('sv', 'scoreApplication()'),
-      call('sv', 'sc', 'activeModel()'), call('sv', 'sc', 'assess()'), call('sv', 'md', 'insertApplication()')
-    ])])]],
-    ['Ручное рассмотрение заявки (вероятность дефолта от 8 до 30 %)', [
-      { key: 'of', label: 'Кредитный\nспециалист', actor: true }, { key: 'ct', label: ':StaffLoanController' }, { key: 'sv', label: ':LoanService' },
-      { key: 'md', label: ':LoanModel' }
-    ], [call('of', 'ct', 'decide()', [call('ct', 'sv', 'decide()', [
-      call('sv', 'md', 'lockApplication()'), call('sv', 'md', 'decideApplication()')
-    ])])]],
-    ['Подписание договора и выдача кредита (заявка одобрена)', [
-      { key: 'cl', label: 'Клиент', actor: true }, { key: 'ct', label: ':LoanController' }, { key: 'sv', label: ':LoanService' },
-      { key: 'ot', label: ':OtpService' }, { key: 'md', label: ':LoanModel' }, { key: 'lg', label: ':LedgerService' }
-    ], [
-      call('cl', 'ct', 'sendCode()', [call('ct', 'sv', 'requestSignCode()', [call('sv', 'ot', 'issue()')])]),
-      call('cl', 'ct', 'sign()', [call('ct', 'sv', 'sign()', [
-        call('sv', 'ot', 'verify()'), call('sv', 'md', 'lockApplication()'), call('sv', 'md', 'insertLoan()'),
-        call('sv', 'md', 'insertInstallments()'), call('sv', 'lg', 'post()'), call('sv', 'md', 'setApplicationStatus()')
-      ])])
-    ]]
+  const parts = [
+    { key: 'cl', label: 'Клиент', actor: true }, { key: 'ct', label: ':LoanController' }, { key: 'sv', label: ':LoanService' },
+    { key: 'sc', label: ':ScoringService' }, { key: 'md', label: ':LoanModel' }, { key: 'ot', label: ':OtpService' },
+    { key: 'lg', label: ':LedgerService' }, { key: 'of', label: 'Кредитный\nспециалист', actor: true }
   ];
-  for (const [title, parts, steps] of panels) y += sequencePanel(d, 20, y, title, parts, steps, W) + 18;
+  const steps = [
+    call('cl', 'ct', 'create()', [call('ct', 'sv', 'apply()', [
+      selfCall('sv', 'buildSchedule()'), selfCall('sv', 'scoreApplication()'),
+      call('sv', 'sc', 'activeModel()'), call('sv', 'sc', 'assess()')
+    ])]),
+    { open: 'alt1', guard: '[отказ: долговая нагрузка выше 40 % или вероятность дефолта выше 30 %]' },
+    call('sv', 'md', 'insertApplication()'),
+    { close: true },
+    { text: '[иначе: вероятность дефолта до 30 %]' },
+    { open: 'alt2', guard: '[ручное рассмотрение: вероятность от 8 до 30 % или сумма выше лимита]' },
+    call('sv', 'md', 'insertApplication()'),
+    call('of', 'sv', 'decide()', [call('sv', 'md', 'lockApplication()'), call('sv', 'md', 'decideApplication()')]),
+    { close: true },
+    { text: '[иначе: автоодобрение, вероятность до 8 % и сумма в пределах лимита]' },
+    call('sv', 'md', 'insertApplication()'),
+    { text: '[заявка одобрена: подписание договора]' },
+    call('cl', 'ct', 'sendCode()', [call('ct', 'sv', 'requestSignCode()', [call('sv', 'ot', 'issue()')])]),
+    call('cl', 'ct', 'sign()', [call('ct', 'sv', 'sign()', [
+      call('sv', 'ot', 'verify()'), call('sv', 'md', 'lockApplication()'), call('sv', 'md', 'insertLoan()'),
+      call('sv', 'md', 'insertInstallments()'), call('sv', 'lg', 'post()'), call('sv', 'md', 'setApplicationStatus()')
+    ])])
+  ];
+  sequencePanel(d, 20, 16, 'Оформление кредита', parts, steps, 1560);
   return d;
 }
 
