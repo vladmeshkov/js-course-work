@@ -140,9 +140,10 @@ if (ucBad.length) console.warn('Вариант использования: пе�
 // Каждый поток управления показан на отдельной диаграмме (панели одного рисунка).
 const call = (from, to, name, calls = [], ret = false) => ({ from, to, name, calls, ret });
 const selfCall = (on, name) => ({ self: on, name });
+const show = (from, to, name) => ({ dash: true, from, to, name });
 
 /** Рисует одну диаграмму последовательности в прямоугольнике «sd …» с левым верхним углом (x0, y0). Возвращает высоту. */
-function sequencePanel(d, x0, y0, title, parts, steps, width) {
+function sequencePanel(d, x0, y0, title, parts, steps, width, holdKey = null) {
   const ROW = 40; const HEAD_Y = y0 + 40;
   const pitch = width / parts.length;
   const cx = (key) => x0 + pitch * (parts.findIndex((p) => p.key === key) + 0.5);
@@ -154,6 +155,11 @@ function sequencePanel(d, x0, y0, title, parts, steps, width) {
     if (step.open) { marks.push({ open: step.open, guard: step.guard, y }); y += 48; return; }
     if (step.close) { marks.push({ close: true, y: y - 8 }); y += 14; return; }
     if (step.text) { marks.push({ text: step.text, y: y + 4 }); y += 48; return; }
+    if (step.dash) {
+      marks.push({ from: step.from, to: step.to, name: `${++n} : ${step.name}`, y, ret: true });
+      y += ROW;
+      return;
+    }
     if (step.self) {
       marks.push({ self: step.self, name: `${++n} : ${step.name}`, y });
       y += ROW + 20;
@@ -170,6 +176,11 @@ function sequencePanel(d, x0, y0, title, parts, steps, width) {
   for (const s of steps) run(s);
   const bottom = y + 10;
   // фокус управления инициатора занимает весь период взаимодействия
+  if (holdKey) {
+    const first = marks.find((m) => m.to === holdKey);
+    acts.get(holdKey).length = 0;
+    acts.get(holdKey).push([first.y - 6, bottom - 18]);
+  }
   for (const p of parts.filter((q) => q.actor)) acts.get(p.key).push([firstY - 6, bottom - 18]);
 
   d.frame({ x: x0, y: y0, w: width, h: bottom - y0, stroke: '#000', dashed: false, fill: 'none' });
@@ -212,35 +223,27 @@ function sequencePanel(d, x0, y0, title, parts, steps, width) {
 }
 
 function seqLoan() {
-  const d = new Diagram('Оформление кредита');
+  const d = new Diagram('Подача заявки на кредит');
   const parts = [
-    { key: 'cl', label: 'Клиент', actor: true }, { key: 'ct', label: ':LoanController' }, { key: 'sv', label: ':LoanService' },
-    { key: 'sc', label: ':ScoringService' }, { key: 'md', label: ':LoanModel' }, { key: 'ot', label: ':OtpService' },
-    { key: 'lg', label: ':LedgerService' }, { key: 'of', label: 'Кредитный\nспециалист', actor: true }
+    { key: 'cl', label: 'Клиент', actor: true }, { key: 'fm', label: ':LoanForm' }, { key: 'ct', label: ':LoanController' },
+    { key: 'sc', label: ':ScoringService' }, { key: 'db', label: ':Database' }
   ];
   const steps = [
-    call('cl', 'ct', 'create()', [call('ct', 'sv', 'apply()', [
-      selfCall('sv', 'buildSchedule()'), selfCall('sv', 'scoreApplication()'),
-      call('sv', 'sc', 'activeModel()'), call('sv', 'sc', 'assess()')
-    ])]),
-    { open: 'alt1', guard: '[отказ: долговая нагрузка выше 40 % или вероятность дефолта выше 30 %]' },
-    call('sv', 'md', 'insertApplication()'),
+    call('cl', 'fm', 'fillForm()', [call('fm', 'ct', 'create()', [selfCall('ct', 'validate()')])]),
+    { open: 'alt1', guard: '[данные некорректны]' },
+    call('ct', 'fm', 'renderErrors()', [show('fm', 'cl', 'showErrors()')]),
     { close: true },
-    { text: '[иначе: вероятность дефолта до 30 %]' },
-    { open: 'alt2', guard: '[ручное рассмотрение: вероятность от 8 до 30 % или сумма выше лимита]' },
-    call('sv', 'md', 'insertApplication()'),
-    call('of', 'sv', 'decide()', [call('sv', 'md', 'lockApplication()'), call('sv', 'md', 'decideApplication()')]),
+    { text: '[данные корректны]' },
+    call('ct', 'sc', 'assess()', [call('sc', 'db', 'getHistory()', [], true)], true),
+    { open: 'alt2', guard: '[отказ: нагрузка выше 40 % или вероятность дефолта выше 30 %]' },
+    call('ct', 'db', 'saveApplication()', [], true),
+    call('ct', 'fm', 'renderRefusal()', [show('fm', 'cl', 'showRefusal()')]),
     { close: true },
-    { text: '[иначе: автоодобрение, вероятность до 8 % и сумма в пределах лимита]' },
-    call('sv', 'md', 'insertApplication()'),
-    { text: '[заявка одобрена: подписание договора]' },
-    call('cl', 'ct', 'sendCode()', [call('ct', 'sv', 'requestSignCode()', [call('sv', 'ot', 'issue()')])]),
-    call('cl', 'ct', 'sign()', [call('ct', 'sv', 'sign()', [
-      call('sv', 'ot', 'verify()'), call('sv', 'md', 'lockApplication()'), call('sv', 'md', 'insertLoan()'),
-      call('sv', 'md', 'insertInstallments()'), call('sv', 'lg', 'post()'), call('sv', 'md', 'setApplicationStatus()')
-    ])])
+    { text: '[иначе: заявка одобрена или передана на рассмотрение]' },
+    call('ct', 'db', 'saveApplication()', [], true),
+    call('ct', 'fm', 'renderStatus()', [show('fm', 'cl', 'showStatus()')])
   ];
-  sequencePanel(d, 20, 16, 'Оформление кредита', parts, steps, 1560);
+  sequencePanel(d, 20, 16, 'Подача заявки на кредит', parts, steps, 1100, 'ct');
   return d;
 }
 

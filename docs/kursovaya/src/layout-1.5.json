@@ -4,13 +4,14 @@
   "uc",
   "seq",
   "act",
-  "comp",
-  "dep"
+  "dep",
+  "comp"
  ],
  "modes": {
   "st": "A",
   "uc": "A",
   "seq": "A",
-  "act": "A"
+  "act": "A",
+  "dep": "A"
  }
 }
