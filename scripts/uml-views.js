@@ -23,11 +23,11 @@ const Rt = (o, t = 0.5) => [o.x + o.w, o.y + o.h * t];
 // Столбцы: A — основные действия клиента, B — включаемые и расширяющие, C — действия сотрудников.
 function useCases() {
   const d = new Diagram('Варианты использования');
-  const rx = 88, ry = 23, P = 56, y0 = 90;
-  const cxA = 215, cxB = 471, cxC = 727, axL = 40, axR = 960;
+  const rx = 88, ry = 24, P = 68, y0 = 90;
+  const cxA = 225, cxB = 515, cxC = 805, axL = 40, axR = 1040;
   const Y = (r) => y0 + r * P;
   const mk = (cx, r, text) => ({ cx, cy: Y(r), rx, ry, text });
-  d.frame({ x: 105, y: 30, w: 745, h: Y(19.15) - 30, title: 'Система ТалерБанк', center: true });
+  d.frame({ x: 105, y: 30, w: 850, h: Y(19.05) - 30, title: 'Система ТалерБанк', center: true });
 
   const a = {
     rates: mk(cxA, 0, 'Просмотреть\nкурсы валют'), reg: mk(cxA, 1, 'Зарегистрироваться'), acc: mk(cxA, 2, 'Открыть счёт'),
@@ -36,13 +36,12 @@ function useCases() {
     stmt: mk(cxA, 16, 'Получить выписку')
   };
   const b = {
-    conv: mk(cxB, 0, 'Рассчитать\nконвертацию'), form: mk(cxB, 1, 'Заполнить анкету'), iban: mk(cxB, 2, 'Сформировать\nномер IBAN'),
+    conv: mk(cxB, 0, 'Рассчитать\nконвертацию'),
     fx: mk(cxB, 3, 'Конвертировать\nвалюту'), hold: mk(cxB, 4, 'Передать\nна проверку'), code: mk(cxB, 5, 'Подтвердить\nоперацию кодом'),
     auto: mk(cxB, 6, 'Настроить\nавтоплатёж'), tpl: mk(cxB, 7, 'Сохранить\nшаблон платежа'),
     calc: mk(cxB, 8, 'Рассчитать доход\nпо вкладу'), early: mk(cxB, 9, 'Закрыть вклад\nдосрочно'),
     score: mk(cxB, 10, 'Оценить кредито-\nспособность'), sched: mk(cxB, 11, 'Составить график\nплатежей'),
     prepay: mk(cxB, 12, 'Погасить\nдосрочно'), block: mk(cxB, 14, 'Заблокировать\nкарту'), limit: mk(cxB, 15, 'Установить\nлимиты'),
-    pdf: mk(cxB, 16, 'Сформировать\nPDF-файл')
   };
   const c = {
     check: mk(cxC, 1, 'Проверить анкету\nклиента'), lock: mk(cxC, 2, 'Заблокировать\nсчёт клиента'), cash: mk(cxC, 3, 'Принять и выдать\nналичные'),
@@ -72,11 +71,11 @@ function useCases() {
   const ext = (from, to) => link(from, to, 'extend');
 
   // включение: от базового варианта к включаемому
-  inc(a.reg, b.form); inc(a.acc, b.iban); inc(a.xfer, b.code); inc(a.pay, b.code); inc(a.dep, b.calc);
-  inc(a.loan, b.score); inc(a.loan, b.sched); inc(c.review, b.score); inc(b.hold, c.fraud); inc(c.eod, c.backup);
+  inc(a.xfer, b.code); inc(a.pay, b.code); inc(a.dep, b.calc);
+  inc(a.loan, b.score); inc(a.loan, b.sched); inc(c.review, b.score); inc(b.hold, c.fraud);
   // расширение: от расширяющего варианта к базовому
   ext(b.conv, a.rates); ext(b.fx, a.xfer); ext(b.hold, a.xfer); ext(b.auto, a.pay); ext(b.tpl, a.pay); ext(b.early, a.dep);
-  ext(b.prepay, a.repay); ext(b.block, a.card); ext(b.limit, a.card); ext(b.pdf, a.stmt);
+  ext(b.prepay, a.repay); ext(b.block, a.card); ext(b.limit, a.card);
   ext(c.special, c.fraud); ext(c.issue, c.review);
 
   // актёры слева: Гость и Клиент (обобщение)
