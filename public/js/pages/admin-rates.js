@@ -85,7 +85,10 @@ export default async function page({ navigate }) {
         } catch (error) {
           // строка настройки с ошибкой подсвечивается, как поле формы
           if (error instanceof ApiError) {
-            for (const name of Object.keys(error.fields)) settingsForm.querySelector(`[name="${name}"]`)?.closest('.setting')?.classList.add('field--error');
+            // после bindForm: он сбрасывает подсветку перед показом ошибок
+            setTimeout(() => {
+              for (const name of Object.keys(error.fields)) settingsForm.querySelector(`[name="${name}"]`)?.closest('.setting')?.classList.add('field--error');
+            }, 0);
           }
           throw error;
         }

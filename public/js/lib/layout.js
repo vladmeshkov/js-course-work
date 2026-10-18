@@ -40,7 +40,7 @@ export function headerHtml(session, path) {
     <div class="top-bar__in">
       <a class="logo" href="/">${LOGO}</a>
       <nav class="main-nav${nav.length > 5 ? ' main-nav--dense' : ''}" aria-label="Основное меню">
-        ${nav.map((item) => html`<a href="${item.href}"${path === item.href ? html` aria-current="page"` : ''}>${item.label}</a>`)}
+        ${nav.map((item) => html`<a href="${item.href}"${path === item.href || (item.href !== '/' && path.startsWith(`${item.href}/`)) ? html` aria-current="page"` : ''}>${item.label}</a>`)}
       </nav>
       <div class="top-bar__actions">
         ${user
