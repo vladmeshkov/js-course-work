@@ -170,7 +170,7 @@ function sequencePanel(d, x0, y0, title, parts, steps, width, holdKey = null) {
     y += ROW;
     for (const c of step.calls) run(c);
     let yEnd = y - ROW + 14;
-    if (step.ret) { marks.push({ from: step.to, to: step.from, name: '', y, ret: true }); yEnd = y + 6; y += ROW - 6; }
+    if (step.ret) { marks.push({ from: step.to, to: step.from, name: typeof step.ret === 'string' ? `${++n} : ${step.ret}` : '', y, ret: true }); yEnd = y + 6; y += ROW - 6; }
     acts.get(step.to).push([yCall - 6, yEnd]);
   };
   for (const s of steps) run(s);
@@ -192,20 +192,19 @@ function sequencePanel(d, x0, y0, title, parts, steps, width, holdKey = null) {
       d.line({ pts: [[x, HEAD_Y + 106], [x, bottom - 6]], arrow: null, dashed: true });
     } else {
       const w = Math.min(pitch - 18, p.label.length * 8.4 + 26);
-      d.rect({ x: x - w / 2, y: HEAD_Y + 40, w, h: 36, text: p.label, size: 16, underline: true });
+      d.rect({ x: x - w / 2, y: HEAD_Y + 40, w, h: 36, text: p.label, size: 16, underline: true, bold: true });
       d.line({ pts: [[x, HEAD_Y + 76], [x, bottom - 6]], arrow: null, dashed: true });
     }
     for (const [a, b] of acts.get(p.key)) d.rect({ x: x - 6, y: a, w: 12, h: b - a, text: '' });
   }
-  const opens = [];
+  const opens = []; const notes = [];
   for (const m of marks) {
     if (m.open) opens.push(m);
     else if (m.close) {
       const o = opens.pop();
       d.rect({ x: x0 + 8, y: o.y, w: width - 16, h: m.y - o.y, text: '', fill: 'none' });
-      d.rect({ x: x0 + 8, y: o.y, w: 58, h: 24, text: o.open, size: 14, bold: true });
-      d.text({ x: x0 + 76, y: o.y + 18, text: o.guard, size: 15, italic: true });
-    } else if (m.text) d.text({ x: x0 + 76, y: m.y + 14, text: m.text, size: 15, italic: true });
+      notes.push({ x: x0 + 8, y: o.y, label: o.open, guard: o.guard });
+    } else if (m.text) notes.push({ x: x0 + 8, y: m.y - 8, guard: m.text });
   }
   for (const m of marks) {
     if (m.open || m.close || m.text) continue;
@@ -218,6 +217,14 @@ function sequencePanel(d, x0, y0, title, parts, steps, width, holdKey = null) {
       const xa = cx(m.from) + (right ? 6 : -6); const xb = cx(m.to) + (right ? -6 : 6);
       d.line({ pts: [[xa, m.y], [xb, m.y]], arrow: m.ret ? 'open' : 'filled', dashed: Boolean(m.ret), label: m.name || undefined, at: { x: (xa + xb) / 2, y: m.y - 7 }, italic: false });
     }
+  }
+  // названия блоков и условия рисуются последними, на белой подложке: линии жизни их не пересекают
+  const gx = cx(parts.find((q) => q.actor).key) + 18;
+  for (const nt of notes) {
+    if (nt.label) d.rect({ x: nt.x, y: nt.y, w: 58, h: 24, text: nt.label, size: 14, bold: true });
+    const w = nt.guard.length * 7.4 + 16;
+    d.rect({ x: gx, y: nt.y + (nt.label ? 4 : 6), w, h: 20, text: '', stroke: '#fff' });
+    d.text({ x: gx + 8, y: nt.y + (nt.label ? 18 : 24), text: nt.guard, size: 15, italic: true });
   }
   return bottom - y0;
 }
@@ -234,13 +241,13 @@ function seqLoan() {
     call('ct', 'fm', 'renderErrors()', [show('fm', 'cl', 'showErrors()')]),
     { close: true },
     { text: '[данные корректны]' },
-    call('ct', 'sc', 'assess()', [call('sc', 'db', 'getHistory()', [], true)], true),
+    call('ct', 'sc', 'assess()', [call('sc', 'db', 'getHistory()', [], 'history')], 'decision'),
     { open: 'alt2', guard: '[отказ: нагрузка выше 40 % или вероятность дефолта выше 30 %]' },
-    call('ct', 'db', 'saveApplication()', [], true),
+    call('ct', 'db', 'saveApplication()', [], 'application'),
     call('ct', 'fm', 'renderRefusal()', [show('fm', 'cl', 'showRefusal()')]),
     { close: true },
     { text: '[иначе: заявка одобрена или передана на рассмотрение]' },
-    call('ct', 'db', 'saveApplication()', [], true),
+    call('ct', 'db', 'saveApplication()', [], 'application'),
     call('ct', 'fm', 'renderStatus()', [show('fm', 'cl', 'showStatus()')])
   ];
   sequencePanel(d, 20, 16, 'Подача заявки на кредит', parts, steps, 1100, 'ct');
