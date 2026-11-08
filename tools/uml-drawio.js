@@ -25,24 +25,37 @@ function simplifyParams(raw) {
   return parts.map((p) => { const t = p.trim(); return t.startsWith('{') ? 'options' : t.startsWith('[') ? 'list' : t.split('=')[0].trim(); }).join(', ');
 }
 
-const pascal = (s) => s.replace(/\.js$/, '').replace(/^./, (c) => c.toUpperCase());
+const pascal = (s) => s.replace(/\.js$/, '').replace(/(^|[.-])(\w)/g, (_, __, c) => c.toUpperCase());
 
-function scan(dir, stereotype) {
-  const base = path.join(root, 'src', dir);
-  return readdirSync(base).filter((f) => f.endsWith('.js')).sort().map((f) => {
-    const text = readFileSync(path.join(base, f), 'utf8');
+/** Все файлы кода сервера: server/modules/<модуль>/* и server/shared/*, кроме маршрутов. */
+function serverFiles() {
+  const out = [];
+  const modules = path.join(root, 'server/modules');
+  for (const m of readdirSync(modules)) {
+    for (const f of readdirSync(path.join(modules, m))) if (f.endsWith('.js') && f !== 'routes.js') out.push({ file: path.join(modules, m, f), name: f });
+  }
+  for (const f of readdirSync(path.join(root, 'server/shared'))) if (f.endsWith('.js')) out.push({ file: path.join(root, 'server/shared', f), name: f });
+  return out;
+}
+
+/** Файлы одного вида: controller, service, model или library (всё остальное). */
+function scan(kind, stereotype) {
+  const kindOf = (name) => (/\.(controller|service|model)\.js$/.exec(name)?.[1] ?? 'library');
+  return serverFiles().filter((f) => kindOf(f.name) === kind).sort((a, b) => a.name.localeCompare(b.name)).map(({ file, name }) => {
+    const text = readFileSync(file, 'utf8');
     const methods = [...text.matchAll(/^export (?:async )?function (\w+)\(([^)]*)\)/gm)].map((m) => `+ ${m[1]}(${simplifyParams(m[2])})`);
     const consts = [...text.matchAll(/^export const (\w+)\s*=\s*(?:async\s*)?\(?/gm)].map((m) => `+ ${m[1]}()`);
-    const deps = [...text.matchAll(/from '\.\.?\/(?:\.\.\/)?(controllers|services|models|lib)\/(\w+)\.js'|from '\.\/(\w+)\.js'/g)]
-      .map((m) => (m[1] ? { layer: m[1], name: m[2] } : { layer: dir, name: m[3] }));
-    return { name: pascal(f), file: f.replace('.js', ''), stereotype, methods: [...methods, ...consts], deps };
+    const deps = [...text.matchAll(/from '\.{1,2}\/(?:[\w-]+\/)*([\w-]+)\.(controller|service|model)\.js'|from '\.\/([\w-]+)\.js'/g)]
+      .map((m) => (m[2] ? { layer: `${m[2]}s`, name: m[1] } : { layer: 'lib', name: m[3] }));
+    const base = name.replace(/\.js$/, '').replace(/\.(controller|service|model)$/, '');
+    return { name: pascal(name), file: base, stereotype, methods: [...methods, ...consts], deps };
   });
 }
 
-const controllers = scan('controllers', 'controller');
-const services = scan('services', 'service');
-const models = scan('models', 'model');
-const libs = scan('lib', 'library');
+const controllers = scan('controller', 'controller');
+const services = scan('service', 'service');
+const models = scan('model', 'model');
+const libs = scan('library', 'library');
 
 /** Раскладывает классы по сетке. Возвращает идентификаторы по ключу. */
 function layout(page, items, { x0 = 40, y0 = 40, perRow = 5, w = 250, gapX = 70, gapY = 50, maxMethods = 10, fill = '#ffffff' } = {}) {

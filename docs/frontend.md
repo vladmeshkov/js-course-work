@@ -4,14 +4,14 @@
 
 ```
 Браузер                                         Сервер (Express 5)
-public/index.html  ── статика ──────────────►   express.static + запасной index.html
-public/js/app.js   ── fetch /api/... ───────►   routes → controllers → services → models → MySQL
+client/index.html  ── статика ──────────────►   express.static + запасной index.html
+client/js/app.js   ── fetch /api/... ───────►   routes → controllers → services → models → MySQL
 ```
 
-* `public/index.html` – оболочка: шапка (`#site-header`), `main#content`, подвал.
-* `public/css/style.css` – единственная таблица стилей. Встроенные стили (`style="..."`, `<style>`) запрещены политикой CSP и проверяются тестом. Ширины и подобное задаются классами или через `element.style.setProperty` в коде.
-* `public/js/lib/` – общие модули: `html.js` (шаблоны), `api.js` (запросы), `router.js` (маршрутизатор), `ui.js` (формы, сообщения), `format.js` (деньги и даты), `layout.js` (шапка и поиск), `motion.js` (анимации), `flags.js`, `rates-block.js`.
-* `public/js/routes/<модуль>.js` – таблица маршрутов модуля. `public/js/pages/*.js` – страницы.
+* `client/index.html` – оболочка: шапка (`#site-header`), `main#content`, подвал.
+* `client/css/style.css` – единственная таблица стилей. Встроенные стили (`style="..."`, `<style>`) запрещены политикой CSP и проверяются тестом. Ширины и подобное задаются классами или через `element.style.setProperty` в коде.
+* `client/js/lib/` – общие модули: `html.js` (шаблоны), `api.js` (запросы), `router.js` (маршрутизатор), `ui.js` (формы, сообщения), `format.js` (деньги и даты), `layout.js` (шапка и поиск), `motion.js` (анимации), `flags.js`, `rates-block.js`.
+* `client/js/modules/<модуль>/routes.js` – маршруты модуля, `client/js/modules/<модуль>/pages/*.js` – его страницы. `client/js/routes.js` собирает маршруты всех модулей. Карта модулей: [structure.md](structure.md).
 
 ## Модуль страницы
 
@@ -34,13 +34,13 @@ export default async function page(ctx) {   // ctx: { params, query, session, na
 * Вместо `redirect` в разметке вернуть `{ redirect: '/путь' }`: маршрутизатор перейдёт без записи в историю.
 * Ошибки API (`ApiError`) в `page()` обрабатывает маршрутизатор: 401 ведёт на вход (после входа вернёт на эту страницу), `staff_2fa_required` на настройку 2FA, остальные рисуются как страница ошибки. Ошибку, которую страница ждёт, ловите сами (`try { ... } catch (e) { if (e.code === ...) }`).
 * Ссылки `<a href="/...">` перехватываются маршрутизатором (переход без перезагрузки). Ссылки на файлы (PDF, CSV) и на `/api/...` открываются обычным образом: для них маршрутизатор ничего не делает, а `download`/`target` не нужны (скачивание задаёт заголовок ответа). Если ссылка на внутренний адрес должна загрузиться как обычная страница, добавьте `data-native`.
-* Маршрут описывается в `public/js/routes/<модуль>.js`:
+* Маршрут описывается в `client/js/modules/<модуль>/routes.js`:
 
 ```js
 export default [
-  { path: '/accounts', load: () => import('../pages/accounts.js'), access: 'client' },
-  { path: '/accounts/new', load: () => import('../pages/account-new.js'), access: 'client' },   // статичные пути раньше «:id»
-  { path: '/accounts/:id', load: () => import('../pages/account.js'), access: 'client' }
+  { path: '/accounts', load: () => import('./pages/accounts.js'), access: 'client' },
+  { path: '/accounts/new', load: () => import('./pages/account-new.js'), access: 'client' },   // статичные пути раньше «:id»
+  { path: '/accounts/:id', load: () => import('./pages/account.js'), access: 'client' }
 ];
 ```
 
@@ -66,9 +66,9 @@ bindForm(root.querySelector('#f'), async (data, form) => {
 * Базовый адрес `/api`. Пути повторяют адреса страниц: страница `/accounts/5` загружает `GET /api/accounts/5`.
 * Успех: `200`/`201` и JSON с данными страницы. Ничего не «рендерится»: контроллер отдаёт то, что раньше передавалось в шаблон (`res.json(...)`).
 * Ошибка: `{ "error": { "message": "...", "code": "...", "fields": { "поле": "..." } } }`. Коды: `validation` (422, есть `fields`), `business_rule` (409), `unauthorized` (401), `forbidden` (403), `not_found` (404), `csrf` (403), `staff_2fa_required` (403).
-* Контроллеры тонкие: `AppError`, `ValidationError`, `BusinessError` из сервисов не перехватываются, их превращает в JSON `src/middleware/errorHandler.js`. Не нужно ловить ошибку и «рендерить форму с ошибками».
+* Контроллеры тонкие: `AppError`, `ValidationError`, `BusinessError` из сервисов не перехватываются, их превращает в JSON `server/shared/middleware/error-handler.js`. Не нужно ловить ошибку и «рендерить форму с ошибками».
 * Редиректы сервера заменены данными: контроллер возвращает то, что нужно клиенту для перехода (например `{ id, review: false }`), а переход делает страница.
-* Права проверяют `requireAuth`, `requireClient`, `requireStaff`, `requirePermission(код)` из `src/middleware/auth.js`.
+* Права проверяют `requireAuth`, `requireClient`, `requireStaff`, `requirePermission(код)` из `server/shared/middleware/auth.js`.
 * Файлы (PDF, CSV) – обычные `GET` с `Content-Disposition`; ссылка на них ведёт на `/api/...`.
 * Сессия: `GET /api/session` → `{ csrfToken, user, nav, unread }`. Сообщения «flash» в сессии сервера больше нет, сообщение для следующей страницы клиент хранит в `sessionStorage` (`flash()` из `ui.js`).
 * Код подтверждения в учебном режиме (без почты) приходит в JSON-ответе (поле `demoCode`), страница показывает его на экране подтверждения.
