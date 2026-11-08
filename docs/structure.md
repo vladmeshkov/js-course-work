@@ -73,7 +73,7 @@ docs/                      документация
 
 ## Тесты: `test/`
 
-Тесты лежат в папке своего модуля: `test/loans/loan.test.js` проверяет модуль `loans`. Общие помощники: `test/helpers.js` (создание клиентов и счетов), `test/http.js` (клиент API с cookie и CSRF-токеном), `test/env.js`, `test/globalSetup.js` (пересоздаёт тестовую базу). Запуск: `npm test`.
+Тесты лежат в папке своего модуля: `test/loans/loan.test.js` проверяет сервис кредитов, `test/loans/api-loans.test.js` их API. Общие помощники: `test/helpers.js` (создание клиентов и счетов), `test/http.js` (клиент API с cookie и CSRF-токеном), `test/env.js`, `test/globalSetup.js` (пересоздаёт тестовую базу). Запуск: `npm test`.
 
 ## Служебные скрипты: `tools/`
 
