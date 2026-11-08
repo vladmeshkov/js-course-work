@@ -43,9 +43,10 @@ CREATE DATABASE talerbank_test CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
 GRANT ALL PRIVILEGES ON talerbank.* TO 'taler'@'%';
 GRANT ALL PRIVILEGES ON talerbank_test.* TO 'taler'@'%';
 GRANT RELOAD ON *.* TO 'taler'@'%';
+SET GLOBAL log_bin_trust_function_creators = 1;
 ```
 
-Право `RELOAD` нужно утилите `mysqldump`, которая делает резервные копии. Если задать пароль, отличный от `taler`, поменяйте его и в `.env` (раздел 4).
+Право `RELOAD` нужно утилите `mysqldump`, которая делает резервные копии. Параметр `log_bin_trust_function_creators` разрешает обычному пользователю создавать триггеры (они запрещают изменение проводок и журнала аудита) при включённом двоичном журнале MySQL; чтобы он сохранялся после перезапуска службы, добавьте `log_bin_trust_function_creators=1` в раздел `[mysqld]` файла `my.ini`. Если задать пароль, отличный от `taler`, поменяйте его и в `.env` (раздел 4).
 
 База `talerbank` рабочая, `talerbank_test` нужна только автотестам: они пересоздают в ней схему при каждом запуске, поэтому не храните там ничего нужного.
 

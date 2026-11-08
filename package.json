@@ -8,20 +8,20 @@
     "node": ">=20"
   },
   "scripts": {
-    "setup": "node scripts/setup.js",
-    "start": "node --env-file=.env src/server.js",
-    "dev": "node --watch --env-file=.env src/server.js",
-    "db:migrate": "node --env-file=.env src/db/migrate.js",
-    "db:seed": "node --env-file=.env src/db/seed.js",
-    "scoring:train": "node --env-file=.env scripts/train-scoring.js",
-    "er:drawio": "node --env-file=.env scripts/er-drawio.js",
-    "uml:drawio": "node scripts/uml-drawio.js",
-    "uml:classes": "node scripts/class-diagrams.js",
-    "uml:views": "node scripts/uml-views.js",
-    "db:schema": "node scripts/build-schema.js",
+    "setup": "node tools/setup.js",
+    "start": "node --env-file=.env server/server.js",
+    "dev": "node --watch --env-file=.env server/server.js",
+    "db:migrate": "node --env-file=.env server/db/migrate.js",
+    "db:seed": "node --env-file=.env server/db/seed.js",
+    "scoring:train": "node --env-file=.env tools/train-scoring.js",
+    "er:drawio": "node --env-file=.env tools/er-drawio.js",
+    "uml:drawio": "node tools/uml-drawio.js",
+    "uml:classes": "node tools/class-diagrams.js",
+    "uml:views": "node tools/uml-views.js",
+    "db:schema": "node tools/build-schema.js",
     "test": "vitest run",
-    "staff2fa:off": "node --env-file=.env scripts/staff-2fa.js off",
-    "staff2fa:on": "node --env-file=.env scripts/staff-2fa.js on"
+    "staff2fa:off": "node --env-file=.env tools/staff-2fa.js off",
+    "staff2fa:on": "node --env-file=.env tools/staff-2fa.js on"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

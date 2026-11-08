@@ -1,10 +1,10 @@
 import { describe, it, expect, afterAll } from 'vitest';
 import request from 'supertest';
-import { createApp } from '../src/app.js';
-import { pool } from '../src/db/pool.js';
-import { verifyClient } from '../src/services/kycService.js';
-import { hashPassword } from '../src/services/authService.js';
-import * as userModel from '../src/models/userModel.js';
+import { createApp } from '../server/app.js';
+import { pool } from '../server/db/pool.js';
+import { verifyClient } from '../server/modules/clients/kyc.service.js';
+import { hashPassword } from '../server/modules/auth/auth.service.js';
+import * as userModel from '../server/modules/auth/user.model.js';
 import { createClientWithAccount, closePool } from './helpers.js';
 import { apiClient, loggedIn } from './http.js';
 
@@ -149,7 +149,7 @@ describe('заявка клиента, проверка анкеты и вход
 
 describe('счета и курсы', () => {
   it('клиент открывает и закрывает счёт, курсы и конвертер открыты без входа', async () => {
-    const { openForUser, closeForUser } = await import('../src/services/accountService.js');
+    const { openForUser, closeForUser } = await import('../server/modules/accounts/account.service.js');
     const c = await createClientWithAccount(0);
     const usd = await openForUser(c.userId, { kind: 'current', currency: 'USD' });
     expect(usd.currency).toBe('USD');
@@ -201,7 +201,7 @@ describe('единая таблица стилей', () => {
     const path = await import('node:path');
     const walk = async (dir) => (await Promise.all((await readdir(dir, { withFileTypes: true })).map((e) =>
       e.isDirectory() ? walk(path.join(dir, e.name)) : [path.join(dir, e.name)]))).flat();
-    const files = [...(await walk(path.resolve('public/js'))), path.resolve('public/index.html')];
+    const files = [...(await walk(path.resolve('client/js'))), path.resolve('client/index.html')];
     for (const file of files.filter((f) => /\.(js|html)$/.test(f))) {
       const text = await readFile(file, 'utf8');
       expect(text, file).not.toMatch(/\sstyle=["'`]/);
@@ -211,7 +211,7 @@ describe('единая таблица стилей', () => {
 
   it('страницы не используют шаблонизатор на сервере', async () => {
     const { readdir } = await import('node:fs/promises');
-    expect(await readdir('src').then((l) => l.includes('views'))).toBe(false);
+    expect(await readdir('server').then((l) => l.includes('views'))).toBe(false);
     const pkg = JSON.parse(await (await import('node:fs/promises')).readFile('package.json', 'utf8'));
     expect(Object.keys(pkg.dependencies)).not.toContain('ejs');
   });

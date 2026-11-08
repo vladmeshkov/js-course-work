@@ -59,6 +59,7 @@
    GRANT ALL PRIVILEGES ON talerbank.* TO 'taler'@'%';
    GRANT ALL PRIVILEGES ON talerbank_test.* TO 'taler'@'%';
    GRANT RELOAD ON *.* TO 'taler'@'%';
+   SET GLOBAL log_bin_trust_function_creators = 1;
    ```
 
 3. В папке проекта:

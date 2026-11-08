@@ -11,11 +11,11 @@ export default async function setup() {
   });
   await connection.query(`DROP DATABASE IF EXISTS \`${dbName}\`; CREATE DATABASE \`${dbName}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci`);
   await connection.end();
-  const { migrate } = await import('../src/db/migrate.js');
-  const { pool: appPool } = await import('../src/db/pool.js');
+  const { migrate } = await import('../server/db/migrate.js');
+  const { pool: appPool } = await import('../server/db/pool.js');
   await migrate();
   // фиксированные курсы для тестов: API Нацбанка недоступен
-  const { refreshRates } = await import('../src/services/ratesService.js');
+  const { refreshRates } = await import('../server/modules/rates/rates.service.js');
   await refreshRates(() => Promise.reject(new Error('offline')));
   await appPool.query("UPDATE settings SET value = '0' WHERE `key` = 'security.require_2fa_staff'");
   await appPool.end();

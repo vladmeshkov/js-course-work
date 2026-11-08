@@ -1,8 +1,8 @@
-import { pool, withTransaction } from '../src/db/pool.js';
-import { openClientAccount, ensureInternalAccount } from '../src/services/accountService.js';
-import * as userModel from '../src/models/userModel.js';
-import * as clientModel from '../src/models/clientModel.js';
-import { encrypt, lookupHash } from '../src/lib/crypto.js';
+import { pool, withTransaction } from '../server/db/pool.js';
+import { openClientAccount, ensureInternalAccount } from '../server/modules/accounts/account.service.js';
+import * as userModel from '../server/modules/auth/user.model.js';
+import * as clientModel from '../server/modules/clients/client.model.js';
+import { encrypt, lookupHash } from '../server/shared/crypto.js';
 
 let counter = 0;
 
@@ -18,7 +18,7 @@ export async function createClientWithAccount(startBalance = 0, currency = 'BYN'
     await clientModel.setKycStatus(db, clientId, 'verified');
     const account = await openClientAccount(db, { clientId, kind: 'current', currency });
     if (startBalance > 0) {
-      const { post } = await import('../src/services/ledgerService.js');
+      const { post } = await import('../server/modules/ledger/ledger.service.js');
       const cash = await ensureInternalAccount(db, 'cash', currency);
       await post({ type: 'cash_in', entries: [{ debit: cash.id, credit: account.id, amount: startBalance, currency }] }, db);
     }
@@ -40,7 +40,7 @@ export async function addAccount(clientId, currency, startBalance = 0, kind = 'c
   return withTransaction(async (db) => {
     const account = await openClientAccount(db, { clientId, kind, currency });
     if (startBalance > 0) {
-      const { post } = await import('../src/services/ledgerService.js');
+      const { post } = await import('../server/modules/ledger/ledger.service.js');
       const cash = await ensureInternalAccount(db, 'cash', currency);
       await post({ type: 'cash_in', entries: [{ debit: cash.id, credit: account.id, amount: startBalance, currency }] }, db);
     }

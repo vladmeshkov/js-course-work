@@ -1,0 +1,11 @@
+import { createApp } from './app.js';
+import { config } from './config/index.js';
+import { scheduleBackups } from './modules/admin/backup.service.js';
+import { scheduleOutbox } from './modules/notifications/mail.service.js';
+
+createApp().listen(config.port, () => {
+  console.log(`ТалерБанк запущен: http://localhost:${config.port}`);
+  if (scheduleOutbox()) console.log('Почта: уведомления и коды отправляются на email клиентов');
+  else console.log('Почта не настроена (SMTP_HOST): коды подтверждения показываются на странице');
+  if (scheduleBackups()) console.log(`Резервное копирование каждые ${config.backup.intervalHours} ч`);
+});
