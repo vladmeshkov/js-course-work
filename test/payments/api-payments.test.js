@@ -1,12 +1,9 @@
 import { describe, it, expect, afterAll } from 'vitest';
-import request from 'supertest';
 import { createApp } from '../../server/app.js';
 import { pool } from '../../server/db/pool.js';
-import { buildIban } from '../../server/shared/iban.js';
 import { hashPassword } from '../../server/modules/auth/auth.service.js';
-import * as userModel from '../../server/modules/auth/user.model.js';
-import { createClientWithAccount, addAccount, getAccount, closePool } from '../helpers.js';
-import { apiClient, loggedIn } from '../http.js';
+import { createClientWithAccount, getAccount, closePool } from '../helpers.js';
+import { loggedIn } from '../http.js';
 
 afterAll(closePool);
 
@@ -20,8 +17,6 @@ async function clientWith(balance) {
 }
 
 const providerId = async (name = 'Энергосбыт') => (await pool.query('SELECT id FROM payment_providers WHERE name = ?', [name])).rows[0].id;
-const extIban = (code, n = 1) => buildIban(code, '2400', n);
-const wrongCode = (code) => (code === '000000' ? '111111' : '000000');
 
 
 describe('каталог платежей и оплата', () => {

@@ -9,7 +9,7 @@ import { roundMinor } from '../../shared/money.js';
  */
 
 /** Месячная ставка в долях. */
-export function monthlyRate(annualPercent) {
+function monthlyRate(annualPercent) {
   return annualPercent / 12 / 100;
 }
 

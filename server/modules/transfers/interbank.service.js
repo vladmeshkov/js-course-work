@@ -35,7 +35,7 @@ async function verifiedClient(userId) {
 }
 
 /** Расчёт комиссии: процент от суммы, но не меньше минимальной. */
-export async function feeFor(amount, db = pool) {
+async function feeFor(amount, db = pool) {
   const percent = await settingsModel.getNumber('interbank.fee_percent', db);
   const min = await settingsModel.getNumber('interbank.min_fee', db);
   return Math.max(min, percentOf(amount, percent));

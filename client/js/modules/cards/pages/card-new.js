@@ -1,6 +1,6 @@
 import { html } from '../../../lib/html.js';
 import { api } from '../../../lib/api.js';
-import { bindForm, crumbs, errorSlot, flash, formError } from '../../../lib/ui.js';
+import { bindForm, crumbs, errorSlot, formError } from '../../../lib/ui.js';
 import { formatAmount } from '../../../lib/format.js';
 
 /** Выпуск карты: платёжная система, счёт и PIN-код. */

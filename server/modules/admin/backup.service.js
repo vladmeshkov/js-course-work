@@ -123,7 +123,7 @@ export async function listBackups() {
 }
 
 /** Оставляет только последние N копий. */
-export async function pruneBackups() {
+async function pruneBackups() {
   const all = await listBackups();
   for (const old of all.slice(config.backup.keep)) await rm(path.join(dir(), old.name), { force: true });
 }

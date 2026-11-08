@@ -2,7 +2,7 @@ import { query } from '../../db/pool.js';
 import { ValidationError } from '../../shared/errors.js';
 import { addDays } from '../../shared/dates.js';
 
-export const BALANCE_NAMES = {
+const BALANCE_NAMES = {
   '1010': 'Касса',
   '1100': 'Корреспондентский счёт, расчёты по картам',
   '1210': 'Счета конвертации',

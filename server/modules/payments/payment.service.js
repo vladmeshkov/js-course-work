@@ -31,14 +31,14 @@ export const catalog = {
 };
 
 /** Проверяет реквизит по маске поставщика. Возвращает текст ошибки или null. */
-export function checkRequisite(provider, requisite) {
+function checkRequisite(provider, requisite) {
   return new RegExp(provider.requisite_regex).test(requisite) ? null : `${provider.requisite_label}: ${provider.requisite_hint || 'неверный формат'}`;
 }
 
 /**
  * Проводит платёж внутри транзакции db. Используется и для ручной оплаты, и для автоплатежей.
  */
-export async function executePayment(db, { client, userId, providerId, fromAccountId, amount, requisite, source = 'manual' }) {
+async function executePayment(db, { client, userId, providerId, fromAccountId, amount, requisite, source = 'manual' }) {
   const provider = await paymentModel.provider(providerId, db);
   if (!provider) throw new ValidationError({ providerId: 'Поставщик не найден' });
   const errors = {};

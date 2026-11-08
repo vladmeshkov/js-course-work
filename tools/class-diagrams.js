@@ -3,7 +3,7 @@
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ClassDiagram, top, bottom, left, right } from './lib/uml.js';
+import { ClassDiagram, top, bottom, right } from './lib/uml.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const outDir = path.join(root, 'docs/diagrams');
@@ -16,7 +16,6 @@ function mult(p, q, text, off = 0) {
   return { text, x: p[0] + (q[0] > p[0] ? 6 + off : -6 - off), y: p[1] - 7, anchor: q[0] > p[0] ? 'start' : 'end' };
 }
 /** Горизонтальная связь между соседями по ряду: обе точки на одной высоте, a левее b. */
-const hline = (a, b, dy = 48) => { const y = Math.max(a.y, b.y) + dy; return [[a.x + a.w, y], [b.x, y]]; };
 function link(d, kind, pts, m1, m2, extra = {}) {
   const marks = [];
   if (m1) marks.push(mult(pts[0], pts[1], m1, kind === 'aggregation' || kind === 'composition' ? 24 : 0));

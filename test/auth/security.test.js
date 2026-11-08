@@ -1,7 +1,7 @@
 import { describe, it, expect, afterAll } from 'vitest';
 import { createApp } from '../../server/app.js';
 import { pool, withTransaction } from '../../server/db/pool.js';
-import { totp, verify, stepOf } from '../../server/modules/auth/totp.js';
+import { totp } from '../../server/modules/auth/totp.js';
 import { decrypt } from '../../server/shared/crypto.js';
 import { hashPassword } from '../../server/modules/auth/auth.service.js';
 import * as twoFactor from '../../server/modules/auth/two-factor.service.js';

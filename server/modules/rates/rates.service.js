@@ -49,7 +49,7 @@ export async function refreshRates(fetchFn = fetch) {
  * Последние курсы Нацбанка и спреды банка.
  * @returns {Promise<Map<string, {perUnit:number, buyPercent:number, sellPercent:number}>>} BYN за единицу валюты
  */
-export async function currentRates(db = pool) {
+async function currentRates(db = pool) {
   const { rows } = await db.query(
     `SELECT r.currency, r.rate, r.scale, s.buy_percent, s.sell_percent
      FROM exchange_rates r JOIN rate_spreads s ON s.currency = r.currency

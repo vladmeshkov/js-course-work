@@ -2,7 +2,6 @@ import { describe, it, expect, afterAll } from 'vitest';
 import { pool, withTransaction } from '../../server/db/pool.js';
 import { addMonths, addDays } from '../../server/shared/dates.js';
 import { apply, decide, sign, requestSignCode, processLoans, repayFull, repayPartial, getLoan, previewSchedule } from '../../server/modules/loans/loan.service.js';
-import * as otpService from '../../server/modules/auth/otp.service.js';
 import { trialBalance } from '../../server/modules/ledger/ledger.service.js';
 import { createClientWithAccount, getAccount, closePool } from '../helpers.js';
 import { lookupHash } from '../../server/shared/crypto.js';

@@ -1,5 +1,4 @@
 import { describe, it, expect, afterAll } from 'vitest';
-import request from 'supertest';
 import { createApp } from '../../server/app.js';
 import { pool } from '../../server/db/pool.js';
 import { hashPassword } from '../../server/modules/auth/auth.service.js';
@@ -12,7 +11,6 @@ afterAll(closePool);
 const app = createApp();
 const PASSWORD = 'Parol2026';
 
-const depositId = async (name) => (await pool.query('SELECT id FROM deposit_products WHERE name = ?', [name])).rows[0].id;
 const loanProductId = async () => (await pool.query("SELECT id FROM loan_products WHERE name LIKE 'Потребительский «Талер»'")).rows[0].id;
 
 /** Клиент с проверенной анкетой, счётом и входом в систему. */

@@ -22,7 +22,7 @@ export function crumbs(items) {
 }
 
 /** Собирает значения полей формы: флажок даёт 'on' (если выбран), у переключателей берётся выбранное значение. */
-export function formData(form) {
+function formData(form) {
   const data = {};
   for (const [name, value] of new FormData(form).entries()) {
     if (typeof value === 'string') data[name] = value;

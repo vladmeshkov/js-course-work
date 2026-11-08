@@ -20,8 +20,6 @@ export function register(list) {
   }
 }
 
-export const getSession = () => session;
-
 /** Загружает состояние сессии с сервера (пользователь, меню, токен CSRF). */
 export async function refreshSession() {
   session = await api.get('/session');
@@ -74,7 +72,7 @@ export function navigate(url, { replace = false } = {}) {
 }
 
 /** После входа возвращает на страницу, которую пользователь открывал до перехода на вход. */
-export function rememberReturn(path) {
+function rememberReturn(path) {
   try { sessionStorage.setItem('returnTo', path); } catch { /* без возврата */ }
 }
 

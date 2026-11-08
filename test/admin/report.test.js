@@ -1,5 +1,4 @@
 import { describe, it, expect, afterAll } from 'vitest';
-import { pool } from '../../server/db/pool.js';
 import { trialBalance, trialBalanceCsv, portfolio } from '../../server/modules/admin/report.service.js';
 import { createTransfer } from '../../server/modules/transfers/transfer.service.js';
 import { createClientWithAccount, getAccount, closePool } from '../helpers.js';

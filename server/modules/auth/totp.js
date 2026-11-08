@@ -6,7 +6,7 @@ import crypto from 'node:crypto';
  */
 
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-export const STEP_SECONDS = 30;
+const STEP_SECONDS = 30;
 
 export function base32Encode(buffer) {
   let bits = '';

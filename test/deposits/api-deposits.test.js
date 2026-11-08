@@ -12,8 +12,8 @@ afterAll(closePool);
 const app = createApp();
 const PASSWORD = 'Parol2026';
 
-const depositId = async (name) => (await pool.query('SELECT id FROM deposit_products WHERE name = ?', [name])).rows[0].id;
 const loanProductId = async () => (await pool.query("SELECT id FROM loan_products WHERE name LIKE 'Потребительский «Талер»'")).rows[0].id;
+const depositId = async (name) => (await pool.query('SELECT id FROM deposit_products WHERE name = ?', [name])).rows[0].id;
 
 /** Клиент с проверенной анкетой, счётом и входом в систему. */
 async function clientSession(balance = 500000) {
@@ -28,11 +28,6 @@ async function staffSession(roleCode, login) {
   await userModel.create(pool, { login, passwordHash: await hashPassword(PASSWORD), roleCode });
   return loggedIn(app, login, PASSWORD);
 }
-
-const loanForm = async (c, extra = {}) => ({
-  productId: await loanProductId(), amount: '3000,00', termMonths: 12, scheduleType: 'annuity', targetAccountId: c.accountId,
-  income: '3000,00', obligations: '', experienceMonths: 60, dependents: 0, ...extra
-});
 
 
 describe('каталог и калькуляторы открыты гостю', () => {

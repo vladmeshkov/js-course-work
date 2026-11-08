@@ -26,7 +26,7 @@ export async function enforceStaff2fa(req, res, next) {
   throw new AppError('Для сотрудников банка двухфакторная защита обязательна. Настройте её, чтобы продолжить работу.', 403, 'staff_2fa_required');
 }
 
-export async function staff2faRequired() {
+async function staff2faRequired() {
   return (await settingsModel.getNumber('security.require_2fa_staff')) === 1;
 }
 

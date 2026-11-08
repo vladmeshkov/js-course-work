@@ -211,7 +211,7 @@ export async function getLoan(userId, id) {
 }
 
 /** Сумма полного досрочного погашения: долг, проценты с даты последней оплаты и начисленная пеня. */
-export function quoteFull(loan, schedule, today) {
+function quoteFull(loan, schedule, today) {
   const interest = interestForPeriod(loan.principal_balance, Number(loan.rate_percent), String(loan.last_paid_date).slice(0, 10), today);
   const penalty = schedule.filter((r) => r.status === 'overdue').reduce((t, r) => t + r.penalty, 0);
   return { principal: loan.principal_balance, interest, penalty, total: loan.principal_balance + interest + penalty };
