@@ -16,24 +16,20 @@ export default async function page({ navigate }) {
     title: 'Стать клиентом',
     body: html`<h1 class="h-ico"><img src="/img/3d/laptop.webp" alt="" width="64" height="64">Стать клиентом</h1>
 <p class="muted m0 measure">Заполните анкету. Сотрудник банка проверит данные, после этого вам откроют первый счёт.</p>
-<form class="tile form" id="register-form" novalidate>
+<form class="tile form w640" id="register-form" novalidate>
   <h2>Личные данные</h2>
-  <div class="form-grid">
-    ${field('lastName', 'Фамилия')}
-    ${field('firstName', 'Имя')}
-    ${field('patronymic', 'Отчество')}
-    ${field('birthDate', 'Дата рождения', { type: 'date' })}
-    ${field('idNumber', 'Идентификационный номер', { hint: 'Из паспорта, например 3010590A001PB4' })}
-    ${field('passport', 'Серия и номер паспорта', { hint: 'Например MC1234567' })}
-    ${field('phone', 'Телефон', { type: 'tel', hint: '+375291234567' })}
-    ${field('email', 'Электронная почта', { type: 'email' })}
-  </div>
+  ${field('lastName', 'Фамилия')}
+  ${field('firstName', 'Имя')}
+  ${field('patronymic', 'Отчество')}
+  ${field('birthDate', 'Дата рождения', { type: 'date' })}
+  ${field('idNumber', 'Идентификационный номер', { hint: 'Из паспорта, например 3010590A001PB4' })}
+  ${field('passport', 'Серия и номер паспорта', { hint: 'Например MC1234567' })}
+  ${field('phone', 'Телефон', { type: 'tel', hint: '+375291234567' })}
+  ${field('email', 'Электронная почта', { type: 'email' })}
   <h2 class="mt10">Доступ в кабинет</h2>
-  <div class="form-grid">
-    ${field('login', 'Логин', { autocomplete: 'username', hint: 'Латинские буквы, цифры, точка, дефис' })}
-    ${field('password', 'Пароль', { type: 'password', autocomplete: 'new-password', hint: 'Не короче 8 символов, буквы и цифры' })}
-    ${field('passwordRepeat', 'Повторите пароль', { type: 'password', autocomplete: 'new-password' })}
-  </div>
+  ${field('login', 'Логин', { autocomplete: 'username', hint: 'Латинские буквы, цифры, точка, дефис' })}
+  ${field('password', 'Пароль', { type: 'password', autocomplete: 'new-password', hint: 'Не короче 8 символов, буквы и цифры' })}
+  ${field('passwordRepeat', 'Повторите пароль', { type: 'password', autocomplete: 'new-password' })}
   ${formError()}
   <div><button class="btn btn--lg" type="submit">Отправить заявку</button></div>
 </form>`,
