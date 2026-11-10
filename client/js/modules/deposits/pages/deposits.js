@@ -3,6 +3,9 @@ import { api } from '../../../lib/api.js';
 import { crumbs } from '../../../lib/ui.js';
 import { formatAmount, dmy, percent } from '../../../lib/format.js';
 
+/** Значки продуктов по очереди: стеклянный купол, сейф, рост, монеты. */
+const ICONS = ['deposit', 'safe', 'coins-up', 'coins'];
+
 const STATUS_SUFFIX = { active: '', closed: ' (закрыт)', early_closed: ' (закрыт досрочно)' };
 
 /** Каталог вкладов (открыт гостю) и вклады вошедшего клиента. */
@@ -13,7 +16,8 @@ export default async function page() {
     body: html`${crumbs([['Главная', '/'], 'Вклады'])}
 <h1>Вклады</h1>
 <section class="tiles">
-  ${products.map((p) => html`<a class="tile-link" href="/deposits/new?product=${p.id}">
+  ${products.map((p, i) => html`<a class="tile-link tile-link--icon" href="/deposits/new?product=${p.id}">
+      <img class="tile-link__icon" src="/img/3d/${ICONS[i % ICONS.length]}.webp" alt="" width="96" height="96" loading="lazy">
       <h3>«${p.name}»</h3>
       <div class="rate">${percent(p.rate_percent)}%<small> годовых</small></div>
       <span class="muted">${p.term_months} мес., от ${formatAmount(p.min_amount)} ${p.currency}<br>

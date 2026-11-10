@@ -3,6 +3,9 @@ import { api } from '../../../lib/api.js';
 import { crumbs } from '../../../lib/ui.js';
 import { formatAmount, dmy, percent } from '../../../lib/format.js';
 
+/** Значки продуктов по очереди: процент, кошелёк, дом, песочные часы. */
+const ICONS = ['percent', 'wallet', 'house', 'hourglass'];
+
 const LABELS = { manual_review: 'на рассмотрении', approved: 'одобрена', rejected: 'отклонена', signed: 'договор подписан' };
 
 /** Каталог кредитов (открыт гостю), кредиты и заявки вошедшего клиента. */
@@ -14,7 +17,8 @@ export default async function page() {
     body: html`${crumbs([['Главная', '/'], 'Кредиты'])}
 <h1>Кредиты</h1>
 <section class="tiles">
-  ${products.map((p) => html`<a class="tile-link" href="/loans/new?product=${p.id}">
+  ${products.map((p, i) => html`<a class="tile-link tile-link--icon" href="/loans/new?product=${p.id}">
+      <img class="tile-link__icon" src="/img/3d/${ICONS[i % ICONS.length]}.webp" alt="" width="96" height="96" loading="lazy">
       <h3>${p.name}</h3>
       <div class="rate">${percent(p.rate_percent)}%<small> годовых</small></div>
       <span class="muted">От ${formatAmount(p.min_amount)} до ${formatAmount(p.max_amount)} BYN<br>Срок от ${p.min_term} до ${p.max_term} мес.<br>Аннуитетные или дифференцированные платежи</span>

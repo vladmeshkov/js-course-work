@@ -22,7 +22,7 @@ export default async function page() {
       <div><h1>С возвращением, ${name}</h1>
       <p class="auth__lead">${previous ? `Прошлый вход: ${dateTime(previous).replace(' ', ' в ')}.` : 'Это ваш первый вход.'}</p></div>
     </div>
-    <img class="auth__coin" src="/img/coin.png" alt="" width="540">
+    <img class="auth__coin" src="/img/3d/coin-orbit.webp" alt="" width="540" height="334">
   </div>
   <div class="auth__panel">
     <div class="auth__card">

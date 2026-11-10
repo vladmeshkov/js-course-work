@@ -11,7 +11,7 @@ export default async function page({ params, query, navigate, refreshSession }) 
     body: html`${crumbs([['Главная', '/cabinet'], ['Платежи', '/payments/catalog'], [provider.category_name, `/payments/catalog/${provider.category_id}`], provider.name])}
 <section class="pay-banner">
   <div><h1>${provider.name}</h1><div class="muted2">${provider.category_name}</div></div>
-  <img src="/img/3d/${icon}.png" alt="">
+  <img src="/img/3d/${icon}.webp" alt="">
 </section>
 <section class="pay-svc">
 <form class="panel form pay-svc__form" id="pay-form" novalidate>

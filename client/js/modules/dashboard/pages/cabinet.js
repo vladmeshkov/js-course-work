@@ -50,7 +50,7 @@ export default async function page() {
   <a class="quad__tile quad__deposits" href="/deposits">
     <h2>Вклады</h2>
     <p>${deposits.count ? `Открыто вкладов: ${deposits.count}, на них ${formatAmount(deposits.total)} BYN.` : `Откройте вклад в рублях или валюте. До ${percent(maxDepositRate)}% годовых.`}</p>
-    <img class="quad__coin" src="/img/emblem.png" alt="" width="260" height="260">
+    <img class="quad__coin" src="/img/3d/deposit.webp" alt="" width="260" height="299">
   </a>
   <a class="quad__tile quad__loans" href="/loans">
     <h2>Кредиты</h2>
@@ -60,7 +60,7 @@ export default async function page() {
   <a class="quad__tile quad__pay" href="/payments">
     <h2>Платежи и переводы</h2>
     <p>Коммунальные услуги, связь, налоги и переводы клиентам банка.</p>
-    <img class="quad__coin quad__coin--pay" src="/img/emblem.png" alt="" width="220" height="220">
+    <img class="quad__coin quad__coin--pay" src="/img/3d/phone-wifi.webp" alt="" width="220" height="221">
   </a>
 </section>
 

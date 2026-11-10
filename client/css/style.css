@@ -38,7 +38,7 @@ html.dark ::selection{background:color-mix(in srgb, var(--accent) 45%, transpare
 /* Базовые стили */
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:'Fira Sans',system-ui,sans-serif;font-size:17px;line-height:1.45;font-variant-numeric:tabular-nums}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Golos Text',system-ui,sans-serif;font-size:17px;line-height:1.45;font-variant-numeric:tabular-nums}
 a{color:inherit;text-decoration:none}
 button,input,select{font-family:inherit;font-size:inherit}
 h1,h2,h3{margin:0;letter-spacing:-0.5px}
@@ -109,6 +109,10 @@ h2{font-size:26px;font-weight:700}
 .tile-link{display:flex;flex-direction:column;gap:10px;min-height:200px;border-radius:24px;background:var(--surface);padding:30px 32px;transition:transform .2s}
 .tile-link:hover{transform:translateY(-3px)}
 .tile-link h3{font-size:24px}
+/* плитка продукта с объёмным значком в правом верхнем углу */
+.tile-link--icon{position:relative}
+.tile-link--icon h3{padding-right:96px}
+.tile-link__icon{position:absolute;right:20px;top:18px;width:96px;height:96px;object-fit:contain;pointer-events:none}
 
 /* Счета */
 .account{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:16px 0;border-top:1px solid var(--line)}
@@ -297,7 +301,7 @@ html.dark .metric{box-shadow:inset 0 0 0 1px rgba(255,255,255,.045)}
   .btn.is-loading::after{animation:slide 1s ease-in-out infinite}
   .btn{transition:transform .15s var(--ease),background-color .15s,border-color .15s}
   .quad__coin,.quad__card{transition:transform .5s var(--ease)}
-  .quad__tile:hover .quad__coin{transform:rotate(-2deg) translateY(-10px) scale(1.03)}
+  .quad__tile:hover .quad__coin{transform:translateY(-8px) scale(1.03)}
   .quad__tile:hover .quad__card{transform:rotate(-5deg) translateY(-8px)}
   .bank-card{transition:transform .25s var(--ease),box-shadow .25s}
   .bell__count{animation:pop .5s var(--ease) both}
@@ -321,7 +325,7 @@ html.dark .metric{box-shadow:inset 0 0 0 1px rgba(255,255,255,.045)}
 .hero-dark h1{font-size:clamp(34px,4.2vw,58px);line-height:1.05;letter-spacing:-1.5px;max-width:13ch;text-wrap:balance;position:relative;z-index:1}
 .hero-dark p{margin:0;font-size:19px;line-height:1.45;color:#D3DAE2;max-width:30ch;position:relative;z-index:1}
 .hero-dark .actions{margin-top:8px;position:relative;z-index:1}
-.hero-dark__coin{position:absolute;right:-10px;bottom:-40px;width:min(350px,50%);height:auto;pointer-events:none;-webkit-mask-image:linear-gradient(to bottom,#000 78%,transparent);mask-image:linear-gradient(to bottom,#000 78%,transparent)}
+.hero-dark__coin{position:absolute;right:-6px;bottom:-34px;width:min(290px,40%);height:auto;pointer-events:none;-webkit-mask-image:linear-gradient(to bottom,#000 78%,transparent);mask-image:linear-gradient(to bottom,#000 78%,transparent)}
 .btn--outline-light{background:transparent;border-color:rgba(255,255,255,.5);color:#fff;font-weight:600}
 .btn--outline-light:hover{background:rgba(255,255,255,.12);border-color:#fff}
 .prod-col{flex:1 1 300px;min-width:0;display:flex;flex-direction:column;gap:16px}
@@ -365,11 +369,12 @@ html.dark .metric{box-shadow:inset 0 0 0 1px rgba(255,255,255,.045)}
 .auth__top{display:flex;flex-direction:column;gap:30px;position:relative;z-index:2}
 .logo--lg{font-size:28px}
 .auth__lead{margin:16px 0 0;font-size:20px;line-height:1.4;color:var(--muted);max-width:18ch}
-.auth__coin{position:absolute;right:-20px;bottom:40px;width:540px;max-width:70%;height:auto;pointer-events:none}
+.auth__coin{position:absolute;right:-10px;bottom:150px;width:400px;max-width:56%;height:auto;pointer-events:none}
 .auth__links{display:flex;flex-wrap:wrap;gap:14px 30px;position:relative;z-index:2}
 .auth__links a{display:flex;align-items:center;gap:14px}
 .auth__links b{display:block;font-size:16px}
 .auth__links small{display:block;font-size:14px;color:var(--muted2)}
+.auth__ico img{width:40px;height:40px;object-fit:contain}
 .auth__ico{width:52px;height:52px;border-radius:14px;background:var(--surface);box-shadow:0 0 0 1px var(--line);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:var(--accentText)}
 .auth__card{position:relative;z-index:2}
 .field__row{display:flex;justify-content:space-between;align-items:baseline}
@@ -382,7 +387,7 @@ html.dark .metric{box-shadow:inset 0 0 0 1px rgba(255,255,255,.045)}
 .info p{margin:0;line-height:1.55;color:var(--muted)}
 .auth__side{position:relative;flex:1.4 1 600px;min-width:0}
 .auth__panel{flex:1 1 440px;padding-left:0}
-.auth__coin{right:0;bottom:40px;width:420px;max-width:60%}
+.auth__coin{right:0;bottom:150px;width:380px;max-width:52%}
 
 /* Перевод */
 .xfer{display:flex;flex-direction:column;align-items:center;gap:26px;padding:48px 40px 56px}
@@ -486,8 +491,7 @@ html.dark .metric{box-shadow:inset 0 0 0 1px rgba(255,255,255,.045)}
 .cat-tile:hover{transform:translateY(-3px);box-shadow:0 18px 32px var(--shadow-strong)}
 .cat-tile__name{position:relative;font-size:28px;font-weight:700;letter-spacing:-.5px;line-height:1.1;max-width:13ch}
 .cat-tile__hint{position:relative;font-size:16px;color:var(--muted2);max-width:24ch}
-.cat-tile img{position:absolute;right:14px;bottom:-4px;width:min(260px,62%);height:auto;mix-blend-mode:multiply;pointer-events:none}
-html.dark .cat-tile img,html.dark .pay-banner img{mix-blend-mode:normal;border-radius:18px}
+.cat-tile img{position:absolute;right:16px;bottom:10px;width:min(200px,48%);max-height:58%;height:auto;object-fit:contain;object-position:right bottom;pointer-events:none}
 .pay-found{padding-top:14px;padding-bottom:14px;gap:0}
 .pay-found h2{font-size:22px;margin:10px 0}
 .pay-row{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:18px 0;border-bottom:1px solid var(--line);font-size:19px}
@@ -498,9 +502,9 @@ html.dark .cat-tile img,html.dark .pay-banner img{mix-blend-mode:normal;border-r
 .pay-row:hover .pay-row__go{transform:translateX(4px)}
 .pay-banner{position:relative;overflow:hidden;border-radius:24px;padding:40px;min-height:220px;background:var(--surface);display:flex;flex-direction:column;justify-content:center}
 .pay-banner h1{margin:0 0 8px;max-width:14ch;position:relative}
-.pay-banner img{position:absolute;right:30px;bottom:-6px;width:min(300px,45%);height:auto;mix-blend-mode:multiply;pointer-events:none}
+.pay-banner img{position:absolute;right:30px;bottom:12px;width:min(220px,38%);max-height:80%;height:auto;object-fit:contain;object-position:right bottom;pointer-events:none}
 .cat-tile__hint{max-width:17ch}
-.cat-tile img{width:min(240px,55%)}
+.cat-tile img{width:min(180px,46%)}
 .pay-done{display:flex;justify-content:center}
 .pay-done .talon{flex:0 1 520px}
 .talon__head{display:flex;align-items:center;gap:10px;color:var(--muted);font-weight:500}
@@ -632,7 +636,6 @@ textarea{padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;bac
 .upcoming__row small{display:block;font-size:14px;color:var(--muted2);font-weight:400}
 .cur-cell{display:flex;align-items:center;gap:12px}
 
-html.dark .cat-tile img,html.dark .pay-banner img{mix-blend-mode:screen;border-radius:0;filter:invert(1) hue-rotate(180deg) saturate(1.15)}
 
 /* Экран загрузки: вращающееся кольцо вокруг эмблемы */
 .loader{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(4px);opacity:0;visibility:hidden;transition:opacity .25s,visibility .25s}
@@ -674,8 +677,7 @@ html.dark .cat-tile img,html.dark .pay-banner img{mix-blend-mode:screen;border-r
 .pay-empty{padding:30px 0;color:var(--muted2);font-size:17px}
 .pay-row--icon{justify-content:flex-start;gap:22px;padding:16px 0}
 .pay-row__thumb{flex:0 0 76px;width:76px;height:64px;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.pay-row__thumb img{width:92px;height:auto;mix-blend-mode:multiply}
-html.dark .pay-row__thumb img{mix-blend-mode:screen;filter:invert(1) hue-rotate(180deg) saturate(1.15)}
+.pay-row__thumb img{width:84px;height:72px;object-fit:contain}
 .pay-row__txt{flex:1;min-width:0}
 .pay-svc{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
 .pay-svc__form{flex:7 1 480px;min-width:0}
@@ -748,3 +750,7 @@ html.dark .pay-row__thumb img{mix-blend-mode:screen;filter:invert(1) hue-rotate(
 
 /* узкий экран: кнопка в строке пользователя не растягивает строку шире экрана */
 @media (max-width:640px){.user-row{flex-wrap:wrap}.user-row__btn{min-width:0}.user-confirm,.user-role{margin-left:0;flex-wrap:wrap}}
+
+/* объёмные значки на плитках кабинета: купол вклада по центру, телефон в углу плитки платежей */
+.quad__coin{transform:none;width:210px;height:auto;margin-left:-105px;bottom:-18px}
+.quad__coin--pay{width:160px;height:auto;right:6px;bottom:-12px}

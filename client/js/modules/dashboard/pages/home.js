@@ -17,7 +17,7 @@ export default async function page({ session }) {
       <a class="btn btn--lg" href="/register">Стать клиентом</a>
       <a class="btn btn--lg btn--outline-light" href="/deposits">Посмотреть вклады</a>
     </div>
-    <img class="hero-dark__coin" src="/img/coin-cut.png" alt="Объёмная монета ТалерБанка на металлической подставке" width="350" height="407">
+    <img class="hero-dark__coin" src="/img/3d/coin-stand.webp" alt="Объёмная монета ТалерБанка на металлической подставке" width="350" height="388">
   </div>
   <div class="prod-col">
     <a class="prod-tile" href="/deposits"><span class="prod-tile__name">Вклады</span><span class="prod-tile__row"><span class="prod-tile__hint">Рассчитайте доход за минуту</span><span class="prod-tile__rate prod-tile__rate--accent">${percent(maxDepositRate)}%</span></span></a>

@@ -19,10 +19,10 @@ export default async function page({ navigate, refreshSession, session }) {
         <p class="auth__lead">Современный банк для ваших целей</p>
       </div>
     </div>
-    <img class="auth__coin" src="/img/coin.png" alt="" width="540">
+    <img class="auth__coin" src="/img/3d/coin-orbit.webp" alt="" width="540" height="334">
     <div class="auth__links">
-      <a href="/loans"><span class="auth__ico">Кр</span><span><b>Кредиты</b><small>На любые цели</small></span></a>
-      <a href="/deposits"><span class="auth__ico">%</span><span><b>Вклады</b><small>Стабильный доход</small></span></a>
+      <a href="/loans"><span class="auth__ico"><img src="/img/3d/wallet.webp" alt="" width="40" height="40"></span><span><b>Кредиты</b><small>На любые цели</small></span></a>
+      <a href="/deposits"><span class="auth__ico"><img src="/img/3d/percent.webp" alt="" width="40" height="40"></span><span><b>Вклады</b><small>Стабильный доход</small></span></a>
     </div>
   </div>
   <div class="auth__panel">

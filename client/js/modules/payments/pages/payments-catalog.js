@@ -24,7 +24,7 @@ ${q ? html`<section class="panel pay-found">
   ${categories.map((c, i) => html`<a class="cat-tile cat-tile--${i + 1}" href="/payments/catalog/${c.id}">
       <span class="cat-tile__name">${c.name}</span>
       <span class="cat-tile__hint">${c.count} ${servicesWord(c.count)}</span>
-      <img src="/img/3d/${c.icon}.png" alt="" loading="lazy">
+      <img src="/img/3d/${c.icon}.webp" alt="" loading="lazy">
     </a>`)}
 </section>
 <section class="pay-two">
