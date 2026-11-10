@@ -82,6 +82,7 @@ docs/                      документация
 | `setup.js` | Создаёт `.env` со случайными ключами |
 | `build-schema.js` | Собирает `db/schema.sql` из `db/sql` |
 | `train-scoring.js` | Обучает модель кредитного скоринга |
+| `demo-data.js` | Демонстрационные операции после `db:seed` (`npm run db:demo`) |
 | `staff-2fa.js` | Включает и выключает обязательную 2FA сотрудников |
 | `er-drawio.js`, `class-diagrams.js`, `uml-drawio.js`, `uml-views.js` | Диаграммы для записки (draw.io и SVG) |
 | `kursovaya/` | Сборка пояснительной записки (docx) |

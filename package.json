@@ -20,6 +20,7 @@
     "uml:views": "node tools/uml-views.js",
     "db:schema": "node tools/build-schema.js",
     "test": "vitest run",
+    "db:demo": "node --env-file=.env tools/demo-data.js",
     "staff2fa:off": "node --env-file=.env tools/staff-2fa.js off",
     "staff2fa:on": "node --env-file=.env tools/staff-2fa.js on"
   },
