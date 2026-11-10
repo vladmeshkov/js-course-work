@@ -8,6 +8,8 @@ export function notFound(req, res, next) {
 /** Ошибки API отдаются как JSON: { error: { message, code, fields? } }. */
 // eslint-disable-next-line no-unused-vars
 export function errorHandler(error, req, res, next) {
+  // ответ уже ушёл (например, сессия не сохранилась после res.json): только записать ошибку
+  if (res.headersSent) { console.error(error); return; }
   if (error.type === 'entity.parse.failed') error = new AppError('Некорректный формат запроса', 400, 'bad_request');
   const known = error instanceof AppError;
   const status = known ? error.status : 500;

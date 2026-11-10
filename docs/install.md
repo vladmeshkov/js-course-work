@@ -179,7 +179,8 @@ npm test
 | Симптом | Причина и решение |
 |---|---|
 | PowerShell: «выполнение сценариев отключено в этой системе» при `npm` | выполните в PowerShell `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` либо запускайте команды в обычной командной строке `cmd` |
-| `ECONNREFUSED` или «Access denied for user» | не запущена служба MySQL (`MySQL80`), либо в `DATABASE_URL` неверные пользователь, пароль или имя базы |
+| `ECONNREFUSED` | не запущена служба MySQL (`MySQL80`): запустите её в «Службах» Windows |
+| «Access denied for user 'taler'@'localhost'» | пользователь `taler` не создан или пароль в `DATABASE_URL` другой. Под root выполните `DROP USER IF EXISTS 'taler'@'localhost'; CREATE USER 'taler'@'localhost' IDENTIFIED BY 'taler'; GRANT ALL PRIVILEGES ON talerbank.* TO 'taler'@'localhost'; GRANT ALL PRIVILEGES ON talerbank_test.* TO 'taler'@'localhost'; GRANT RELOAD ON *.* TO 'taler'@'localhost';` |
 | `Unknown database 'talerbank'` | не выполнен шаг 3, создайте базы |
 | `EADDRINUSE` при запуске | порт 3000 занят предыдущей копией сервера. Закройте её окно или выполните `taskkill /F /IM node.exe`, затем `npm start`. Либо смените `PORT` в `.env` |
 | После обновления кода страница показывает ошибку «... is not defined» | сервер работает со старой версией: перезапустите его (Ctrl+C и `npm start`) |
