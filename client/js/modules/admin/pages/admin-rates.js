@@ -22,11 +22,11 @@ export default async function page({ navigate }) {
         const unit = s.rate === null ? null : s.rate / s.scale;
         return html`<tr>
           <td><div class="cur-cell">${flag(s.currency, 34)}<b>${s.currency}</b>${s.scale > 1 ? html` <span class="muted2">за ${s.scale}</span>` : ''}</div></td>
-          <td>${s.rate === null ? '—' : comma(s.rate)}</td>
+          <td>${s.rate === null ? '–' : comma(s.rate)}</td>
           <td><input class="mini" name="${s.currency}_buy" value="${comma(s.buy_percent)}" aria-label="Спред покупки ${s.currency}"><div class="field__error" data-error="${s.currency}_buy" hidden></div></td>
           <td><input class="mini" name="${s.currency}_sell" value="${comma(s.sell_percent)}" aria-label="Спред продажи ${s.currency}"><div class="field__error" data-error="${s.currency}_sell" hidden></div></td>
-          <td>${unit === null ? '—' : comma((unit * s.scale * (1 - s.buy_percent / 100)).toFixed(4))}</td>
-          <td>${unit === null ? '—' : comma((unit * s.scale * (1 + s.sell_percent / 100)).toFixed(4))}</td>
+          <td>${unit === null ? '–' : comma((unit * s.scale * (1 - s.buy_percent / 100)).toFixed(4))}</td>
+          <td>${unit === null ? '–' : comma((unit * s.scale * (1 + s.sell_percent / 100)).toFixed(4))}</td>
         </tr>`;
       })}
     </tbody>

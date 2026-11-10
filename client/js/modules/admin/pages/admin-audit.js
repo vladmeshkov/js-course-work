@@ -2,6 +2,7 @@ import { html } from '../../../lib/html.js';
 import { api, query, ApiError } from '../../../lib/api.js';
 import { showAlert } from '../../../lib/ui.js';
 import { stamp, replaceUrl } from '../admin-ui.js';
+import { actionLabel } from '../../../lib/labels.js';
 
 const PERIODS = [[1, 'Сутки'], [3, 'Три дня'], [7, 'Неделя']];
 
@@ -10,9 +11,9 @@ function table(rows) {
   return html`<div class="scroll-x"><table class="table table--ledger">
     <thead><tr><th>№</th><th>Дата и время</th><th>Пользователь</th><th>Событие</th><th>Объект</th><th>Результат</th><th>Адрес</th></tr></thead>
     <tbody>
-      ${rows.map((r) => html`<tr class="audit-row" tabindex="0" data-audit-toggle="a${r.id}" aria-expanded="false"><td>${r.id}</td><td>${stamp(r.at, 19)}</td><td>${r.login || '—'}</td><td>${r.action}</td>
+      ${rows.map((r) => html`<tr class="audit-row" tabindex="0" data-audit-toggle="a${r.id}" aria-expanded="false"><td>${r.id}</td><td>${stamp(r.at, 19)}</td><td>${r.login || '–'}</td><td title="${r.action}">${actionLabel(r.action)}</td>
           <td>${r.entity ? r.entity + ' ' + (r.entity_id ?? '') : ''}</td><td class="${r.result === 'success' ? 'text-good' : 'text-bad'}">${r.result === 'success' ? 'успех' : 'отказ'}</td><td>${r.ip || ''}</td></tr>
-        <tr class="audit-detail" id="a${r.id}" hidden><td colspan="7"><span class="muted2">Адрес</span> <b>${r.ip || '—'}</b> &nbsp; <span class="muted2">Подробности</span> <code class="audit-json">${JSON.stringify(r.details)}</code></td></tr>`)}
+        <tr class="audit-detail" id="a${r.id}" hidden><td colspan="7"><span class="muted2">Адрес</span> <b>${r.ip || '–'}</b> &nbsp; <span class="muted2">Подробности</span> <code class="audit-json">${JSON.stringify(r.details)}</code></td></tr>`)}
     </tbody>
   </table></div>
   ${rows.length ? '' : html`<p class="muted m0">Записей нет.</p>`}`;

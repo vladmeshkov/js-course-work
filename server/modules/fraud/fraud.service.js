@@ -43,11 +43,10 @@ export async function evaluate(ctx, db = { query }) {
     if (rowCount) add('new_client', 20, 'Крупный перевод в первые дни после регистрации');
   }
 
-  const score = reasons.reduce((t, r) => t + r.points, 0);
-  const decision = score >= (await s('fraud.score_review')) ? 'review' : score >= (await s('fraud.score_confirm')) ? 'confirm' : 'allow';
-  return { score, reasons, decision, special: ctx.amountByn >= (await s('fraud.special_control')) };
+  return decide(reasons, ctx.amountByn, s);
 }
 
+/** Сумма баллов и решение по порогам из настроек (общее для переводов клиентам и в другие банки). */
 async function decide(reasons, amountByn, s) {
   const score = reasons.reduce((t, r) => t + r.points, 0);
   const decision = score >= (await s('fraud.score_review')) ? 'review' : score >= (await s('fraud.score_confirm')) ? 'confirm' : 'allow';

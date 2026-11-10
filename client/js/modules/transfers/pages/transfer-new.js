@@ -16,11 +16,11 @@ export default async function page({ query, navigate, refreshSession }) {
   ${own ? html`<span>Мгновенно</span><span>Конвертация по курсу банка</span><span>Без комиссии</span>`
     : html`<span>По номеру счёта в формате IBAN</span><span>Без комиссии внутри банка</span><span>Подтверждение кодом</span>`}
 </div>
-<div class="chips chips--center" role="tablist">
-  <a class="chip" role="tab" aria-selected="${String(!own)}" href="/transfers/new?kind=client">Клиенту банка</a>
-  <a class="chip" role="tab" aria-selected="${String(own)}" href="/transfers/new?kind=own">Между своими счетами</a>
-  <a class="chip" role="tab" aria-selected="false" href="/transfers/interbank">В другой банк</a>
-</div>
+<nav class="chips chips--center" aria-label="Вид перевода">
+  <a class="chip" aria-current="${(!own) ? 'page' : 'false'}" href="/transfers/new?kind=client">Клиенту банка</a>
+  <a class="chip" aria-current="${(own) ? 'page' : 'false'}" href="/transfers/new?kind=own">Между своими счетами</a>
+  <a class="chip" aria-current="false" href="/transfers/interbank">В другой банк</a>
+</nav>
 <form class="xfer__form" id="transfer-form" novalidate>
   <input type="hidden" name="kind" value="${kind}">
   ${formError()}

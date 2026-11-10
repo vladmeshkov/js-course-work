@@ -3,7 +3,6 @@ import { AppError, BusinessError, ValidationError } from '../../shared/errors.js
 import { isValidIban } from '../../shared/iban.js';
 import { percentOf } from '../../shared/money.js';
 import * as accountModel from '../accounts/account.model.js';
-import * as clientModel from '../clients/client.model.js';
 import * as settingsModel from '../settings/settings.model.js';
 import { ensureInternalAccount } from '../accounts/account.service.js';
 import * as auditService from '../audit/audit.service.js';
@@ -13,6 +12,7 @@ import * as transferModel from './transfer.model.js';
 import { checkDailyLimit } from './transfer.service.js';
 import * as fraudService from '../fraud/fraud.service.js';
 import * as otpService from '../auth/otp.service.js';
+import { requireVerified } from '../clients/client.service.js';
 
 /*
  * Межбанковские переводы через клиринг.
@@ -30,11 +30,7 @@ export async function banks(db = { query }) {
   return (await db.query('SELECT * FROM external_banks ORDER BY name')).rows;
 }
 
-async function verifiedClient(userId) {
-  const client = await clientModel.findByUserId(userId);
-  if (!client || client.kyc_status !== 'verified') throw new BusinessError('Переводы доступны после проверки анкеты сотрудником банка');
-  return client;
-}
+const verifiedClient = (userId) => requireVerified(userId, 'Переводы доступны после проверки анкеты сотрудником банка');
 
 /** Расчёт комиссии: процент от суммы, но не меньше минимальной. */
 async function feeFor(amount, db = pool) {

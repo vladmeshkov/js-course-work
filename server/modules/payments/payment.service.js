@@ -1,5 +1,5 @@
 import { withTransaction, withSavepoint } from '../../db/pool.js';
-import { AppError, BusinessError, ValidationError } from '../../shared/errors.js';
+import { AppError, ValidationError } from '../../shared/errors.js';
 import { addMonths, addDays } from '../../shared/dates.js';
 import { percentOf } from '../../shared/money.js';
 import * as accountModel from '../accounts/account.model.js';
@@ -9,6 +9,7 @@ import { ensureInternalAccount } from '../accounts/account.service.js';
 import * as auditService from '../audit/audit.service.js';
 import { notify, money } from '../notifications/notification.service.js';
 import * as ledgerService from '../ledger/ledger.service.js';
+import { requireVerified } from '../clients/client.service.js';
 
 /*
  * Оплата услуг по каталогу (по образцу ЕРИП): категория -> город -> поставщик -> реквизит и сумма.
@@ -16,11 +17,7 @@ import * as ledgerService from '../ledger/ledger.service.js';
  * Шаблоны хранят поставщика, реквизит и счёт; автоплатёж выполняется по шаблону при закрытии операционного дня.
  */
 
-async function verifiedClient(userId) {
-  const client = await clientModel.findByUserId(userId);
-  if (!client || client.kyc_status !== 'verified') throw new BusinessError('Платежи доступны после проверки анкеты сотрудником банка');
-  return client;
-}
+const verifiedClient = (userId) => requireVerified(userId, 'Платежи доступны после проверки анкеты сотрудником банка');
 
 export const catalog = {
   categories: paymentModel.categories,
@@ -144,6 +141,16 @@ export async function cancelAutopayment(userId, id) {
 const MAX_FAILS = 3;
 
 /**
+ * Плановая дата автоплатежа, к которому относится выполнение в день date: последнее число day_of_month не позже date.
+ * Повтор после неудачи может перейти в следующий месяц (28.02 → 01.03), но следующий платёж считается
+ * от плановой даты (28.03), иначе мартовский платёж пропал бы.
+ */
+function plannedDate(date, day) {
+  const sameMonth = `${date.slice(0, 8)}${String(day).padStart(2, '0')}`;
+  return sameMonth <= date ? sameMonth : addMonths(sameMonth, -1);
+}
+
+/**
  * Выполнение автоплатежей при закрытии операционного дня. Неудачу (нет денег) повторяем на следующий день,
  * после трёх неудач подряд автоплатёж отключается.
  * @returns {Promise<{done:number, failed:number}>}
@@ -154,7 +161,7 @@ export async function processAutopayments(db, date) {
     const client = { id: a.client_id };
     const result = await withSavepoint(db, (tx) => executePayment(tx, { client, userId: a.user_id, providerId: a.provider_id, fromAccountId: a.from_account_id, amount: a.amount, requisite: a.requisite, source: 'autopay' }));
     if (result.ok) {
-      await paymentModel.saveAutopayment(db, a.id, { next_date: addMonths(`${date.slice(0, 8)}${String(a.day_of_month).padStart(2, '0')}`, 1), fail_count: 0, last_result: 'Выполнен' });
+      await paymentModel.saveAutopayment(db, a.id, { next_date: addMonths(plannedDate(date, a.day_of_month), 1), fail_count: 0, last_result: 'Выполнен' });
       stats.done += 1;
     } else {
       const fails = a.fail_count + 1;

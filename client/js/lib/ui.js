@@ -62,24 +62,38 @@ export function showErrors(form, error) {
 }
 
 /**
- * Подключает отправку формы через API. handler(data, form) вызывается с собранными значениями; ошибки ApiError показываются в форме.
- * Повторная отправка блокируется, пока идёт запрос (защита от двойного платежа).
+ * Подключает отправку формы через API. handler(data, form, submitter) вызывается с собранными значениями;
+ * ошибки ApiError показываются в форме. Повторная отправка блокируется, пока идёт запрос (защита от двойного платежа).
+ *
+ * Необратимое действие: атрибут data-confirm="Закрыть карту?" у формы. Первое нажатие показывает строку
+ * подтверждения с кнопками «Да» и «Отмена», запрос уходит только после «Да».
+ *
+ * Сессия: при ответе csrf токен обновляется (повторное нажатие пройдёт), при unauthorized приложение
+ * ведёт на вход (событие session-lost обрабатывает маршрутизатор).
  */
 export function bindForm(form, handler) {
   if (!form) return;
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
     if (form.dataset.sending) return;
-    form.dataset.sending = '1';
     const button = event.submitter ?? form.querySelector('button[type="submit"], button:not([type])');
+    if (form.dataset.confirm && !button?.hasAttribute('data-confirm-yes')) {
+      askConfirm(form, button);
+      return;
+    }
+    form.querySelector('.confirm-bar')?.remove();
+    form.dataset.sending = '1';
     button?.classList.add('is-loading');
     motion.busy();
     clearErrors(form);
     try {
-      await handler(formData(form), form);
+      await handler(formData(form), form, button);
     } catch (error) {
       if (!(error instanceof ApiError)) throw error;
-      showErrors(form, error);
+      if (error.code === 'csrf' || error.code === 'unauthorized') {
+        window.dispatchEvent(new CustomEvent('session-lost', { detail: { code: error.code } }));
+      }
+      if (error.code !== 'unauthorized') showErrors(form, error);
     } finally {
       delete form.dataset.sending;
       button?.classList.remove('is-loading');
@@ -88,7 +102,32 @@ export function bindForm(form, handler) {
   });
 }
 
-/** Сообщение в начале страницы (container — элемент страницы, по умолчанию #content). */
+/** Строка подтверждения необратимого действия внутри формы. */
+function askConfirm(form, button) {
+  if (form.querySelector('.confirm-bar')) return;
+  const bar = document.createElement('div');
+  bar.className = 'confirm-bar';
+  bar.setAttribute('role', 'alert');
+  const text = document.createElement('span');
+  text.textContent = form.dataset.confirm;
+  const yes = document.createElement('button');
+  yes.type = 'submit';
+  yes.className = 'btn btn--small btn--danger';
+  yes.dataset.confirmYes = '';
+  // значение нажатой кнопки (например, decision) передаётся дальше вместе с подтверждением
+  if (button?.name) { yes.name = button.name; yes.value = button.value; }
+  yes.textContent = 'Да, подтверждаю';
+  const no = document.createElement('button');
+  no.type = 'button';
+  no.className = 'btn btn--ghost btn--small';
+  no.textContent = 'Отмена';
+  no.addEventListener('click', () => { bar.remove(); button?.focus(); });
+  bar.append(text, yes, no);
+  form.append(bar);
+  yes.focus();
+}
+
+/** Сообщение в начале страницы (container – элемент страницы, по умолчанию #content). */
 export function showAlert(container, type, message) {
   const root = container ?? document.getElementById('content');
   root.querySelector(':scope > .alert[data-flash]')?.remove();

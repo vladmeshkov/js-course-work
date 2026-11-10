@@ -25,6 +25,10 @@ describe('money', () => {
     expect(roundMinor(10.5)).toBe(11);
     expect(percentOf(10000, 1.5)).toBe(150);
     expect(percentOf(333, 0.5)).toBe(2);
+    // ровно половина копейки округляется вверх, хотя в двоичной дроби 11000 * 0,35 / 100 = 38,4999…
+    expect(percentOf(11000, 0.35)).toBe(39);
+    expect(percentOf(-11000, 0.35)).toBe(-39);
+    expect(percentOf(12345, 0.1)).toBe(12);
   });
 });
 

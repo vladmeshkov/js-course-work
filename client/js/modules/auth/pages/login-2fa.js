@@ -1,6 +1,6 @@
 import { html } from '../../../lib/html.js';
 import { api } from '../../../lib/api.js';
-import { bindForm, formError } from '../../../lib/ui.js';
+import { bindForm, formError, flash } from '../../../lib/ui.js';
 import { takeReturn } from '../../../lib/router.js';
 
 export default async function page({ navigate, refreshSession }) {
@@ -23,7 +23,11 @@ export default async function page({ navigate, refreshSession }) {
         try {
           result = await api.post('/login/2fa', data);
         } catch (error) {
-          if (error.code === 'login_expired') return navigate('/login', { replace: true });
+          if (error.code === 'login_expired') {
+            // причина (много неверных кодов, истекло время) показывается на странице входа
+            flash('error', error.message);
+            return navigate('/login', { replace: true });
+          }
           throw error;
         }
         await refreshSession();

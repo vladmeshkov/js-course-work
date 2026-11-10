@@ -12,6 +12,8 @@ import { ensureInternalAccount } from '../accounts/account.service.js';
 import * as auditService from '../audit/audit.service.js';
 import { notify, money } from '../notifications/notification.service.js';
 import * as ledgerService from '../ledger/ledger.service.js';
+import { requireVerified } from '../clients/client.service.js';
+import { currentBankDate as bankDate } from '../../shared/bank-date.js';
 
 /*
  * Виртуальные карты. Номер генерируется с контрольной цифрой по алгоритму Луна и хранится зашифрованным,
@@ -23,16 +25,7 @@ export const SYSTEMS = { belkart: 'Белкарт', visa: 'Visa', mastercard: 'M
 const BIN = { belkart: '911200', visa: '411111', mastercard: '520000' };
 const MAX_ACTIVE_CARDS = 5;
 
-async function verifiedClient(userId) {
-  const client = await clientModel.findByUserId(userId);
-  if (!client || client.kyc_status !== 'verified') throw new BusinessError('Карты доступны после проверки анкеты сотрудником банка');
-  return client;
-}
-
-async function bankDate(db) {
-  const { rows } = await db.query('SELECT bank_date FROM bank_state');
-  return String(rows[0].bank_date).slice(0, 10);
-}
+const verifiedClient = (userId) => requireVerified(userId, 'Карты доступны после проверки анкеты сотрудником банка');
 
 /** Строит номер карты: BIN, 9 случайных цифр и контрольная цифра Луна. */
 export function generateCardNumber(system) {
@@ -112,14 +105,6 @@ export function closeCard(userId, cardId) {
     await cardModel.setStatus(db, card.id, 'closed');
     await auditService.log({ userId, action: 'card.close', entity: 'card', entityId: card.id }, db);
   });
-}
-
-/** Перевыпуск: новая карта на тот же счёт, старая закрывается. */
-export async function reissue(userId, cardId, pin) {
-  const { card } = await getForClient(userId, cardId);
-  const fresh = await issueCard(userId, { accountId: card.account_id, system: card.system, pin });
-  await closeCard(userId, cardId);
-  return fresh;
 }
 
 /**

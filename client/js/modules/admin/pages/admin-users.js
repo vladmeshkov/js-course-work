@@ -18,8 +18,8 @@ export default async function page({ session, query: params, navigate }) {
   <input name="q" value="${q}" placeholder="Фамилия или логин" aria-label="Поиск пользователя">
   <input type="hidden" name="role" value="${role}">
   <div class="chips">
-    <a class="chip" aria-selected="${String(!role)}" href="/admin/users${query({ q })}">Все</a>
-    ${roles.map((r) => html`<a class="chip" aria-selected="${String(r.code === role)}" href="/admin/users${query({ role: r.code, q })}">${r.name}</a>`)}
+    <a class="chip" aria-current="${(!role) ? 'page' : 'false'}" href="/admin/users${query({ q })}">Все</a>
+    ${roles.map((r) => html`<a class="chip" aria-current="${(r.code === role) ? 'page' : 'false'}" href="/admin/users${query({ role: r.code, q })}">${r.name}</a>`)}
   </div>
 </form>
 <section class="panel user-list">

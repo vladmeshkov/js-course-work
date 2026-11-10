@@ -2,7 +2,7 @@ import { describe, it, expect, afterAll } from 'vitest';
 import { pool } from '../../server/db/pool.js';
 import { decrypt } from '../../server/shared/crypto.js';
 import { isValidCardNumber } from '../../server/modules/cards/luhn.js';
-import { generateCardNumber, issueCard, setBlocked, updateLimits, purchase, closeCard, reissue, getForClient } from '../../server/modules/cards/card.service.js';
+import { generateCardNumber, issueCard, setBlocked, updateLimits, purchase, closeCard, getForClient } from '../../server/modules/cards/card.service.js';
 import { createClientWithAccount, getAccount, closePool } from '../helpers.js';
 
 afterAll(closePool);
@@ -71,16 +71,5 @@ describe('карты', () => {
     await expect(purchase(a.userId, card.id, { amount: 2000, online: false })).rejects.toMatchObject({ code: 'insufficient_funds' });
     await expect(setBlocked(b.userId, card.id, true)).rejects.toMatchObject({ status: 404 });
     await expect(getForClient(b.userId, card.id)).rejects.toMatchObject({ status: 404 });
-  });
-
-  it('перевыпуск закрывает старую карту и создаёт новую', async () => {
-    const c = await createClientWithAccount(0);
-    const old = await issue(c);
-    const fresh = await reissue(c.userId, old.id, '4321');
-    expect(fresh.number).not.toBe(old.number);
-    const { rows } = await pool.query('SELECT id, status FROM cards WHERE client_id = ? ORDER BY id', [c.clientId]);
-    expect(rows.map((r) => r.status)).toEqual(['closed', 'active']);
-    await expect(purchase(c.userId, old.id, { amount: 100, online: false })).rejects.toThrow(/закрыта/);
-    await closeCard(c.userId, fresh.id);
   });
 });

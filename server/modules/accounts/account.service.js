@@ -28,7 +28,7 @@ const CLIENT_KINDS = {
 
 /**
  * Открывает счёт клиента.
- * @param {import('pg').PoolClient} db клиент транзакции
+ * @param {import('../../db/pool.js').Db} db клиент транзакции
  * @param {{clientId:number, kind:'current'|'savings', currency:string, userId?:number}} p
  */
 export async function openClientAccount(db, { clientId, kind, currency, userId }) {

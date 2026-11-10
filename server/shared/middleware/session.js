@@ -23,7 +23,7 @@ class MysqlStore extends session.Store {
   set(sid, data, callback) {
     const expires = data.cookie?.expires ? new Date(data.cookie.expires) : new Date(Date.now() + MAX_AGE_MS);
     pool.query(
-      'INSERT INTO sessions (sid, sess, expires_at) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE sess = VALUES(sess), expires_at = VALUES(expires_at)',
+      'INSERT INTO sessions (sid, sess, expires_at) VALUES (?, ?, ?) AS new ON DUPLICATE KEY UPDATE sess = new.sess, expires_at = new.expires_at',
       [sid, JSON.stringify(data), expires]
     ).then(() => callback?.()).catch((e) => callback?.(e));
   }

@@ -1,6 +1,7 @@
 import { html } from '../../../lib/html.js';
 import { api } from '../../../lib/api.js';
-import { dmy } from '../../../lib/format.js';
+import { dmy, dateTime } from '../../../lib/format.js';
+import { actionLabel } from '../../../lib/labels.js';
 
 export default async function page({ session }) {
   const { bankDate, metrics, queues, admin } = await api.get('/workplace');
@@ -24,7 +25,7 @@ ${queues.length ? html`<section class="split split--even">
 ${admin ? html`<section class="split split--even">
   ${admin.events.length ? html`<div class="tile">
     <div class="between"><h2>Последние события</h2><a class="link" href="/admin/audit">Журнал</a></div>
-    ${admin.events.map((e) => html`<div class="op"><div><div class="op__title">${e.action}</div><div class="op__meta">${e.login || 'система'}, ${new Date(e.at).toISOString().slice(0, 16).replace('T', ' ')}</div></div><span class="${e.result === 'success' ? 'text-good' : 'text-bad'}">${e.result === 'success' ? 'успех' : 'отказ'}</span></div>`)}
+    ${admin.events.map((e) => html`<div class="op"><div><div class="op__title">${actionLabel(e.action)}</div><div class="op__meta">${e.login || 'система'}, ${dateTime(e.at)}</div></div><span class="${e.result === 'success' ? 'text-good' : 'text-bad'}">${e.result === 'success' ? 'успех' : 'отказ'}</span></div>`)}
   </div>` : ''}
   <div class="tile">
     <h2 class="mb10">Состояние системы</h2>

@@ -23,7 +23,7 @@ export default async function page({ params, navigate }) {
   <dl class="facts">
     <div><dt>Выдано</dt><dd>${formatAmount(loan.amount)} BYN</dd></div>
     <div><dt>Ставка</dt><dd>${percent(loan.rate_percent)}% годовых</dd></div>
-    <div><dt>Следующий платёж</dt><dd>${next ? `${dmy(next.due_date)}, ${formatAmount(payment(next))} BYN` : '—'}</dd></div>
+    <div><dt>Следующий платёж</dt><dd>${next ? `${dmy(next.due_date)}, ${formatAmount(payment(next))} BYN` : '–'}</dd></div>
     ${dpd > 0 ? html`<div><dt>Просрочка</dt><dd class="text-bad">${dpd} дн.</dd></div>` : ''}
   </dl>
 </section>

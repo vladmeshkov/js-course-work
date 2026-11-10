@@ -51,7 +51,7 @@ export function done() {
   loader?.classList.remove('is-on');
 }
 
-/** Включает эффекты для вновь показанной страницы (root — контейнер страницы). */
+/** Включает эффекты для вновь показанной страницы (root – контейнер страницы). */
 export function init(root) {
   observer?.disconnect();
   const targets = [];

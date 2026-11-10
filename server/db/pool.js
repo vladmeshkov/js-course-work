@@ -3,6 +3,11 @@ import { config } from '../config/index.js';
 import { AppError } from '../shared/errors.js';
 
 /**
+ * Соединение для запросов: пул или клиент транзакции (withTransaction). Модели и сервисы получают его параметром db.
+ * @typedef {{query: (sql: string, params?: any[]) => Promise<{rows: any[], rowCount: number, insertId: number}>}} Db
+ */
+
+/**
  * Пул соединений MySQL. Суммы хранятся в копейках (BIGINT) и помещаются в безопасный диапазон Number,
  * DECIMAL (результат SUM) приводится к числу, DATE остаётся строкой «ГГГГ-ММ-ДД», чтобы не зависеть от часового пояса,
  * TINYINT(1) возвращается как boolean. Время хранится в UTC.

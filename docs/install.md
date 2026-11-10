@@ -7,7 +7,7 @@
 | Программа | Версия | Зачем | Где взять |
 |---|---|---|---|
 | Node.js | 20 или новее (LTS) | запуск сервера | https://nodejs.org |
-| MySQL | 8.0 или новее (Community Server) | база данных | https://dev.mysql.com/downloads/installer/ |
+| MySQL | 8.0.19 или новее (Community Server) | база данных | https://dev.mysql.com/downloads/installer/ |
 | Git | любая | получение проекта (можно скачать архив) | https://git-scm.com |
 | Браузер | Яндекс Браузер, Firefox, Chrome или Opera | работа с интерфейсом | |
 

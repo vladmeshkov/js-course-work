@@ -18,7 +18,7 @@ import * as accountModel from '../accounts/account.model.js';
  * Проводит документ с набором проводок в одной транзакции.
  * Если передан db, проводка выполняется в транзакции вызывающего кода.
  * @param {PostRequest} request
- * @param {import('pg').PoolClient} [db]
+ * @param {import('../../db/pool.js').Db} [db]
  * @returns {Promise<{documentId:number, duplicate:boolean}>}
  */
 export function post(request, db) {

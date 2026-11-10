@@ -3,18 +3,21 @@ import { api, ApiError } from '../../../lib/api.js';
 import { crumbs } from '../../../lib/ui.js';
 import { formatAmount, formatIban, dmy } from '../../../lib/format.js';
 
-const iso = (d) => d.toISOString().slice(0, 10);
+/** Дата «ГГГГ-ММ-ДД» из года, месяца (с нуля) и дня; переполнение месяца и дня Date.UTC переносит сам. */
+const ymd = (y, m, d) => new Date(Date.UTC(y, m, d)).toISOString().slice(0, 10);
 
-/** Быстрые периоды: этот и прошлый месяц, три месяца, год. */
-function presets() {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = now.getMonth();
+/**
+ * Быстрые периоды: этот и прошлый месяц, три месяца, год. Считаются от банковской даты (statement.today),
+ * а не от часов компьютера: операции проводятся по банковской дате, она может уйти вперёд после закрытия дней.
+ */
+function presets(today) {
+  const [y, m, d] = today.split('-').map(Number);
+  const month = m - 1;
   return [
-    ['Этот месяц', iso(new Date(Date.UTC(y, m, 1))), iso(now)],
-    ['Прошлый месяц', iso(new Date(Date.UTC(y, m - 1, 1))), iso(new Date(Date.UTC(y, m, 0)))],
-    ['3 месяца', iso(new Date(Date.UTC(y, m - 2, 1))), iso(now)],
-    ['Год', iso(new Date(Date.UTC(y - 1, m, now.getDate()))), iso(now)]
+    ['Этот месяц', ymd(y, month, 1), today],
+    ['Прошлый месяц', ymd(y, month - 1, 1), ymd(y, month, 0)],
+    ['3 месяца', ymd(y, month - 2, 1), today],
+    ['Год', ymd(y - 1, month, d), today]
   ];
 }
 
@@ -32,7 +35,6 @@ export default async function page({ params, query, navigate }) {
     errors = error.fields;
     kind = '';
     data = await api.get(path);
-    data.accounts = [];
   }
   const { statement, accounts } = data;
   const acc = statement.account;
@@ -54,21 +56,21 @@ export default async function page({ params, query, navigate }) {
   ${accounts.length > 1 ? html`<div class="stmt-filter__col">
     <div class="stmt-filter__label">Счёт</div>
     <div class="chips">
-      ${accounts.map((a) => html`<a class="chip" aria-selected="${String(a.id === acc.id)}" href="/accounts/${a.id}/statement?${period}">${a.title}</a>`)}
+      ${accounts.map((a) => html`<a class="chip" aria-current="${(a.id === acc.id) ? 'page' : 'false'}" href="/accounts/${a.id}/statement?${period}">${a.title}</a>`)}
     </div>
   </div>` : ''}
   <div class="stmt-filter__col">
     <div class="stmt-filter__label">Период</div>
     <div class="chips">
-      ${presets().map((p) => html`<a class="chip" aria-selected="${String(p[1] === statement.from && p[2] === statement.to)}" href="${base}?from=${p[1]}&to=${p[2]}${kind ? '&kind=' + kind : ''}">${p[0]}</a>`)}
+      ${presets(statement.today).map((p) => html`<a class="chip" aria-current="${(p[1] === statement.from && p[2] === statement.to) ? 'page' : 'false'}" href="${base}?from=${p[1]}&to=${p[2]}${kind ? '&kind=' + kind : ''}">${p[0]}</a>`)}
     </div>
   </div>
   <div class="stmt-filter__col">
     <div class="stmt-filter__label">Операции</div>
     <div class="chips">
-      <a class="chip" aria-selected="${String(!kind)}" href="${base}?${period}">Все</a>
-      <a class="chip" aria-selected="${String(kind === 'in')}" href="${base}?${period}&kind=in">Поступления</a>
-      <a class="chip" aria-selected="${String(kind === 'out')}" href="${base}?${period}&kind=out">Списания</a>
+      <a class="chip" aria-current="${(!kind) ? 'page' : 'false'}" href="${base}?${period}">Все</a>
+      <a class="chip" aria-current="${(kind === 'in') ? 'page' : 'false'}" href="${base}?${period}&kind=in">Поступления</a>
+      <a class="chip" aria-current="${(kind === 'out') ? 'page' : 'false'}" href="${base}?${period}&kind=out">Списания</a>
     </div>
   </div>
   <div class="stmt-filter__col">
@@ -104,9 +106,9 @@ export default async function page({ params, query, navigate }) {
   <div class="talon-wide__cut"></div>
   <div class="talon-wide__bottom">
     <div class="talon-wide__facts">
-      <div><small>Поступления</small><b class="text-good">${formatAmount(statement.credit)}</b></div>
-      <div><small>Списания</small><b>${formatAmount(statement.debit)}</b></div>
-      <div><small>Операций</small><b>${shownOps.length}</b></div>
+      <div><small>Поступления за период</small><b class="text-good">${formatAmount(statement.credit)}</b></div>
+      <div><small>Списания за период</small><b>${formatAmount(statement.debit)}</b></div>
+      <div><small>${kind ? 'Показано операций' : 'Операций'}</small><b>${shownOps.length}</b></div>
     </div>
     <a class="btn btn--lg" href="/api${base}.pdf?${period}">Скачать PDF</a>
   </div>

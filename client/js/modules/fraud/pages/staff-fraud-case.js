@@ -18,7 +18,7 @@ export default async function page({ params, navigate }) {
     <div><dt>Сумма</dt><dd>${formatAmount(c.amount)} ${c.currency}</dd></div>
     <div><dt>Со счёта</dt><dd>${formatIban(c.from_iban)}</dd></div>
     <div><dt>На счёт</dt><dd>${formatIban(c.to_iban)}</dd></div>
-    <div><dt>Назначение</dt><dd>${c.comment || '—'}</dd></div>
+    <div><dt>Назначение</dt><dd>${c.comment || '–'}</dd></div>
     <div><dt>Балл риска</dt><dd>${c.score}</dd></div>
   </dl>
   <h2 class="mb10">Сработавшие правила</h2>

@@ -1,7 +1,7 @@
 import { html } from '../../../lib/html.js';
 import { api } from '../../../lib/api.js';
 import { crumbs, bindForm, errorSlot, formError } from '../../../lib/ui.js';
-import { formatAmount, dmy, percent } from '../../../lib/format.js';
+import { formatAmount, dmy, percent, EMPTY } from '../../../lib/format.js';
 
 const PREVIEW_ROWS = 6;
 
@@ -11,6 +11,9 @@ export default async function page({ query, navigate }) {
   const minA = Math.round(Number(product.min_amount) / 100);
   const maxA = Math.round(Number(product.max_amount) / 100);
   const rateTxt = percent(product.rate_percent);
+  // начальные значения внутри границ продукта (у «Быстрого» максимум меньше 15 000 BYN и 36 месяцев)
+  const startAmount = Math.min(Math.max(15000, minA), maxA);
+  const startTerm = Math.min(Math.max(36, Number(product.min_term)), Number(product.max_term));
   let timer = 0;
   let requestNo = 0;
   return {
@@ -31,15 +34,15 @@ export default async function page({ query, navigate }) {
       ${formError()}
       <div class="field">
         <div class="field__row"><label for="amount">Сумма кредита, BYN</label></div>
-        <input id="amount" name="amount" value="15 000,00" inputmode="decimal" placeholder="От ${formatAmount(product.min_amount)}">
-        <input class="range" id="amount-range" type="range" min="${minA}" max="${maxA}" step="100" value="15000" aria-label="Сумма кредита ползунком">
+        <input id="amount" name="amount" value="${formatAmount(startAmount * 100)}" inputmode="decimal" placeholder="От ${formatAmount(product.min_amount)}">
+        <input class="range" id="amount-range" type="range" min="${minA}" max="${maxA}" step="100" value="${startAmount}" aria-label="Сумма кредита ползунком">
         <div class="range__scale"><span>${minA.toLocaleString('ru-RU')}</span><span>${maxA.toLocaleString('ru-RU')}</span></div>
         ${errorSlot('amount')}
       </div>
       <div class="field">
         <div class="field__row"><label for="termMonths">Срок, месяцев</label></div>
-        <input id="termMonths" name="termMonths" type="number" min="${product.min_term}" max="${product.max_term}" value="36">
-        <input class="range" id="term-range" type="range" min="${product.min_term}" max="${product.max_term}" step="1" value="36" aria-label="Срок ползунком">
+        <input id="termMonths" name="termMonths" type="number" min="${product.min_term}" max="${product.max_term}" value="${startTerm}">
+        <input class="range" id="term-range" type="range" min="${product.min_term}" max="${product.max_term}" step="1" value="${startTerm}" aria-label="Срок ползунком">
         <div class="range__scale"><span>${product.min_term} мес.</span><span>${product.max_term} мес.</span></div>
         ${errorSlot('termMonths')}
       </div>
@@ -69,13 +72,13 @@ export default async function page({ query, navigate }) {
       <div class="talon__head"><img src="/img/emblem.png" alt="" width="30" height="30"><span>Предварительный расчёт</span></div>
       <div>
         <div class="muted" id="loan-pmt-label">Платёж в месяц</div>
-        <div class="talon__sum"><span id="loan-pmt">—</span> <small>BYN</small></div>
+        <div class="talon__sum"><span id="loan-pmt">–</span> <small>BYN</small></div>
       </div>
       <div class="talon__cut"></div>
       <div class="talon__rows">
         <div><span class="muted">Ставка</span><b>${rateTxt}% годовых</b></div>
-        <div><span class="muted">Переплата</span><b id="loan-over">—</b></div>
-        <div><span class="muted">Всего к возврату</span><b id="loan-total">—</b></div>
+        <div><span class="muted">Переплата</span><b id="loan-over">–</b></div>
+        <div><span class="muted">Всего к возврату</span><b id="loan-total">–</b></div>
       </div>
       <p class="talon__ratio" id="loan-ratio"></p>
       <button class="btn btn--lg" type="submit" form="loan-form">Отправить заявку</button>
@@ -129,9 +132,14 @@ export default async function page({ query, navigate }) {
         body.textContent = '';
         summary.textContent = '';
         if (!data.ok) {
+          // расчёт невозможен: прежние цифры убираются, вместо подсказки видна причина от сервера
           table.hidden = true;
           more.hidden = true;
-          byId('loan-pmt').textContent = '—';
+          summary.hidden = true;
+          for (const id of ['loan-pmt', 'loan-over', 'loan-total']) byId(id).textContent = EMPTY;
+          byId('loan-count').textContent = '';
+          byId('loan-ratio').textContent = '';
+          hint.textContent = Object.values(data.errors ?? {}).join('. ') || 'Введите сумму и срок, график появится здесь.';
           hint.hidden = false;
           return;
         }

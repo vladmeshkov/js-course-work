@@ -2,6 +2,7 @@ import { html } from '../../../lib/html.js';
 import { api } from '../../../lib/api.js';
 import { crumbs, errorSlot, formError, flash } from '../../../lib/ui.js';
 import { bindChoiceForm } from '../choice-form.js';
+import { dmy } from '../../../lib/format.js';
 
 export default async function page({ params, navigate }) {
   const { client } = await api.get(`/staff/kyc/${params.id}`);
@@ -12,9 +13,9 @@ export default async function page({ params, navigate }) {
 <section class="tile">
   <dl class="facts">
     <div><dt>Логин</dt><dd>${client.login}</dd></div>
-    <div><dt>Дата рождения</dt><dd>${String(client.birthDate).slice(0, 10)}</dd></div>
+    <div><dt>Дата рождения</dt><dd>${dmy(client.birthDate)}</dd></div>
     <div><dt>Телефон</dt><dd>${client.phone}</dd></div>
-    <div><dt>Почта</dt><dd>${client.email || '—'}</dd></div>
+    <div><dt>Почта</dt><dd>${client.email || '–'}</dd></div>
     <div><dt>Идентификационный номер</dt><dd>${client.idNumber}</dd></div>
     <div><dt>Паспорт</dt><dd>${client.passport}</dd></div>
   </dl>

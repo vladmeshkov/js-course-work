@@ -1,6 +1,6 @@
 // Клиентский маршрутизатор на History API. Страницы подгружаются по требованию (динамический import),
 // каждая страница это модуль с default-функцией: async (ctx) => ({ title, body, mount?(root) }).
-import { api, setCsrfToken, ApiError } from './api.js';
+import { api, setCsrfToken, ApiError, takeChanged } from './api.js';
 import { html } from './html.js';
 import { headerHtml, bindHeader, resetSearch } from './layout.js';
 import * as motion from './motion.js';
@@ -86,6 +86,9 @@ export function takeReturn() {
   }
 }
 
+/** Первый показ после загрузки: фокус остаётся у браузера. */
+let first = true;
+
 async function render() {
   const id = ++renderId;
   const url = new URL(location.href);
@@ -93,6 +96,8 @@ async function render() {
   const main = document.getElementById('content');
   motion.busy();
   let page;
+  // после действия (перевод, открытие вклада) сервер мог создать уведомления: шапка берёт свежую сессию
+  if (takeChanged()) await refreshSession().catch(() => {});
   try {
     if (!found) page = errorPage(404, 'Проверьте адрес или вернитесь на главную страницу.');
     else if (!allowed(found.route.access)) {
@@ -145,6 +150,9 @@ async function render() {
     page.mount?.(main);
     motion.init(main);
     window.scrollTo(0, 0);
+    // фокус на новую страницу: экранный диктор объявит её, клавиатура начнёт с начала содержимого
+    if (!first) main.focus({ preventScroll: true });
+    first = false;
   };
   if (document.startViewTransition && !motion.reducedMotion) await document.startViewTransition(show).updateCallbackDone;
   else show();
@@ -166,9 +174,21 @@ export async function start() {
   await refreshSession();
   bindHeader(document.getElementById('site-header'), {
     async onLogout() {
-      await api.post('/logout');
+      // выход завершается и при ошибке запроса (сессия уже истекла, токен устарел): клиент всё равно сбрасывает состояние
+      try {
+        await api.post('/logout');
+      } catch { /* сервер уже забыл сессию */ }
       await refreshSession();
       navigate('/');
+    }
+  });
+  // форма получила csrf или unauthorized: сессия истекла или завершена в другой вкладке
+  window.addEventListener('session-lost', async (event) => {
+    await refreshSession();
+    if (event.detail?.code === 'unauthorized') {
+      rememberReturn(location.pathname + location.search);
+      flash('info', 'Сеанс завершён. Войдите снова, чтобы продолжить');
+      navigate('/login', { replace: true });
     }
   });
   document.addEventListener('click', onClick);

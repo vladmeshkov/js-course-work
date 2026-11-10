@@ -56,6 +56,16 @@ describe('суточный лимит под блокировкой', () => {
   });
 });
 
+describe('проверки суммы', () => {
+  it('сумма, которая в пересчёте в BYN меньше копейки, отклоняется проверкой', async () => {
+    const a = await createClientWithAccount(0);
+    const { addAccount } = await import('../helpers.js');
+    const rub = await addAccount(a.clientId, 'RUB', 100000);
+    await expect(createTransfer(a.userId, { kind: 'own', fromAccountId: rub.id, toAccountId: a.accountId, amount: 10 }))
+      .rejects.toMatchObject({ fields: { amount: expect.any(String) } });
+  });
+});
+
 describe('статусы не перезаписывают друг друга', () => {
   it('отмена после проведения не меняет статус «проведён»', async () => {
     await withSetting('transfer.otp_threshold', 1, async () => {

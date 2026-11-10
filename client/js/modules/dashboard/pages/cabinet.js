@@ -1,6 +1,7 @@
 import { html } from '../../../lib/html.js';
 import { api } from '../../../lib/api.js';
 import { formatAmount, formatIban, dmy, percent } from '../../../lib/format.js';
+import { documentLabel } from '../../../lib/labels.js';
 
 export default async function page() {
   const d = await api.get('/cabinet');
@@ -68,7 +69,7 @@ export default async function page() {
     <div class="between"><h2>Последние операции</h2><a class="link" href="${accounts[0] ? `/accounts/${accounts[0].id}/statement` : '/accounts'}">Выписка</a></div>
     ${operations.length ? '' : html`<p class="muted">Операций пока нет. Пополните счёт в отделении или переведите деньги.</p>`}
     ${operations.map((o) => html`<div class="op">
-        <div><div class="op__title">${o.description || o.type}</div><div class="op__meta">${dmy(o.bank_date)}</div></div>
+        <div><div class="op__title">${o.description || documentLabel(o.type)}</div><div class="op__meta">${dmy(o.bank_date)}</div></div>
         <div class="op__sum${o.signed > 0 ? ' text-good' : ''}">${o.signed > 0 ? '+' : ''}${formatAmount(o.signed)} ${o.currency}</div>
       </div>`)}
   </div>

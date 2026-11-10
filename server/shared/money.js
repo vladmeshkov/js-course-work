@@ -41,5 +41,10 @@ export function roundMinor(value) {
  * @param {number} percent например 1.5
  */
 export function percentOf(minor, percent) {
-  return roundMinor((minor * percent) / 100);
+  // считается в целых: процент переводится в десятитысячные доли (0,35 % = 3500), иначе двоичная дробь
+  // даёт 38,4999… вместо 38,5 и округление «половина вверх» срабатывает не туда
+  const units = BigInt(Math.round(Number(percent) * 10000));
+  const value = BigInt(Math.abs(minor)) * units;
+  const rounded = Number((value + 500000n) / 1000000n);
+  return minor < 0 ? -rounded : rounded;
 }

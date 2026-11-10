@@ -3,6 +3,7 @@ import { api, query, ApiError } from '../../../lib/api.js';
 import { bindForm, errorSlot } from '../../../lib/ui.js';
 import { formatAmount, percent } from '../../../lib/format.js';
 import { replaceUrl } from '../admin-ui.js';
+import { documentLabel } from '../../../lib/labels.js';
 
 const CURRENCIES = ['BYN', 'USD', 'EUR', 'RUB', 'CNY'];
 
@@ -40,7 +41,7 @@ function report({ trial, portfolio, currency }) {
 </section>
 <section class="tile">
   <h2 class="mb10">Операции за 30 дней</h2>
-  ${portfolio.operations.byType.map((t) => html`<div class="account"><div class="account__title">${t.type}</div><div><span class="muted2">${t.count} шт.</span> &nbsp; <b>${formatAmount(t.byn)} BYN</b></div></div>`)}
+  ${portfolio.operations.byType.map((t) => html`<div class="account"><div class="account__title">${documentLabel(t.type)}</div><div><span class="muted2">${t.count} шт.</span> &nbsp; <b>${formatAmount(t.byn)} BYN</b></div></div>`)}
 </section>`;
 }
 

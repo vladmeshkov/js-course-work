@@ -1,6 +1,7 @@
 import { query } from '../../db/pool.js';
 import { ValidationError } from '../../shared/errors.js';
 import { addDays } from '../../shared/dates.js';
+import { currentBankDate as bankDate } from '../../shared/bank-date.js';
 
 const BALANCE_NAMES = {
   '1010': 'Касса',
@@ -14,11 +15,6 @@ const BALANCE_NAMES = {
   '6000': 'Доходы банка',
   '7000': 'Расходы банка (проценты по вкладам)'
 };
-
-async function bankDate() {
-  const { rows } = await query('SELECT bank_date FROM bank_state');
-  return String(rows[0].bank_date).slice(0, 10);
-}
 
 /**
  * Оборотно-сальдовая ведомость за период по балансовым счетам в одной валюте.

@@ -38,7 +38,7 @@ export async function refreshRates(fetchFn = fetch) {
     await pool.query(
       `INSERT INTO exchange_rates (currency, rate_date, rate, scale)
        VALUES (?, (SELECT bank_date FROM bank_state), ?, ?)
-       ON DUPLICATE KEY UPDATE rate = VALUES(rate), scale = VALUES(scale)`,
+       AS new ON DUPLICATE KEY UPDATE rate = new.rate, scale = new.scale`,
       [currency, used[currency].rate, used[currency].scale]
     );
   }

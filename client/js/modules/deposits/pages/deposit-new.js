@@ -44,15 +44,15 @@ export default async function page({ query, navigate }) {
     </form>
     <div>
       <div class="dep__bar" aria-hidden="true"><div class="dep__bar-main" id="dep-bar"></div><div class="dep__bar-income"></div></div>
-      <div class="dep__bar-caption"><span class="muted">Вы вложите <span id="dep-sum">—</span></span><b id="dep-income-cap">Доход —</b></div>
+      <div class="dep__bar-caption"><span class="muted">Вы вложите <span id="dep-sum">–</span></span><b id="dep-income-cap">Доход –</b></div>
     </div>
   </div>
   <aside class="dep__aside" aria-live="polite">
     <div class="dep__aside-lead">К получению через ${product.term_months} мес.</div>
-    <div class="dep__total" id="calc-total">—</div>
+    <div class="dep__total" id="calc-total">–</div>
     <div class="dep__facts">
       <div><span>Ставка</span><span>${percent(product.rate_percent)}% годовых</span></div>
-      <div><span>Доход за срок</span><span id="calc-income">—</span></div>
+      <div><span>Доход за срок</span><span id="calc-income">–</span></div>
       <div><span>Проценты</span><span>${product.capitalization ? 'капитализация' : 'на счёт'}</span></div>
     </div>
     <p class="dep__aside-note">${product.revocable ? 'При досрочном закрытии проценты пересчитываются по сниженной ставке.' : 'Досрочное закрытие по этому вкладу невозможно.'}</p>
@@ -79,8 +79,8 @@ export default async function page({ query, navigate }) {
         try {
           const data = await api.get('/deposits/calc', { product: product.id, amount: input.value });
           if (mine !== requestNo) return;
-          income.textContent = data.ok ? money(data.income, data.currency) : '—';
-          total.textContent = data.ok ? money(data.total, data.currency) : '—';
+          income.textContent = data.ok ? money(data.income, data.currency) : '–';
+          total.textContent = data.ok ? money(data.total, data.currency) : '–';
           if (data.ok) {
             bar.style.setProperty('width', `${Math.max(60, Math.min(94, Math.round((data.total - data.income) / data.total * 100)))}%`);
             sumEl.textContent = money(data.total - data.income, data.currency);

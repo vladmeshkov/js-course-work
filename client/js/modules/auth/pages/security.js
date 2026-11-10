@@ -38,10 +38,10 @@ ${user.roleCode === 'client' ? html`<section class="panel">
     : !mail.email
       ? html`<p class="muted m0">В вашей анкете не указана электронная почта, поэтому письма отправлять некуда.</p>`
       : html`<p class="muted m0">Коды подтверждения операций приходят на адрес <b>${mail.email}</b>. Остальные уведомления можно дублировать на почту.</p>
-    <form class="switch-row" id="email-form">
+    <label class="switch-row" id="email-form">
       <span><b>Дублировать уведомления на почту</b><small>Платежи, переводы, решения по заявкам, напоминания</small></span>
       <span class="switch"><input type="checkbox" name="enabled" role="switch"${user.notifyEmail ? ' checked' : ''}><i></i></span>
-    </form>`}
+    </label>`}
 </section>` : ''}`,
     mount(root) {
       bindForm(root.querySelector('#disable-form'), async (data) => {
@@ -52,9 +52,16 @@ ${user.roleCode === 'client' ? html`<section class="panel">
       });
       const email = root.querySelector('#email-form');
       email?.querySelector('input').addEventListener('change', async (event) => {
-        const result = await api.post('/security/email', { enabled: event.target.checked });
-        await refreshSession();
-        showAlert(root, 'success', result.message);
+        const input = event.target;
+        try {
+          const result = await api.post('/security/email', { enabled: input.checked });
+          await refreshSession();
+          showAlert(root, 'success', result.message);
+        } catch (error) {
+          // запрос не прошёл: переключатель возвращается в прежнее положение
+          input.checked = !input.checked;
+          showAlert(root, 'error', error.message ?? 'Не удалось сохранить настройку');
+        }
       });
     }
   };

@@ -11,6 +11,8 @@ import { notify, money } from '../notifications/notification.service.js';
 import * as ledgerService from '../ledger/ledger.service.js';
 import { buildIban } from '../../shared/iban.js';
 import { config } from '../../config/index.js';
+import { requireVerified } from '../clients/client.service.js';
+import { currentBankDate as bankDate } from '../../shared/bank-date.js';
 
 /*
  * Вклад. Основная сумма лежит на отдельном счёте вклада (вид «deposit»).
@@ -22,16 +24,7 @@ import { config } from '../../config/index.js';
  * излишне выплаченные проценты удерживаются из суммы возврата.
  */
 
-async function verifiedClient(userId) {
-  const client = await clientModel.findByUserId(userId);
-  if (!client || client.kyc_status !== 'verified') throw new BusinessError('Вклады доступны после проверки анкеты сотрудником банка');
-  return client;
-}
-
-async function bankDate(db) {
-  const { rows } = await db.query('SELECT bank_date FROM bank_state');
-  return rows[0].bank_date;
-}
+const verifiedClient = (userId) => requireVerified(userId, 'Вклады доступны после проверки анкеты сотрудником банка');
 
 /**
  * Открывает вклад: создаёт счёт вклада и переводит на него сумму с текущего счёта.
@@ -85,7 +78,7 @@ function nextPayoutDate(deposit, periodsDone) {
 
 /**
  * Начисляет проценты и закрывает вклады, у которых наступили даты. Вызывается при закрытии операционного дня.
- * @param {import('pg').PoolClient} db
+ * @param {import('../../db/pool.js').Db} db
  * @param {string} date банковская дата, по которую (включительно) нужно выполнить начисления
  * @returns {Promise<{payouts:number, matured:number}>}
  */
@@ -147,7 +140,7 @@ export async function processDeposits(db, date) {
 /**
  * Расчёт досрочного расторжения: что получит клиент.
  * @returns {{demandInterest:number, paidInterest:number, adjustment:number, payout:number}}
- *   adjustment: положительное число доплаты процентов, отрицательное — удержание излишне выплаченных
+ *   adjustment: доплата процентов (больше нуля) или удержание излишне выплаченных (меньше нуля)
  */
 export function quoteEarlyClose(deposit, accountBalance, today) {
   const demandInterest = interestForPeriod(deposit.amount, Number(deposit.demand_rate_percent), deposit.opened_date, today);

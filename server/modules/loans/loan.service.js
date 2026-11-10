@@ -1,4 +1,4 @@
-import { withTransaction, pool } from '../../db/pool.js';
+import { withTransaction } from '../../db/pool.js';
 import { config } from '../../config/index.js';
 import { AppError, BusinessError, ValidationError } from '../../shared/errors.js';
 import { daysBetween } from '../../shared/dates.js';
@@ -17,6 +17,8 @@ import { notify, money } from '../notifications/notification.service.js';
 import * as scoringService from './scoring.service.js';
 import * as ledgerService from '../ledger/ledger.service.js';
 import * as otpService from '../auth/otp.service.js';
+import { requireVerified } from '../clients/client.service.js';
+import { currentBankDate as bankDate } from '../../shared/bank-date.js';
 
 /*
  * Кредит. Жизненный цикл:
@@ -28,16 +30,7 @@ import * as otpService from '../auth/otp.service.js';
  * Проценты и пеня: Дт текущий счёт, Кт доходы банка.
  */
 
-async function verifiedClient(userId) {
-  const client = await clientModel.findByUserId(userId);
-  if (!client || client.kyc_status !== 'verified') throw new BusinessError('Кредиты доступны после проверки анкеты сотрудником банка');
-  return client;
-}
-
-async function bankDate(db = pool) {
-  const { rows } = await db.query('SELECT bank_date FROM bank_state');
-  return rows[0].bank_date;
-}
+const verifiedClient = (userId) => requireVerified(userId, 'Кредиты доступны после проверки анкеты сотрудником банка');
 
 function ageOn(birthDate, date) {
   const b = String(birthDate).slice(0, 10);
@@ -120,7 +113,8 @@ export async function apply(userId, input) {
       clientId: client.id, productId: product.id, targetAccountId: target.id, amount: input.amount, termMonths: input.termMonths,
       scheduleType: input.scheduleType, rate, income: input.income, obligations: input.obligations,
       experienceMonths: input.experienceMonths, dependents: input.dependents, firstPayment: first.total,
-      dti: result.dti, score: result.score, notes: result.notes, status, comment, pdPercent: result.pdPercent ?? null, modelVersion: result.modelVersion ?? null
+      // при доходе в несколько рублей нагрузка уходит в тысячи процентов: столбец DECIMAL(6,2) ограничивает значение
+      dti: Math.min(result.dti, 9999.99), score: result.score, notes: result.notes, status, comment, pdPercent: result.pdPercent ?? null, modelVersion: result.modelVersion ?? null
     });
     const texts = { approved: ['Кредит одобрен', 'Подпишите договор, чтобы получить деньги.'], manual_review: ['Заявка на рассмотрении', 'Её проверит кредитный специалист.'], rejected: ['Отказ по заявке на кредит', comment ?? ''] }[status];
     await notify(userId, { type: 'loan', title: texts[0], body: `Заявка № ${application.id}, ${money(input.amount)}. ${texts[1]}`, link: `/loans/applications/${application.id}` }, db);
@@ -235,7 +229,7 @@ async function canPay(db, accountId, amount) {
  * Обслуживание кредитов при закрытии операционного дня.
  * Платёж, срок которого наступил, списывается со счёта клиента. Если денег не хватает, платёж уходит на просрочку,
  * по нему каждый день начисляется пеня, а списание повторяется при следующих закрытиях дня.
- * @param {import('pg').PoolClient} db
+ * @param {import('../../db/pool.js').Db} db
  * @param {string} date
  * @returns {Promise<{paid:number, overdue:number, closed:number}>}
  */

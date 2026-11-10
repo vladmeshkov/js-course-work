@@ -1,6 +1,15 @@
 // Обращения к JSON API сервера. Токен CSRF приходит от GET /api/session и отправляется в заголовке запросов, меняющих данные.
 
 let csrfToken = '';
+// был ли успешный запрос, меняющий данные: тогда счётчики в шапке (уведомления) нужно обновить
+let changed = false;
+
+/** Сообщает (и сбрасывает), менялись ли данные с прошлой проверки. */
+export function takeChanged() {
+  const value = changed;
+  changed = false;
+  return value;
+}
 
 export function setCsrfToken(token) {
   csrfToken = token;
@@ -31,6 +40,7 @@ async function request(method, url, body) {
   let data = null;
   try { data = text ? JSON.parse(text) : null; } catch { /* ответ не JSON */ }
   if (!response.ok) throw new ApiError(response.status, data);
+  if (method !== 'GET') changed = true;
   return data;
 }
 

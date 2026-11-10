@@ -23,7 +23,7 @@ export function ratesBlock(rates) {
       </div>
       <div class="conv__result" aria-live="polite">
         <div class="small">Вы получите</div>
-        <div class="conv__sum"><span id="conv-result">—</span> <span class="conv__cur" id="conv-cur">${rates[0] ? rates[0].currency : ''}</span></div>
+        <div class="conv__sum"><span id="conv-result">–</span> <span class="conv__cur" id="conv-cur">${rates[0] ? rates[0].currency : ''}</span></div>
       </div>
     </form>
   </div>
@@ -58,7 +58,7 @@ export function mountConverter(root) {
     result.classList.add('skeleton');
     try {
       const d = await api.get('/rates/convert', { from: 'BYN', to: current, amount: amount.value });
-      if (mine === seq) result.textContent = d.ok ? formatAmount(d.result) : '—';
+      if (mine === seq) result.textContent = d.ok ? formatAmount(d.result) : '–';
     } catch { /* оставляем прежний результат */ }
     if (mine === seq) result.classList.remove('skeleton');
   }

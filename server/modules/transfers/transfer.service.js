@@ -3,7 +3,6 @@ import { AppError, BusinessError, ValidationError } from '../../shared/errors.js
 import { isValidIban } from '../../shared/iban.js';
 import { percentOf } from '../../shared/money.js';
 import * as accountModel from '../accounts/account.model.js';
-import * as clientModel from '../clients/client.model.js';
 import * as settingsModel from '../settings/settings.model.js';
 import * as transferModel from './transfer.model.js';
 import { ensureInternalAccount } from '../accounts/account.service.js';
@@ -13,6 +12,7 @@ import * as otpService from '../auth/otp.service.js';
 import * as ratesService from '../rates/rates.service.js';
 import * as fraudService from '../fraud/fraud.service.js';
 import { notify, notifyAccountOwner, money } from '../notifications/notification.service.js';
+import { requireVerified } from '../clients/client.service.js';
 
 /*
  * Конвейер перевода:
@@ -20,12 +20,7 @@ import { notify, notifyAccountOwner, money } from '../notifications/notification
  * Перевод между своими счетами проходит без кода и комиссии, в том числе с конвертацией.
  */
 
-async function verifiedClient(userId) {
-  const client = await clientModel.findByUserId(userId);
-  if (!client) throw new AppError('Клиент не найден', 404);
-  if (client.kyc_status !== 'verified') throw new BusinessError('Операции доступны после проверки анкеты сотрудником банка');
-  return client;
-}
+const verifiedClient = (userId) => requireVerified(userId, 'Операции доступны после проверки анкеты сотрудником банка');
 
 /**
  * Создаёт заявку на перевод. Если нужен код подтверждения, возвращает заявку и код; иначе сразу проводит.
@@ -55,6 +50,8 @@ export async function createTransfer(userId, input) {
   if (to.id === from.id) throw new ValidationError({ toAccountId: 'Счета списания и зачисления совпадают' });
 
   const amountByn = await ratesService.toBynOfficial(from.currency, input.amount);
+  // сумма в RUB или CNY меньше копейки в пересчёте не учитывается лимитом и не проходит проверку в базе
+  if (amountByn <= 0) throw new ValidationError({ amount: 'Сумма слишком мала для перевода' });
   const feePercent = input.kind === 'client' ? await settingsModel.getNumber('transfer.fee_percent') : 0;
   const fee = percentOf(input.amount, feePercent);
 

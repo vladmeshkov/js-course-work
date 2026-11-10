@@ -1,7 +1,7 @@
 import { html } from '../../../lib/html.js';
 import { api } from '../../../lib/api.js';
 import { bindForm, crumbs, errorSlot, flash, formError } from '../../../lib/ui.js';
-import { formatAmount, formatIban } from '../../../lib/format.js';
+import { formatAmount, formatIban, dmy } from '../../../lib/format.js';
 import { cardClass, cardFace } from '../card-face.js';
 
 /** Поле суммы лимита с местом под ошибку. */
@@ -11,6 +11,8 @@ const limitField = (name, label, value) => html`<div class="field"><label for="$
 export default async function page({ params, navigate }) {
   const { card, operations, systems, secret, cards } = await api.get(`/cards/${params.id}`);
   const active = card.status === 'active';
+  // закрытая карта открывается по прямой ссылке (из истории): только сведения и операции, без действий
+  const closed = card.status === 'closed';
   return {
     title: `Карта *${card.last4}`,
     body: html`${crumbs([['Главная', '/cabinet'], ['Счета и карты', '/accounts'], 'Карты'])}
@@ -26,18 +28,18 @@ ${secret ? html`<div class="alert alert--info" role="status">
 </section>
 <section class="row">
   <div class="panel grow-2">
-    <div class="card-status"><h2>Карта ${systems[card.system]} •••• ${card.last4}</h2><span class="card-status__badge card-status__badge--${active ? 'ok' : 'bad'}">${active ? 'Активна' : 'Заблокирована'}</span></div>
+    <div class="card-status"><h2>Карта ${systems[card.system]} •••• ${card.last4}</h2><span class="card-status__badge card-status__badge--${active ? 'ok' : 'bad'}">${active ? 'Активна' : closed ? 'Закрыта' : 'Заблокирована'}</span></div>
     <div class="muted2">Счёт карты</div>
     <div class="account__title">${card.account_title}</div>
     <div class="account__iban mb14">${formatIban(card.iban)}</div>
-    <div class="actions">
+    ${closed ? '' : html`<div class="actions">
       <form id="block-form"><input type="hidden" name="action" value="${active ? 'block' : 'unblock'}">
         ${active ? html`<button class="btn btn--ghost text-bad" type="submit">Заблокировать</button>` : html`<button class="btn" type="submit">Разблокировать</button>`}</form>
-      <form id="close-form"><button class="link-button" type="submit">Закрыть карту</button></form>
-    </div>
+      <form id="close-form" data-confirm="Закрыть карту? Пользоваться ей будет нельзя, для новой карты нужен новый выпуск."><button class="link-button" type="submit">Закрыть карту</button></form>
+    </div>`}
   </div>
 </section>
-<section class="row">
+${closed ? '' : html`<section class="row">
   <aside class="dark-tile grow">
     <div class="dark-tile__lead">Суточный лимит</div>
     <div class="dark-tile__big">${formatAmount(card.daily_limit)} <small>${card.currency}</small></div>
@@ -65,11 +67,11 @@ ${secret ? html`<div class="alert alert--info" role="status">
     <label class="check"><input type="checkbox" name="online"> Оплата в интернете</label>
     <div><button class="btn" type="submit">Оплатить</button></div>
   </form>
-</section>
+</section>`}
 <section class="panel">
   <h2 class="mb10">Операции по карте</h2>
   ${operations.length ? '' : html`<p class="muted m0">Операций пока нет.</p>`}
-  ${operations.map((o) => html`<div class="account"><div><div class="account__title">${o.place || 'Покупка'}</div><div class="account__iban">${String(o.bank_date).slice(0, 10)}${o.online ? ', интернет' : ''}</div></div>
+  ${operations.map((o) => html`<div class="account"><div><div class="account__title">${o.place || 'Покупка'}</div><div class="account__iban">${dmy(o.bank_date)}${o.online ? ', интернет' : ''}</div></div>
       <div class="amount">−${formatAmount(o.amount)} <small>${card.currency}</small></div></div>`)}
 </section>
 <section class="panel new-card">

@@ -1,7 +1,7 @@
 import { html } from '../../../lib/html.js';
 import { api, ApiError } from '../../../lib/api.js';
 import { bindForm, crumbs, flash, showAlert } from '../../../lib/ui.js';
-import { formatAmount } from '../../../lib/format.js';
+import { formatAmount, dmy } from '../../../lib/format.js';
 
 export default async function page({ navigate, refreshSession }) {
   const { templates, autopayments, recent } = await api.get('/payments');
@@ -20,7 +20,7 @@ ${templates.length ? html`<section class="tile">
   ${templates.map((t) => {
     const auto = autopayments.find((a) => a.template_id === t.id);
     return html`<div class="account">
-      <div><div class="account__title">${t.name}</div><div class="account__iban">${t.provider_name}, ${t.requisite}${auto ? html`<br>Автоплатёж ${formatAmount(auto.amount)} BYN, каждое ${auto.day_of_month}-е число, следующий ${String(auto.next_date).slice(0, 10)}${auto.last_result && auto.last_result !== 'Выполнен' ? ' (' + auto.last_result + ')' : ''}` : ''}</div></div>
+      <div><div class="account__title">${t.name}</div><div class="account__iban">${t.provider_name}, ${t.requisite}${auto ? html`<br>Автоплатёж ${formatAmount(auto.amount)} BYN, каждое ${auto.day_of_month}-е число, следующий ${dmy(auto.next_date)}${auto.last_result && auto.last_result !== 'Выполнен' ? ' (' + auto.last_result + ')' : ''}` : ''}</div></div>
       <div class="actions">
         <a class="btn btn--small" href="/payments/pay/${t.provider_id}?template=${t.id}">Оплатить</a>
         ${auto
@@ -29,14 +29,14 @@ ${templates.length ? html`<section class="tile">
             <input class="mini" name="amount" inputmode="decimal" placeholder="Сумма" aria-label="Сумма автоплатежа" value="${t.amount ? formatAmount(t.amount) : ''}">
             <input class="mini mini--day" name="day" type="number" min="1" max="28" placeholder="День" aria-label="День месяца" value="1">
             <button class="btn btn--ghost btn--small" type="submit">Автоплатёж</button></form>`}
-        <button class="link-button text-bad" type="button" data-template-delete="${t.id}">Удалить</button>
+        <form data-template-delete="${t.id}" data-confirm="Удалить шаблон «${t.name}»?"><button class="link-button text-bad" type="submit">Удалить</button></form>
       </div>
     </div>`;
   })}
 </section>` : ''}
 ${recent.length ? html`<section class="tile">
   <h2 class="mb10">Последние платежи</h2>
-  ${recent.map((p) => html`<a class="account" href="/payments/${p.id}/receipt"><div><div class="account__title">${p.provider_name}</div><div class="account__iban">${String(p.bank_date).slice(0, 10)}, ${p.requisite}${p.source === 'autopay' ? ', автоплатёж' : ''}</div></div>
+  ${recent.map((p) => html`<a class="account" href="/payments/${p.id}/receipt"><div><div class="account__title">${p.provider_name}</div><div class="account__iban">${dmy(p.bank_date)}, ${p.requisite}${p.source === 'autopay' ? ', автоплатёж' : ''}</div></div>
       <div class="amount">−${formatAmount(p.amount + p.fee)} <small>BYN</small></div></a>`)}
 </section>` : ''}`,
     mount(root) {
@@ -56,8 +56,8 @@ ${recent.length ? html`<section class="tile">
       };
       root.querySelectorAll('[data-autopay-cancel]').forEach((button) =>
         button.addEventListener('click', () => act(button, () => api.post(`/payments/autopay/${button.dataset.autopayCancel}/cancel`), 'info')));
-      root.querySelectorAll('[data-template-delete]').forEach((button) =>
-        button.addEventListener('click', () => act(button, () => api.post(`/payments/templates/${button.dataset.templateDelete}/delete`), 'info')));
+      root.querySelectorAll('form[data-template-delete]').forEach((form) => bindForm(form, () =>
+        act(null, () => api.post(`/payments/templates/${form.dataset.templateDelete}/delete`), 'info')));
       root.querySelectorAll('form[data-autopay]').forEach((form) => bindForm(form, async (data) => {
         await act(null, () => api.post(`/payments/templates/${form.dataset.autopay}/autopay`, data), 'success');
       }));

@@ -46,7 +46,4 @@ export async function advanceDays(userId, days) {
   return last;
 }
 
-export async function currentBankDate(db) {
-  const { rows } = await db.query('SELECT bank_date FROM bank_state');
-  return rows[0].bank_date;
-}
+export { currentBankDate } from '../../shared/bank-date.js';

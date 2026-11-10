@@ -1,6 +1,6 @@
 import { html } from '../../../lib/html.js';
 import { api } from '../../../lib/api.js';
-import { formatAmount } from '../../../lib/format.js';
+import { formatAmount, dateTime } from '../../../lib/format.js';
 
 export default async function page() {
   const { cases, special } = await api.get('/staff/fraud');
@@ -16,7 +16,7 @@ export default async function page() {
   <h2 class="mb10">Операции особого контроля</h2>
   <p class="muted2 small mb10">Переводы на сумму не ниже порога по Закону № 165-З (порог задаётся в настройках).</p>
   ${special.length ? '' : html`<p class="muted m0">Таких операций пока нет.</p>`}
-  ${special.map((c) => html`<div class="account"><div><div class="account__title">${c.login}</div><div class="account__iban">${new Date(c.created_at).toISOString().slice(0, 16).replace('T', ' ')}, случай № ${c.id}</div></div><div class="amount">${formatAmount(c.amount_byn)} <small>BYN</small></div></div>`)}
+  ${special.map((c) => html`<div class="account"><div><div class="account__title">${c.login}</div><div class="account__iban">${dateTime(c.created_at)}, случай № ${c.id}</div></div><div class="amount">${formatAmount(c.amount_byn)} <small>BYN</small></div></div>`)}
 </section>`
   };
 }

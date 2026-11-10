@@ -12,11 +12,11 @@ export default async function page({ navigate, refreshSession }) {
     title: 'Перевод в другой банк',
     body: html`${crumbs([['Главная', '/cabinet'], ['Платежи и переводы', '/payments'], 'В другой банк'])}
 <h1>Перевод в другой банк</h1>
-<div class="chips" role="tablist">
-  <a class="chip" role="tab" aria-selected="false" href="/transfers/new?kind=client">Клиенту банка</a>
-  <a class="chip" role="tab" aria-selected="false" href="/transfers/new?kind=own">Между своими счетами</a>
-  <a class="chip" role="tab" aria-selected="true" href="/transfers/interbank">В другой банк</a>
-</div>
+<nav class="chips" aria-label="Вид перевода">
+  <a class="chip" aria-current="false" href="/transfers/new?kind=client">Клиенту банка</a>
+  <a class="chip" aria-current="false" href="/transfers/new?kind=own">Между своими счетами</a>
+  <a class="chip" aria-current="page" href="/transfers/interbank">В другой банк</a>
+</nav>
 <form class="tile form w720" id="interbank-form" novalidate>
   ${formError()}
   <div class="field"><label for="fromAccountId">Со счёта</label>
