@@ -129,7 +129,18 @@ h2{font-size:26px;font-weight:700}
 .balance-big{font-size:clamp(36px,5vw,60px);font-weight:700;letter-spacing:-2px;line-height:1.05}
 
 /* Подвал */
-.footer{max-width:1280px;margin:0 auto;padding:0 40px 40px;display:flex;flex-wrap:wrap;gap:12px 28px;font-size:14px;color:var(--muted2)}
+/* Футер: колонки продуктов, информации и контактов, снизу строка с предупреждением */
+.footer{max-width:1280px;margin:40px auto 0;padding:0 40px 40px;font-size:15px;color:var(--muted2)}
+.footer__grid{display:grid;grid-template-columns:1.4fr 1fr 1.2fr 1.2fr;gap:28px;padding:34px 0 26px;border-top:1px solid var(--line)}
+.footer__brand p{margin:14px 0 0;max-width:30ch;line-height:1.5}
+.footer__col{display:flex;flex-direction:column;gap:10px}
+.footer__col b{color:var(--ink);font-size:16px;margin-bottom:2px}
+.footer__col a{color:var(--muted2)}
+.footer__col a:hover{color:var(--accentText)}
+.footer__phone{font-size:26px;font-weight:700;color:var(--ink);letter-spacing:1px}
+.footer__bottom{display:flex;flex-wrap:wrap;gap:8px 28px;justify-content:space-between;padding-top:18px;border-top:1px solid var(--line);font-size:14px}
+@media (max-width:760px){.footer__grid{grid-template-columns:1fr 1fr}}
+@media (max-width:480px){.footer__grid{grid-template-columns:1fr}}
 
 @media (max-width:640px){
   .util-bar__in,.top-bar__in,.page,.footer{padding-left:16px;padding-right:16px}
@@ -393,6 +404,27 @@ html.dark .metric{box-shadow:inset 0 0 0 1px rgba(255,255,255,.045)}
 .auth__side{position:relative;flex:1.4 1 600px;min-width:0}
 .auth__panel{flex:1 1 440px;padding-left:0}
 .auth__coin{right:0;bottom:150px;width:380px;max-width:52%}
+
+/* Гостевая главная: преимущества, шаги, баннер карты */
+.sec-title{font-size:30px;margin:0 0 20px}
+.why,.steps{margin-top:44px}
+.why__grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.why__item{display:flex;flex-direction:column;gap:8px;padding:26px;border-radius:20px;background:var(--surface)}
+.why__item img{width:72px;height:72px;object-fit:contain;margin-bottom:6px}
+.why__item b{font-size:18px}
+.why__item span{color:var(--muted);line-height:1.45;font-size:15px}
+.steps__grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.steps__item{position:relative;display:flex;flex-direction:column;gap:8px;padding:26px 26px 26px 76px;border-radius:20px;background:var(--surface)}
+.steps__no{position:absolute;left:24px;top:26px;width:36px;height:36px;border-radius:12px;background:var(--soft);color:var(--accentText);font-weight:700;font-size:18px;display:flex;align-items:center;justify-content:center}
+.steps__item img{width:84px;height:84px;object-fit:contain;align-self:flex-end;margin-top:-10px}
+.steps__item b{font-size:18px}
+.steps__item span{color:var(--muted);line-height:1.45;font-size:15px}
+.card-banner{margin-top:44px;display:flex;align-items:center;justify-content:space-between;gap:30px;padding:36px 48px;border-radius:24px;color:#fff;background:linear-gradient(115deg,var(--d1),var(--d2))}
+.card-banner h2{font-size:30px;margin:0 0 10px}
+.card-banner p{margin:0 0 20px;max-width:46ch;color:rgba(255,255,255,.82);line-height:1.5}
+.card-banner img{flex:none;width:min(300px,34%);height:auto;object-fit:contain}
+@media (max-width:900px){.why__grid{grid-template-columns:1fr 1fr}.steps__grid{grid-template-columns:1fr}}
+@media (max-width:640px){.why__grid{grid-template-columns:1fr}.card-banner{flex-direction:column;padding:28px 22px}.card-banner img{width:220px}}
 
 /* Перевод */
 .xfer{display:flex;flex-direction:column;align-items:center;gap:26px;padding:48px 40px 56px}

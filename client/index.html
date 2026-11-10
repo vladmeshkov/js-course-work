@@ -17,12 +17,38 @@
 <div id="site-header"></div>
 <main id="content" class="page" tabindex="-1"></main>
 <footer class="footer">
-  <span>ТалерБанк, учебный проект</span>
-  <a href="/info/privacy">Политика конфиденциальности</a>
-  <a href="/info/terms">Условия обслуживания</a>
-  <a href="/info/tariffs">Тарифы</a>
-  <a href="/info/license">Лицензия Национального банка</a>
-  <span>Банк никогда не просит назвать код из письма или пароль по телефону.</span>
+  <div class="footer__grid">
+    <div class="footer__brand">
+      <span class="logo"><img src="/img/emblem.png" alt="" width="40" height="40"><span>Талер<span class="logo__bank">Банк</span></span></span>
+      <p>Интернет-банкинг для физических лиц. Учебный проект, не является действующим банком.</p>
+    </div>
+    <nav class="footer__col" aria-label="Продукты">
+      <b>Продукты</b>
+      <a href="/deposits">Вклады</a>
+      <a href="/loans">Кредиты</a>
+      <a href="/cards">Карты</a>
+      <a href="/payments">Платежи и переводы</a>
+      <a href="/rates">Курсы валют</a>
+    </nav>
+    <nav class="footer__col" aria-label="Информация">
+      <b>Информация</b>
+      <a href="/info/tariffs">Тарифы</a>
+      <a href="/info/terms">Условия обслуживания</a>
+      <a href="/info/privacy">Политика конфиденциальности</a>
+      <a href="/info/license">Лицензия Национального банка</a>
+    </nav>
+    <div class="footer__col">
+      <b>Контакты</b>
+      <span class="footer__phone">150</span>
+      <span>Звонок по Беларуси, круглосуточно</span>
+      <span>Минск, просп. Строителей, 15</span>
+      <span>Пн-Пт с 9:00 до 17:30</span>
+    </div>
+  </div>
+  <div class="footer__bottom">
+    <span>ТалерБанк, учебный проект</span>
+    <span>Банк никогда не просит назвать код из письма или пароль по телефону.</span>
+  </div>
 </footer>
 <noscript><p class="page">Для работы интернет-банка включите JavaScript в браузере.</p></noscript>
 <script type="module" src="/js/app.js"></script>
