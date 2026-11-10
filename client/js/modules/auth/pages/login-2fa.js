@@ -9,7 +9,7 @@ export default async function page({ navigate, refreshSession }) {
   return {
     title: 'Код подтверждения',
     body: html`<section class="tile form w640">
-  <h1>Код подтверждения</h1>
+  <h1 class="h-ico h-ico--sm"><img src="/img/3d/lock.webp" alt="" width="48" height="48">Код подтверждения</h1>
   <p class="muted m0">Введите шестизначный код из приложения-аутентификатора. Если телефона нет под рукой, введите резервный код.</p>
   <form class="form" id="code-form">
     <div class="field"><label for="code">Код</label><input id="code" name="code" autocomplete="one-time-code" inputmode="text" maxlength="12" autofocus class="otp-input"></div>

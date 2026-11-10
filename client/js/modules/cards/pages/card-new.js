@@ -9,7 +9,7 @@ export default async function page({ navigate }) {
   return {
     title: 'Выпустить карту',
     body: html`${crumbs([['Главная', '/cabinet'], ['Карты', '/cards'], 'Выпуск'])}
-<h1>Выпустить карту</h1>
+<h1 class="h-ico"><img src="/img/3d/card.webp" alt="" width="64" height="64">Выпустить карту</h1>
 <form class="tile form w640" id="card-form" novalidate>
   ${formError()}
   <div class="field"><label for="system">Платёжная система</label>

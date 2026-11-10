@@ -59,7 +59,7 @@ export default async function page({ query: params }) {
   const { trial, currency } = data;
   return {
     title: 'Отчёты',
-    body: html`<h1>Отчёты</h1>
+    body: html`<h1 class="h-ico"><img src="/img/3d/growth.webp" alt="" width="64" height="64">Отчёты</h1>
 <form class="tile search" id="report-filter" novalidate>
   <label class="muted2" for="from">С</label><input id="from" name="from" type="date" value="${trial.from}">
   <label class="muted2" for="to">По</label><input id="to" name="to" type="date" value="${trial.to}">

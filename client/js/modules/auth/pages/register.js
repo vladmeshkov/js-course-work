@@ -14,7 +14,7 @@ function field(name, label, { type = 'text', hint = '', autocomplete = '' } = {}
 export default async function page({ navigate }) {
   return {
     title: 'Стать клиентом',
-    body: html`<h1>Стать клиентом</h1>
+    body: html`<h1 class="h-ico"><img src="/img/3d/laptop.webp" alt="" width="64" height="64">Стать клиентом</h1>
 <p class="muted m0 measure">Заполните анкету. Сотрудник банка проверит данные, после этого вам откроют первый счёт.</p>
 <form class="tile form" id="register-form" novalidate>
   <h2>Личные данные</h2>

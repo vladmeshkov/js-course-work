@@ -7,7 +7,7 @@ export default async function page({ session, navigate, refreshSession }) {
   const user = session.user;
   return {
     title: 'Безопасность',
-    body: html`<h1>Безопасность</h1>
+    body: html`<h1 class="h-ico"><img src="/img/3d/shield.webp" alt="" width="64" height="64">Безопасность</h1>
 ${recoveryCodes ? html`<section class="tile tile--soft">
   <h2 class="mb10">Резервные коды</h2>
   <p class="m0 mb10">Сохраните их в надёжном месте. Каждый код подходит один раз, если не будет доступа к приложению. Больше они показаны не будут.</p>

@@ -11,7 +11,7 @@ export default async function page({ navigate, refreshSession }) {
   return {
     title: 'Перевод в другой банк',
     body: html`${crumbs([['Главная', '/cabinet'], ['Платежи и переводы', '/payments'], 'В другой банк'])}
-<h1>Перевод в другой банк</h1>
+<h1 class="h-ico"><img src="/img/3d/bank.webp" alt="" width="64" height="64">Перевод в другой банк</h1>
 <nav class="chips" aria-label="Вид перевода">
   <a class="chip" aria-current="false" href="/transfers/new?kind=client">Клиенту банка</a>
   <a class="chip" aria-current="false" href="/transfers/new?kind=own">Между своими счетами</a>

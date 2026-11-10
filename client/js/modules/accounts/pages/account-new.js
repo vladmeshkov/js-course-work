@@ -14,7 +14,7 @@ export default async function page({ navigate }) {
   return {
     title: 'Открыть счёт',
     body: html`${crumbs([['Главная', '/cabinet'], ['Счета и карты', '/accounts'], 'Открыть счёт'])}
-<h1>Открыть счёт</h1>
+<h1 class="h-ico"><img src="/img/3d/coin.webp" alt="" width="64" height="64">Открыть счёт</h1>
 <form class="acc-new" id="acc-form" novalidate>
   ${formError()}
   <fieldset class="acc-new__block">

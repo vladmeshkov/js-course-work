@@ -111,6 +111,11 @@ h2{font-size:26px;font-weight:700}
 .tile-link h3{font-size:24px}
 /* плитка продукта с объёмным значком в правом верхнем углу */
 .tile-link--icon{position:relative}
+/* заголовок страницы с объёмным значком слева */
+.h-ico{display:flex;align-items:center;gap:16px}
+.h-ico img{width:64px;height:64px;object-fit:contain;flex:none}
+.h-ico--sm{gap:12px}
+.h-ico--sm img{width:48px;height:48px}
 .tile-link--icon h3{padding-right:96px}
 .tile-link__icon{position:absolute;right:20px;top:18px;width:96px;height:96px;object-fit:contain;pointer-events:none}
 

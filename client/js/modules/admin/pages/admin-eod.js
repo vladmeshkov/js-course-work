@@ -7,7 +7,7 @@ export default async function page({ navigate }) {
   const { bankDate, balance } = await api.get('/admin/eod');
   return {
     title: 'Операционный день',
-    body: html`<h1>Операционный день</h1>
+    body: html`<h1 class="h-ico"><img src="/img/3d/calendar.webp" alt="" width="64" height="64">Операционный день</h1>
 <section class="tile form w720">
   <div><div class="muted2">Текущая банковская дата</div><div class="balance-big">${dmy(bankDate)}</div></div>
   <p class="muted m0">При закрытии дня банковская дата сдвигается вперёд, начисляются проценты по вкладам, закрываются вклады с наступившим сроком. Для показа можно прокрутить несколько дней.</p>
