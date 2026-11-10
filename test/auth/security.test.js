@@ -100,6 +100,25 @@ describe('двухфакторная защита', () => {
     expect((await client.get('/login/2fa')).body.pending).toBe(false);
   });
 
+  it('пароль и неверные коды по кругу приводят к блокировке входа', async () => {
+    const c = await clientWithPassword();
+    const { secret } = await enable2fa(c);
+    const client = apiClient(app);
+    await client.refresh();
+    // каждый круг: верный пароль и четыре неверных кода; счётчик неудач не сбрасывается паролем
+    for (let round = 0; round < 2; round++) {
+      const login = await client.login(c.login, 'Parol2026');
+      if (login.status === 429) break;
+      for (let i = 0; i < 4; i++) await client.post('/login/2fa', { code: '111111' });
+    }
+    const { rows: [u] } = await pool.query('SELECT failed_attempts, locked_until FROM users WHERE id = ?', [c.userId]);
+    expect(u.locked_until).not.toBeNull();
+    // во время блокировки не проходит даже верный пароль с верным кодом
+    const again = await client.login(c.login, 'Parol2026');
+    expect(again.status).toBe(429);
+    expect((await client.post('/login/2fa', { code: totp(secret) })).status).not.toBe(200);
+  });
+
   it('отключение требует пароль и код', async () => {
     const c = await clientWithPassword();
     const { secret } = await enable2fa(c);

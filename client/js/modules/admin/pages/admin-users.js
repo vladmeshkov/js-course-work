@@ -62,8 +62,9 @@ export default async function page({ session, query: params, navigate }) {
         const form = event.currentTarget;
         navigate(`/admin/users${query({ q: form.q.value.trim(), role: form.role.value })}`);
       });
-      // раскрытие и скрытие подтверждения блокировки
-      root.addEventListener('click', (event) => {
+      // раскрытие и скрытие подтверждения блокировки; обработчик висит на списке, который заменяется
+      // при каждом показе страницы (на постоянном root обработчики копились бы)
+      root.querySelector('.user-list').addEventListener('click', (event) => {
         const open = event.target.closest('[data-confirm-toggle]');
         const cancel = event.target.closest('[data-confirm-cancel]');
         if (open) { const f = root.querySelector(`#${open.dataset.confirmToggle}`); if (f) f.hidden = !f.hidden; }

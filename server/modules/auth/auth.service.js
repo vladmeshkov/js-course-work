@@ -78,7 +78,7 @@ export async function login(loginName, password, ip) {
     await auditService.log({ userId: user.id, action: 'auth.login', result: 'failure', ip });
     throw generic;
   }
-  await userModel.registerSuccessfulLogin(user.id);
+  // счётчик неудач сбрасывается только после полного входа (completeLogin), иначе второй фактор можно перебирать
   await auditService.log({ userId: user.id, action: 'auth.login', ip });
   return user;
 }

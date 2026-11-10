@@ -1,4 +1,4 @@
-import { withTransaction, pool } from '../../db/pool.js';
+import { withTransaction, withSavepoint, pool } from '../../db/pool.js';
 import { AppError, BusinessError, ValidationError } from '../../shared/errors.js';
 import { addMonths } from '../../shared/dates.js';
 import { interestForPeriod } from '../../shared/interest.js';
@@ -93,42 +93,55 @@ export async function processDeposits(db, date) {
   let payouts = 0;
   let matured = 0;
   const due = await depositModel.lockActiveDue(db, date);
+  let failed = 0;
   for (const deposit of due) {
-    let { paid_until: paidUntil, periods_done: periods, interest_total: total } = deposit;
-    for (;;) {
-      const eventDate = nextPayoutDate(deposit, periods);
-      if (eventDate > date) break;
-      const account = await accountModel.findById(deposit.account_id, db);
-      const interest = interestForPeriod(account.balance, Number(deposit.rate_percent), paidUntil, eventDate);
-      if (interest > 0) {
-        const expense = await ensureInternalAccount(db, 'expense', deposit.currency);
-        const target = deposit.capitalization ? deposit.account_id : deposit.payout_account_id;
-        await ledgerService.post({
-          type: 'deposit_interest', description: `Проценты по вкладу № ${deposit.id}`,
-          entries: [{ debit: expense.id, credit: target, amount: interest, currency: deposit.currency }]
-        }, db);
-        total += interest;
-        payouts += 1;
-        await notify(deposit.user_id, { type: 'deposit', title: 'Начислены проценты по вкладу', body: money(interest, deposit.currency), link: `/deposits/${deposit.id}` }, db);
+    // каждый вклад в своей точке сохранения: ошибка по одному вкладу (например, счёт заблокирован) не отменяет день,
+    // вклад остаётся активным и обрабатывается при следующем закрытии дня
+    const result = await withSavepoint(db, async () => {
+      const counts = { payouts: 0, matured: 0 };
+      let { paid_until: paidUntil, periods_done: periods, interest_total: total } = deposit;
+      for (;;) {
+        const eventDate = nextPayoutDate(deposit, periods);
+        if (eventDate > date) break;
+        const account = await accountModel.findById(deposit.account_id, db);
+        const interest = interestForPeriod(account.balance, Number(deposit.rate_percent), paidUntil, eventDate);
+        if (interest > 0) {
+          const expense = await ensureInternalAccount(db, 'expense', deposit.currency);
+          const target = deposit.capitalization ? deposit.account_id : deposit.payout_account_id;
+          await ledgerService.post({
+            type: 'deposit_interest', description: `Проценты по вкладу № ${deposit.id}`,
+            entries: [{ debit: expense.id, credit: target, amount: interest, currency: deposit.currency }]
+          }, db);
+          total += interest;
+          counts.payouts += 1;
+          await notify(deposit.user_id, { type: 'deposit', title: 'Начислены проценты по вкладу', body: money(interest, deposit.currency), link: `/deposits/${deposit.id}` }, db);
+        }
+        paidUntil = eventDate;
+        periods += 1;
+        if (eventDate >= deposit.maturity_date) {
+          const body = (await accountModel.findById(deposit.account_id, db)).balance;
+          await ledgerService.post({
+            type: 'deposit_return', description: `Возврат вклада № ${deposit.id}`,
+            entries: [{ debit: deposit.account_id, credit: deposit.payout_account_id, amount: body, currency: deposit.currency }]
+          }, db);
+          await depositModel.closeAccount(db, deposit.account_id);
+          await depositModel.close(db, deposit.id, 'closed', eventDate, total);
+          await notify(deposit.user_id, { type: 'deposit', title: 'Вклад закрыт по окончании срока', body: `Возвращено ${money(body, deposit.currency)} на текущий счёт`, link: `/deposits/${deposit.id}` }, db);
+          counts.matured += 1;
+          break;
+        }
+        await depositModel.saveProgress(db, deposit.id, { paidUntil, periodsDone: periods, interestTotal: total });
       }
-      paidUntil = eventDate;
-      periods += 1;
-      if (eventDate >= deposit.maturity_date) {
-        const body = (await accountModel.findById(deposit.account_id, db)).balance;
-        await ledgerService.post({
-          type: 'deposit_return', description: `Возврат вклада № ${deposit.id}`,
-          entries: [{ debit: deposit.account_id, credit: deposit.payout_account_id, amount: body, currency: deposit.currency }]
-        }, db);
-        await depositModel.closeAccount(db, deposit.account_id);
-        await depositModel.close(db, deposit.id, 'closed', eventDate, total);
-        await notify(deposit.user_id, { type: 'deposit', title: 'Вклад закрыт по окончании срока', body: `Возвращено ${money(body, deposit.currency)} на текущий счёт`, link: `/deposits/${deposit.id}` }, db);
-        matured += 1;
-        break;
-      }
-      await depositModel.saveProgress(db, deposit.id, { paidUntil, periodsDone: periods, interestTotal: total });
+      return counts;
+    });
+    if (result.ok) {
+      payouts += result.value.payouts;
+      matured += result.value.matured;
+    } else {
+      failed += 1;
     }
   }
-  return { payouts, matured };
+  return { payouts, matured, failed };
 }
 
 /**

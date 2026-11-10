@@ -155,6 +155,27 @@ describe('выдача и обслуживание', () => {
     expect(state.dpd).toBe(0);
   });
 
+  it('платежи гасятся по порядку: при просрочке раннего поздний не списывается', async () => {
+    const c = await goodClient();
+    const loan = await signContract(c, await apply(c.userId, await input(c)));
+    await cashOutAll(c.accountId);
+    const start = await bankDate();
+    const paidBefore = (await getLoan(c.userId, loan.id)).loan.last_paid_date;
+    await run(addMonths(start, 1));
+    const [first, second] = (await getLoan(c.userId, loan.id)).schedule;
+    expect(first.status).toBe('overdue');
+    // денег хватает только на второй платёж, первый с пеней дороже
+    await cashIn(c.accountId, second.principal + second.interest);
+    const due2 = addMonths(start, 2);
+    await pool.query('UPDATE bank_state SET bank_date = ?', [due2]);
+    await run(due2);
+    const state = await getLoan(c.userId, loan.id);
+    expect(state.schedule[0].status).toBe('overdue');
+    expect(state.schedule[1].status).toBe('overdue');
+    expect((await getAccount(c.accountId)).balance).toBe(second.principal + second.interest);
+    expect(state.loan.last_paid_date).toBe(paidBefore);
+  });
+
   it('после выплаты всех платежей кредит закрывается, остаток на ссудном счёте нулевой', async () => {
     const c = await goodClient();
     const loan = await signContract(c, await apply(c.userId, await input(c, { termMonths: 6 })));

@@ -28,16 +28,37 @@ export async function markConfirmed(db, id, documentId) {
   );
 }
 
-export async function setStatus(id, status, db = { query }) {
-  await db.query('UPDATE transfer_intents SET status = ? WHERE id = ?', [status, id]);
+/**
+ * Меняет статус, только если заявка ещё в ожидаемом статусе. Возвращает true, если статус изменён:
+ * так параллельные «подтвердить» и «отменить» не перезаписывают друг друга.
+ */
+export async function transition(id, from, to, db = { query }) {
+  const { rowCount } = await db.query('UPDATE transfer_intents SET status = ? WHERE id = ? AND status = ?', [to, id, from]);
+  return rowCount > 0;
 }
 
-/** Сумма переводов клиента другим клиентам за банковскую дату, в BYN. */
+/**
+ * Блокирует строку пользователя до конца транзакции. Проверка суточного лимита и проводка
+ * одного клиента идут по очереди, иначе параллельные переводы проходят проверку одновременно.
+ */
+export async function lockUser(db, userId) {
+  await db.query('SELECT id FROM users WHERE id = ? FOR UPDATE', [userId]);
+}
+
+/**
+ * Переводы клиента другим лицам за банковскую дату, в BYN: проведённые переводы клиентам банка,
+ * задержанные на проверку, а также переводы в другие банки, которые ждут клиринга или уже отправлены сегодня.
+ */
 export async function sentTodayByn(userId, db = { query }) {
   const { rows } = await db.query(
-    `SELECT COALESCE(SUM(amount_byn), 0) AS total FROM transfer_intents
-     WHERE user_id = ? AND kind = 'client' AND status = 'confirmed' AND bank_date = (SELECT bank_date FROM bank_state)`,
-    [userId]
+    `SELECT
+       (SELECT COALESCE(SUM(amount_byn), 0) FROM transfer_intents
+        WHERE user_id = ? AND kind = 'client'
+          AND (status = 'review' OR (status = 'confirmed' AND bank_date = (SELECT bank_date FROM bank_state))))
+     + (SELECT COALESCE(SUM(amount), 0) FROM interbank_transfers
+        WHERE user_id = ? AND direction = 'out'
+          AND (status IN ('queued', 'review') OR (status = 'sent' AND sent_date = (SELECT bank_date FROM bank_state)))) AS total`,
+    [userId, userId]
   );
   return Number(rows[0].total);
 }

@@ -61,10 +61,17 @@ describe('API: проверка анкет', () => {
     expect(accounts.map((x) => x.currency)).toEqual(['BYN']);
 
     expect((await op.get('/staff/kyc')).body.clients.some((c) => c.id === a.clientId)).toBe(false);
-    expect((await op.get(`/staff/kyc/${a.clientId}`)).body.client.kycStatus).toBe('verified');
+    // после решения паспортные данные больше не открываются, повторное решение невозможно
+    expect((await op.get(`/staff/kyc/${a.clientId}`)).status).toBe(409);
     const again = await op.post(`/staff/kyc/${a.clientId}`, { decision: 'approve' });
     expect(again.status).toBe(409);
-    expect(again.body.error.message).toMatch(/уже верифицирован/);
+    expect(again.body.error.message).toMatch(/уже принято/);
+    // действующего клиента нельзя «отклонить» и тем самым заблокировать ему операции
+    const reject = await op.post(`/staff/kyc/${a.clientId}`, { decision: 'reject', comment: 'Ошибка' });
+    expect(reject.status).toBe(409);
+    const { rows: [after] } = await pool.query('SELECT kyc_status FROM clients WHERE id = ?', [a.clientId]);
+    expect(after.kyc_status).toBe('verified');
+    expect((await op.get('/staff/kyc/999999999')).status).toBe(404);
   });
 
   it('отказ требует комментарий, причина доходит до клиента', async () => {

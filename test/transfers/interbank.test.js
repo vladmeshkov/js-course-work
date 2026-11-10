@@ -62,7 +62,7 @@ describe('межбанковские переводы', () => {
     expect(row.status).toBe('sent');
     expect(row.batch_id).not.toBeNull();
     const { rows: [h] } = await pool.query('SELECT status FROM holds WHERE id = ?', [row.hold_id]);
-    expect(h.status).toBe('released');
+    expect(h.status).toBe('captured');
     for (const r of await trialBalance(pool)) expect(r.ok).toBe(true);
     // повторный клиринг ничего не отправляет
     expect((await clear()).sent).toBe(0);

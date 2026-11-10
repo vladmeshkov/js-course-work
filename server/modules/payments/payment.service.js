@@ -1,4 +1,4 @@
-import { withTransaction } from '../../db/pool.js';
+import { withTransaction, withSavepoint } from '../../db/pool.js';
 import { AppError, BusinessError, ValidationError } from '../../shared/errors.js';
 import { addMonths, addDays } from '../../shared/dates.js';
 import { percentOf } from '../../shared/money.js';
@@ -152,19 +152,16 @@ export async function processAutopayments(db, date) {
   const stats = { done: 0, failed: 0 };
   for (const a of await paymentModel.dueAutopayments(db, date)) {
     const client = { id: a.client_id };
-    await db.query('SAVEPOINT autopay');
-    try {
-      await executePayment(db, { client, userId: a.user_id, providerId: a.provider_id, fromAccountId: a.from_account_id, amount: a.amount, requisite: a.requisite, source: 'autopay' });
-      await db.query('RELEASE SAVEPOINT autopay');
+    const result = await withSavepoint(db, (tx) => executePayment(tx, { client, userId: a.user_id, providerId: a.provider_id, fromAccountId: a.from_account_id, amount: a.amount, requisite: a.requisite, source: 'autopay' }));
+    if (result.ok) {
       await paymentModel.saveAutopayment(db, a.id, { next_date: addMonths(`${date.slice(0, 8)}${String(a.day_of_month).padStart(2, '0')}`, 1), fail_count: 0, last_result: 'Выполнен' });
       stats.done += 1;
-    } catch (error) {
-      await db.query('ROLLBACK TO SAVEPOINT autopay');
+    } else {
       const fails = a.fail_count + 1;
       await paymentModel.saveAutopayment(db, a.id, {
-        fail_count: fails, last_result: error.message, next_date: addDays(date, 1), active: fails < MAX_FAILS
+        fail_count: fails, last_result: result.error.message, next_date: addDays(date, 1), active: fails < MAX_FAILS
       });
-      await notify(a.user_id, { type: 'payment', title: 'Автоплатёж не выполнен', body: `${error.message}. Попробуем завтра, всего попыток: ${MAX_FAILS}.`, link: '/payments' }, db);
+      await notify(a.user_id, { type: 'payment', title: 'Автоплатёж не выполнен', body: `${result.error.message}. Попробуем завтра, всего попыток: ${MAX_FAILS}.`, link: '/payments' }, db);
       stats.failed += 1;
     }
   }

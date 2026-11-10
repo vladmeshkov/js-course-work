@@ -139,50 +139,48 @@ export async function specialControlReport(limit = 200) {
 }
 
 /**
- * Решение специалиста по задержанному переводу.
- * Одобрение проводит перевод, отказ снимает холд и отменяет заявку.
- * @param {(userId:number, intentId:string) => Promise<any>} executeIntent функция проведения перевода
+ * Решение специалиста по задержанному переводу. Всё решение идёт одной транзакцией:
+ * случай блокируется (параллельные «одобрить» и «отклонить» обрабатываются по очереди),
+ * при одобрении холд снимается и перевод проводится вместе; если денег уже не хватает, ничего не меняется.
+ * @param {(db:{query:Function}, userId:number, intentId:string) => Promise<any>} executeIn проведение перевода в транзакции
  */
-export async function review(officerId, caseId, { approve, comment }, executeIntent) {
-  const fraudCase = await findCase(caseId);
-  if (!fraudCase) throw new AppError('Случай не найден', 404);
-  if (fraudCase.status !== 'open') throw new BusinessError('Случай уже рассмотрен');
-  if (!approve && !String(comment ?? '').trim()) throw new ValidationError({ comment: 'Укажите причину отказа' });
+export async function review(officerId, caseId, { approve, comment }, executeIn) {
+  const text = String(comment ?? '').trim();
+  await withTransaction(async (db) => {
+    const { rows: [fraudCase] } = await db.query('SELECT * FROM fraud_cases WHERE id = ? FOR UPDATE', [caseId]);
+    if (!fraudCase) throw new AppError('Случай не найден', 404);
+    if (fraudCase.status !== 'open') throw new BusinessError('Случай уже рассмотрен');
+    if (!approve && !text) throw new ValidationError({ comment: 'Укажите причину отказа' });
 
-  if (fraudCase.interbank_id) {
-    await reviewInterbank(fraudCase, approve, String(comment ?? '').trim());
-  } else if (approve) {
-    // холд снимается до проведения, иначе он заблокирует собственный перевод
-    await withTransaction(async (db) => {
-      await db.query("UPDATE holds SET status = 'released', closed_at = UTC_TIMESTAMP(3) WHERE intent_id = ? AND status = 'active'", [fraudCase.intent_id]);
-      await db.query("UPDATE transfer_intents SET status = 'new' WHERE id = ? AND status = 'review'", [fraudCase.intent_id]);
-    });
-    await executeIntent(fraudCase.user_id, fraudCase.intent_id);
-  } else {
-    await withTransaction(async (db) => {
-      await db.query("UPDATE holds SET status = 'released', closed_at = UTC_TIMESTAMP(3) WHERE intent_id = ? AND status = 'active'", [fraudCase.intent_id]);
-      await db.query("UPDATE transfer_intents SET status = 'rejected' WHERE id = ?", [fraudCase.intent_id]);
-      await notify(fraudCase.user_id, { type: 'transfer', title: 'Перевод отклонён', body: `Банк не провёл перевод. Причина: ${String(comment).trim()}. Деньги разблокированы.`, link: '/accounts' }, db);
-    });
-  }
-  await query(
-    'UPDATE fraud_cases SET status = ?, reviewed_by = ?, reviewed_at = UTC_TIMESTAMP(3), comment = ? WHERE id = ?',
-    [approve ? 'approved' : 'rejected', officerId, String(comment ?? '').trim() || null, caseId]);
-  await auditService.log({ userId: officerId, action: approve ? 'fraud.approve' : 'fraud.reject', entity: 'fraud_case', entityId: caseId });
+    if (fraudCase.interbank_id) {
+      await reviewInterbank(db, fraudCase, approve, text);
+    } else {
+      const { rowCount } = await db.query("UPDATE transfer_intents SET status = ? WHERE id = ? AND status = 'review'",
+        [approve ? 'new' : 'rejected', fraudCase.intent_id]);
+      if (!rowCount) throw new BusinessError('Перевод уже обработан');
+      // холд закрывается до проведения, иначе он заблокирует собственный перевод: при одобрении он исполнен, при отказе снят
+      await db.query("UPDATE holds SET status = ?, closed_at = UTC_TIMESTAMP(3) WHERE intent_id = ? AND status = 'active'",
+        [approve ? 'captured' : 'released', fraudCase.intent_id]);
+      if (approve) await executeIn(db, fraudCase.user_id, fraudCase.intent_id);
+      else await notify(fraudCase.user_id, { type: 'transfer', title: 'Перевод отклонён', body: `Банк не провёл перевод. Причина: ${text}. Деньги разблокированы.`, link: '/accounts' }, db);
+    }
+    await db.query(
+      'UPDATE fraud_cases SET status = ?, reviewed_by = ?, reviewed_at = UTC_TIMESTAMP(3), comment = ? WHERE id = ?',
+      [approve ? 'approved' : 'rejected', officerId, text.slice(0, 300) || null, caseId]);
+    await auditService.log({ userId: officerId, action: approve ? 'fraud.approve' : 'fraud.reject', entity: 'fraud_case', entityId: caseId }, db);
+  });
 }
 
 /** Решение по задержанному переводу в другой банк: одобрение ставит платёж в очередь клиринга, отказ снимает резерв. */
-async function reviewInterbank(fraudCase, approve, comment) {
-  await withTransaction(async (db) => {
-    const { rows: [t] } = await db.query('SELECT * FROM interbank_transfers WHERE id = ? FOR UPDATE', [fraudCase.interbank_id]);
-    if (!t || t.status !== 'review') throw new BusinessError('Перевод уже обработан');
-    if (approve) {
-      await db.query("UPDATE interbank_transfers SET status = 'queued' WHERE id = ?", [t.id]);
-      await notify(t.user_id, { type: 'transfer', title: 'Перевод в другой банк одобрен', body: 'Проверка пройдена. Платёж отправится при закрытии операционного дня.', link: '/transfers/interbank' }, db);
-    } else {
-      if (t.hold_id) await db.query("UPDATE holds SET status = 'released', closed_at = UTC_TIMESTAMP(3) WHERE id = ?", [t.hold_id]);
-      await db.query("UPDATE interbank_transfers SET status = 'rejected', reject_reason = ? WHERE id = ?", [comment, t.id]);
-      await notify(t.user_id, { type: 'transfer', title: 'Перевод отклонён', body: `Банк не провёл перевод. Причина: ${comment}. Деньги разблокированы.`, link: '/transfers/interbank' }, db);
-    }
-  });
+async function reviewInterbank(db, fraudCase, approve, comment) {
+  const { rows: [t] } = await db.query('SELECT * FROM interbank_transfers WHERE id = ? FOR UPDATE', [fraudCase.interbank_id]);
+  if (!t || t.status !== 'review') throw new BusinessError('Перевод уже обработан');
+  if (approve) {
+    await db.query("UPDATE interbank_transfers SET status = 'queued' WHERE id = ?", [t.id]);
+    await notify(t.user_id, { type: 'transfer', title: 'Перевод в другой банк одобрен', body: 'Проверка пройдена. Платёж отправится при закрытии операционного дня.', link: '/transfers/interbank' }, db);
+  } else {
+    if (t.hold_id) await db.query("UPDATE holds SET status = 'released', closed_at = UTC_TIMESTAMP(3) WHERE id = ?", [t.hold_id]);
+    await db.query("UPDATE interbank_transfers SET status = 'rejected', reject_reason = ? WHERE id = ?", [comment.slice(0, 300), t.id]);
+    await notify(t.user_id, { type: 'transfer', title: 'Перевод отклонён', body: `Банк не провёл перевод. Причина: ${comment}. Деньги разблокированы.`, link: '/transfers/interbank' }, db);
+  }
 }

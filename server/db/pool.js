@@ -1,5 +1,6 @@
 import mysql from 'mysql2/promise';
 import { config } from '../config/index.js';
+import { AppError } from '../shared/errors.js';
 
 /**
  * Пул соединений MySQL. Суммы хранятся в копейках (BIGINT) и помещаются в безопасный диапазон Number,
@@ -81,6 +82,28 @@ export async function withTransaction(work) {
     throw error;
   } finally {
     connection.release();
+  }
+}
+
+/**
+ * Выполняет часть работы внутри точки сохранения. При ошибке откатывается только эта часть,
+ * транзакция продолжается, ошибка бизнес-правила возвращается вызывающему коду (а не выбрасывается).
+ * Нужна при закрытии дня: неудача одного платежа не должна отменять весь день.
+ * @param {{query: Function}} db
+ * @param {(db:{query:Function}) => Promise<any>} work
+ * @returns {Promise<{ok:true, value:any} | {ok:false, error:Error}>}
+ */
+export async function withSavepoint(db, work) {
+  await db.query('SAVEPOINT step');
+  try {
+    const value = await work(db);
+    await db.query('RELEASE SAVEPOINT step');
+    return { ok: true, value };
+  } catch (error) {
+    await db.query('ROLLBACK TO SAVEPOINT step');
+    // ошибки бизнес-правил (нет денег, счёт заблокирован) возвращаются, ошибки программы и SQL пробрасываются
+    if (!(error instanceof AppError)) throw error;
+    return { ok: false, error };
   }
 }
 

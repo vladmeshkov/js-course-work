@@ -244,6 +244,9 @@ export async function processLoans(db, date) {
   const stats = { paid: 0, overdue: 0, closed: 0 };
   for (const loan of await loanModel.lockActiveLoans(db)) {
     let paidLast = null;
+    // платежи гасятся строго по порядку: если на ранний платёж денег не хватило, поздние не списываются,
+    // иначе проценты по раннему платежу никогда не будут взысканы (last_paid_date ушла бы вперёд)
+    let blocked = false;
     for (const row of await loanModel.dueInstallments(db, loan.id, date)) {
       const due = String(row.due_date).slice(0, 10);
       let penalty = row.penalty;
@@ -253,7 +256,7 @@ export async function processLoans(db, date) {
         if (days > 0) penalty += percentOf((row.principal + row.interest) * days, penaltyPercent);
       }
       const total = row.principal + row.interest + penalty;
-      if (await canPay(db, loan.payout_account_id, total)) {
+      if (!blocked && await canPay(db, loan.payout_account_id, total)) {
         await chargeInstallment(db, loan, row, penalty);
         await loanModel.markInstallment(db, row.id, { status: 'paid', paid_date: date, penalty, penalty_from: null });
         loan.principal_balance -= row.principal;
@@ -261,6 +264,7 @@ export async function processLoans(db, date) {
         stats.paid += 1;
         await notify(loan.user_id, { type: 'loan', title: 'Списан платёж по кредиту', body: `Договор № ${loan.id}: ${money(total)}${penalty ? `, в том числе пеня ${money(penalty)}` : ''}`, link: `/loans/${loan.id}` }, db);
       } else {
+        blocked = true;
         await loanModel.markInstallment(db, row.id, { status: 'overdue', penalty, penalty_from: date });
         if (row.status === 'planned') {
           await notify(loan.user_id, { type: 'loan', title: 'Просрочен платёж по кредиту', body: `Договор № ${loan.id}: на счёте не хватило ${money(total)}. Пополните счёт, начисляется пеня.`, link: `/loans/${loan.id}` }, db);

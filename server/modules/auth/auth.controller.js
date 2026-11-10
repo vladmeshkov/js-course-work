@@ -16,6 +16,7 @@ async function completeLogin(req, res, user) {
   await new Promise((resolve, reject) => req.session.regenerate((e) => (e ? reject(e) : resolve())));
   req.session.userId = user.id;
   req.session.csrfToken = csrfToken;
+  await userModel.registerSuccessfulLogin(user.id);
   await notificationService.notify(user.id, { type: 'security', title: 'Вход в кабинет', body: `Адрес ${req.ip}. Если это были не вы, смените пароль.`, link: '/security' });
   const isClient = user.role_code === 'client';
   if (isClient) req.session.welcome = { previous: user.last_login_at ? new Date(user.last_login_at).toISOString() : null };
@@ -55,8 +56,13 @@ function pending(req) {
 export async function verify2fa(req, res) {
   const p = pending(req);
   if (!p) throw new AppError('Время подтверждения истекло. Войдите заново', 401, 'login_expired');
+  const locked = await userModel.findById(p.userId);
+  if (!locked || locked.status === 'blocked' || (locked.locked_until && new Date(locked.locked_until) > new Date())) {
+    delete req.session.pending2fa;
+    throw new AppError('Слишком много неудачных попыток входа. Повторите позже', 429, 'login_expired');
+  }
   if (await twoFactorService.verifyLogin(p.userId, req.body.code)) {
-    const user = await userModel.findById(p.userId);
+    const user = locked;
     delete req.session.pending2fa;
     await auditService.log({ userId: user.id, action: 'auth.2fa', ip: req.ip });
     return completeLogin(req, res, { ...user, last_login_at: p.previousLogin });

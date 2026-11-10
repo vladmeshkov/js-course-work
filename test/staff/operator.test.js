@@ -33,7 +33,7 @@ describe('операционист', () => {
     expect(rows).toHaveLength(1);
     const account = await kycService.verifyClient(clientId, op.id);
     expect(account.currency).toBe('BYN');
-    await expect(kycService.verifyClient(clientId, op.id)).rejects.toThrow(/уже верифицирован/);
+    await expect(kycService.verifyClient(clientId, op.id)).rejects.toThrow(/уже принято/);
     expect((await kycService.queue()).some((c) => c.id === clientId)).toBe(false);
   });
 

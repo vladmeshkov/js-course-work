@@ -124,7 +124,9 @@ async function render() {
     if (error instanceof ApiError) page = errorPage(error.status || 500, error.message);
     else { console.error(error); page = errorPage(500, 'Не удалось показать страницу. Обновите её и повторите.'); }
   } finally {
-    if (id === renderId) motion.done();
+    // каждый вызов render делает ровно один busy() и один done(), даже если переход вытеснен другим
+    // или перенаправлен (иначе экран загрузки остаётся навсегда)
+    motion.done();
   }
   if (id !== renderId) return;
   if (page.redirect) {

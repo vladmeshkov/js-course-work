@@ -1,4 +1,4 @@
-import { pool, query, withTransaction } from '../../db/pool.js';
+import { pool, query, withTransaction, withSavepoint } from '../../db/pool.js';
 import { AppError, BusinessError, ValidationError } from '../../shared/errors.js';
 import { isValidIban } from '../../shared/iban.js';
 import { percentOf } from '../../shared/money.js';
@@ -9,6 +9,8 @@ import { ensureInternalAccount } from '../accounts/account.service.js';
 import * as auditService from '../audit/audit.service.js';
 import * as ledgerService from '../ledger/ledger.service.js';
 import { notify, notifyAccountOwner, money } from '../notifications/notification.service.js';
+import * as transferModel from './transfer.model.js';
+import { checkDailyLimit } from './transfer.service.js';
 import * as fraudService from '../fraud/fraud.service.js';
 import * as otpService from '../auth/otp.service.js';
 
@@ -58,6 +60,7 @@ export async function createTransfer(userId, input) {
   }
   const name = String(input.name ?? '').trim();
   if (name.length < 3) errors.name = 'Укажите получателя полностью';
+  else if (name.length > 150) errors.name = 'Не длиннее 150 символов';
   const max = await settingsModel.getNumber('interbank.max_amount');
   if (!Number.isSafeInteger(input.amount) || input.amount <= 0) errors.amount = 'Введите сумму больше нуля';
   else if (input.amount > max) errors.amount = `Не больше ${max / 100} BYN за один перевод`;
@@ -70,6 +73,7 @@ export async function createTransfer(userId, input) {
   const fee = await feeFor(input.amount);
   const held = await accountModel.heldAmount(pool, from.id);
   if (from.balance - held - from.min_balance < input.amount + fee) throw new BusinessError('Недостаточно средств с учётом комиссии', 'insufficient_funds');
+  await checkDailyLimit(userId, input.amount);
 
   // риск оценивается сразу, решение (задержка на проверку) применяется после подтверждения кодом
   const risk = await fraudService.evaluateInterbank({ userId, clientId: client.id, counterpartyIban: iban, amountByn: input.amount });
@@ -101,7 +105,11 @@ export async function confirm(userId, id, code) {
   return withTransaction(async (db) => {
     const { rows: [locked] } = await db.query('SELECT * FROM interbank_transfers WHERE id = ? FOR UPDATE', [id]);
     if (locked.status !== 'pending_otp') throw new BusinessError('Перевод уже обработан');
-    const [account] = Object.values(Object.fromEntries(await accountModel.lockAll(db, [locked.account_id])));
+    // суточный лимит общий с переводами клиентам банка, проверяется под блокировкой пользователя
+    await transferModel.lockUser(db, userId);
+    await checkDailyLimit(userId, locked.amount, db);
+    const account = (await accountModel.lockAll(db, [locked.account_id])).get(locked.account_id);
+    if (account.status !== 'open') throw new BusinessError('Счёт заблокирован: списание запрещено');
     const held = await accountModel.heldAmount(db, account.id);
     if (account.balance - held - account.min_balance < locked.amount + locked.fee) throw new BusinessError('Недостаточно средств с учётом комиссии', 'insufficient_funds');
     const { insertId: holdId } = await db.query('INSERT INTO holds (account_id, amount) VALUES (?, ?)', [account.id, locked.amount + locked.fee]);
@@ -143,7 +151,7 @@ export async function cancel(userId, id) {
 export async function processClearing(db, date) {
   const { rows: queued } = await db.query("SELECT * FROM interbank_transfers WHERE status = 'queued' AND direction = 'out' ORDER BY id FOR UPDATE");
   if (!queued.length) return { sent: 0, rejected: 0, total: 0 };
-  await db.query('INSERT INTO clearing_batches (bank_date) VALUES (?) ON DUPLICATE KEY UPDATE bank_date = VALUES(bank_date)', [date]);
+  await db.query('INSERT INTO clearing_batches (bank_date) VALUES (?) ON DUPLICATE KEY UPDATE bank_date = bank_date', [date]);
   const { rows: [batch] } = await db.query('SELECT id FROM clearing_batches WHERE bank_date = ?', [date]);
   const correspondent = await ensureInternalAccount(db, 'correspondent', 'BYN');
   const income = await ensureInternalAccount(db, 'income', 'BYN');
@@ -151,23 +159,31 @@ export async function processClearing(db, date) {
   const owner = async (accountId) => (await db.query('SELECT c.user_id FROM accounts a JOIN clients c ON c.id = a.owner_client_id WHERE a.id = ?', [accountId])).rows[0]?.user_id;
 
   for (const t of queued) {
-    await db.query("UPDATE holds SET status = 'released', closed_at = UTC_TIMESTAMP(3) WHERE id = ?", [t.hold_id]);
     const { rows: [bank] } = await db.query('SELECT active, name FROM external_banks WHERE code = ?', [t.bank_code]);
-    if (!bank.active) {
-      await db.query("UPDATE interbank_transfers SET status = 'rejected', reject_reason = ?, batch_id = ? WHERE id = ?", ['Банк получателя не принимает платежи', batch.id, t.id]);
-      await notify(await owner(t.account_id), { type: 'transfer', title: 'Перевод в другой банк отклонён', body: `${bank.name} не принимает платежи. Деньги разблокированы на вашем счёте.`, link: '/transfers/interbank' }, db);
+    // каждый платёж в своей точке сохранения: если списание невозможно (например, счёт заблокирован после
+    // подтверждения), отклоняется только этот платёж, остальной пакет и закрытие дня продолжаются
+    const result = !bank.active ? { ok: false, error: new BusinessError(`${bank.name} не принимает платежи`) }
+      : await withSavepoint(db, async () => {
+        await db.query("UPDATE holds SET status = 'captured', closed_at = UTC_TIMESTAMP(3) WHERE id = ?", [t.hold_id]);
+        const entries = [{ debit: t.account_id, credit: correspondent.id, amount: t.amount, currency: 'BYN' }];
+        if (t.fee > 0) entries.push({ debit: t.account_id, credit: income.id, amount: t.fee, currency: 'BYN' });
+        const { documentId } = await ledgerService.post({
+          type: 'interbank_out', description: `Перевод в ${bank.name}: ${t.counterparty_name}${t.purpose ? '. ' + t.purpose : ''}`, initiatedBy: t.user_id, entries
+        }, db);
+        await db.query('UPDATE holds SET document_id = ? WHERE id = ?', [documentId, t.hold_id]);
+        await db.query("UPDATE interbank_transfers SET status = 'sent', document_id = ?, batch_id = ?, sent_date = ? WHERE id = ?", [documentId, batch.id, date, t.id]);
+      });
+    if (result.ok) {
+      await notify(await owner(t.account_id), { type: 'transfer', title: 'Перевод в другой банк отправлен', body: `${money(t.amount)} получателю ${t.counterparty_name}, ${bank.name}. Комиссия ${money(t.fee)}.`, link: '/transfers/interbank' }, db);
+      stats.sent += 1;
+      stats.total += t.amount;
+    } else {
+      const reason = bank.active ? `Платёж не отправлен: ${result.error.message}` : 'Банк получателя не принимает платежи';
+      await db.query("UPDATE holds SET status = 'released', closed_at = UTC_TIMESTAMP(3) WHERE id = ?", [t.hold_id]);
+      await db.query("UPDATE interbank_transfers SET status = 'rejected', reject_reason = ?, batch_id = ? WHERE id = ?", [reason.slice(0, 300), batch.id, t.id]);
+      await notify(await owner(t.account_id), { type: 'transfer', title: 'Перевод в другой банк отклонён', body: `${reason}. Деньги разблокированы на вашем счёте.`, link: '/transfers/interbank' }, db);
       stats.rejected += 1;
-      continue;
     }
-    const entries = [{ debit: t.account_id, credit: correspondent.id, amount: t.amount, currency: 'BYN' }];
-    if (t.fee > 0) entries.push({ debit: t.account_id, credit: income.id, amount: t.fee, currency: 'BYN' });
-    const { documentId } = await ledgerService.post({
-      type: 'interbank_out', description: `Перевод в ${bank.name}: ${t.counterparty_name}${t.purpose ? '. ' + t.purpose : ''}`, initiatedBy: t.user_id, entries
-    }, db);
-    await db.query("UPDATE interbank_transfers SET status = 'sent', document_id = ?, batch_id = ?, sent_date = ? WHERE id = ?", [documentId, batch.id, date, t.id]);
-    await notify(await owner(t.account_id), { type: 'transfer', title: 'Перевод в другой банк отправлен', body: `${money(t.amount)} получателю ${t.counterparty_name}, ${bank.name}. Комиссия ${money(t.fee)}.`, link: '/transfers/interbank' }, db);
-    stats.sent += 1;
-    stats.total += t.amount;
   }
   await db.query('UPDATE clearing_batches SET transfers = ?, rejected = ?, total = ? WHERE id = ?', [stats.sent, stats.rejected, stats.total, batch.id]);
   return stats;

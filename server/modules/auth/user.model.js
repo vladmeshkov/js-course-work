@@ -33,8 +33,9 @@ export async function create(db, { login, passwordHash, roleCode }) {
 
 export async function registerFailedLogin(id, maxAttempts, lockMinutes) {
   await query(
-    `UPDATE users SET failed_attempts = failed_attempts + 1,
-       locked_until = CASE WHEN failed_attempts + 1 >= ? THEN UTC_TIMESTAMP(3) + INTERVAL ? MINUTE ELSE locked_until END
+    // MySQL вычисляет SET слева направо, поэтому locked_until считается по прежнему значению счётчика
+    `UPDATE users SET locked_until = CASE WHEN failed_attempts + 1 >= ? THEN UTC_TIMESTAMP(3) + INTERVAL ? MINUTE ELSE locked_until END,
+       failed_attempts = failed_attempts + 1
      WHERE id = ?`,
     [maxAttempts, lockMinutes, id]
   );

@@ -19,7 +19,7 @@ export function ratesBlock(rates) {
         </div>
       </div>
       <div class="cur-pills" role="radiogroup" aria-label="Валюта получения">
-        ${rates.map((r, i) => html`<button type="button" class="cur-pill" role="radio" aria-checked="${i === 0}" data-cur="${r.currency}">${flag(r.code, 30)}${r.currency}</button>`)}
+        ${rates.map((r, i) => html`<button type="button" class="cur-pill" role="radio" aria-checked="${String(i === 0)}" data-cur="${r.currency}">${flag(r.code, 30)}${r.currency}</button>`)}
       </div>
       <div class="conv__result" aria-live="polite">
         <div class="small">Вы получите</div>

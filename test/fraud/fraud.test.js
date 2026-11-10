@@ -31,7 +31,7 @@ describe('антифрод', () => {
     expect(h).toMatchObject({ amount: 400000, status: 'active' });
   });
 
-  it('специалист одобряет: перевод проводится, холд снимается', async () => {
+  it('специалист одобряет: перевод проводится, холд исполнен', async () => {
     const a = await createClientWithAccount(2000000);
     const b = await createClientWithAccount(0);
     const r = await send(a, b, 400000)();
@@ -44,7 +44,7 @@ describe('антифрод', () => {
     expect((await getAccount(b.accountId)).balance).toBe(400000);
     await expect(reviewHeldTransfer(officer.id, fraudCase.id, { approve: true })).rejects.toThrow(/уже рассмотрен/);
     const { rows: [h] } = await pool.query("SELECT status FROM holds WHERE intent_id = ?", [r.intent.id]);
-    expect(h.status).toBe('released');
+    expect(h.status).toBe('captured');
   });
 
   it('специалист отклоняет: деньги разблокированы, перевода нет', async () => {
