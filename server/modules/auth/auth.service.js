@@ -3,7 +3,7 @@ import { config } from '../../config/index.js';
 import { withTransaction } from '../../db/pool.js';
 import { encrypt, lookupHash } from '../../shared/crypto.js';
 import { AppError, ValidationError } from '../../shared/errors.js';
-import { check, rules } from '../../shared/validate.js';
+import { check, rules, text } from '../../shared/validate.js';
 import * as userModel from './user.model.js';
 import * as clientModel from '../clients/client.model.js';
 import * as auditService from '../audit/audit.service.js';
@@ -19,18 +19,21 @@ const DUMMY_HASH = bcrypt.hashSync('dummy-password', BCRYPT_ROUNDS);
  * @param {string} [ip]
  */
 export async function register(form, ip) {
+  const f = Object.fromEntries(['lastName', 'firstName', 'patronymic', 'birthDate', 'phone', 'email', 'idNumber', 'passport', 'login', 'password', 'passwordRepeat']
+    .map((k) => [k, text(form[k])]));
   const values = {
-    ...form,
-    login: String(form.login ?? '').trim().toLowerCase(),
-    idNumber: String(form.idNumber ?? '').trim().toUpperCase(),
-    passport: String(form.passport ?? '').trim().toUpperCase(),
-    phone: String(form.phone ?? '').replace(/[\s()-]/g, '')
+    ...f,
+    lastName: f.lastName.trim(), firstName: f.firstName.trim(), patronymic: f.patronymic.trim(), email: f.email.trim(),
+    login: f.login.trim().toLowerCase(),
+    idNumber: f.idNumber.trim().toUpperCase(),
+    passport: f.passport.trim().toUpperCase(),
+    phone: f.phone.replace(/[\s()-]/g, '')
   };
   const errors = check(values, {
-    lastName: [rules.required], firstName: [rules.required],
-    birthDate: [rules.adult], phone: [rules.phone], email: [rules.email],
+    lastName: [rules.required, rules.maxLength(100)], firstName: [rules.required, rules.maxLength(100)], patronymic: [rules.maxLength(100)],
+    birthDate: [rules.adult], phone: [rules.phone], email: [rules.email, rules.maxLength(254)], password: [rules.password, rules.maxLength(72)],
     idNumber: [rules.idNumber], passport: [rules.passport],
-    login: [rules.login], password: [rules.password]
+    login: [rules.login]
   });
   if (values.password !== values.passwordRepeat) errors.passwordRepeat = 'Пароли не совпадают';
   if (Object.keys(errors).length) throw new ValidationError(errors);
@@ -45,8 +48,8 @@ export async function register(form, ip) {
   return withTransaction(async (db) => {
     const userId = await userModel.create(db, { login: values.login, passwordHash, roleCode: 'client' });
     const clientId = await clientModel.create(db, {
-      userId, lastName: values.lastName.trim(), firstName: values.firstName.trim(), patronymic: values.patronymic?.trim(),
-      birthDate: values.birthDate, phone: values.phone, email: values.email?.trim(),
+      userId, lastName: values.lastName, firstName: values.firstName, patronymic: values.patronymic || null,
+      birthDate: values.birthDate, phone: values.phone, email: values.email || null,
       idNumberEnc: encrypt(values.idNumber), idNumberHash: idHash, passportEnc: encrypt(values.passport)
     });
     await auditService.log({ userId, action: 'client.register', entity: 'client', entityId: clientId, ip }, db);
@@ -61,22 +64,25 @@ export async function register(form, ip) {
  */
 export async function login(loginName, password, ip) {
   const generic = new AppError('Неверный логин или пароль', 401, 'bad_credentials');
-  const user = await userModel.findByLogin(String(loginName ?? '').trim().toLowerCase());
+  const name = text(loginName).trim().toLowerCase().slice(0, 64);
+  const user = await userModel.findByLogin(name);
   if (!user) {
     // сравнение с фиктивным хэшем выравнивает время ответа
-    await bcrypt.compare(String(password ?? ''), DUMMY_HASH);
-    await auditService.log({ action: 'auth.login', result: 'failure', ip, details: { login: loginName } });
+    await bcrypt.compare(text(password), DUMMY_HASH);
+    // в журнал попадает только нормализованный и обрезанный логин (не пароль, введённый не в то поле)
+    await auditService.log({ action: 'auth.login', result: 'failure', ip, details: { login: name.slice(0, 32) } });
+    throw generic;
+  }
+  // сначала проверяется пароль: состояние учётной записи (блокировка) узнаёт только тот, кто знает пароль
+  const ok = await bcrypt.compare(text(password), user.password_hash);
+  if (!ok) {
+    await userModel.registerFailedLogin(user.id, config.login.maxAttempts, config.login.lockMinutes);
+    await auditService.log({ userId: user.id, action: 'auth.login', result: 'failure', ip });
     throw generic;
   }
   if (user.status === 'blocked') throw new AppError('Учётная запись заблокирована. Обратитесь в банк', 403, 'blocked');
   if (user.locked_until && new Date(user.locked_until) > new Date()) {
     throw new AppError('Слишком много неудачных попыток входа. Повторите позже', 429, 'locked');
-  }
-  const ok = await bcrypt.compare(String(password ?? ''), user.password_hash);
-  if (!ok) {
-    await userModel.registerFailedLogin(user.id, config.login.maxAttempts, config.login.lockMinutes);
-    await auditService.log({ userId: user.id, action: 'auth.login', result: 'failure', ip });
-    throw generic;
   }
   // счётчик неудач сбрасывается только после полного входа (completeLogin), иначе второй фактор можно перебирать
   await auditService.log({ userId: user.id, action: 'auth.login', ip });

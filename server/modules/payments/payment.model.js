@@ -1,4 +1,5 @@
 import { query } from '../../db/pool.js';
+import { likePattern } from '../../shared/validate.js';
 
 export const categories = async () => (await query(
   `SELECT c.*, (SELECT count(*) FROM payment_providers p WHERE p.category_id = c.id AND p.active) AS count
@@ -19,7 +20,7 @@ export async function providers({ categoryId, city, q }) {
   const where = ['p.active'];
   if (categoryId) { params.push(categoryId); where.push('p.category_id = ?'); }
   if (city) { params.push(city); where.push('(p.city IS NULL OR p.city = ?)'); }
-  if (q) { const like = `%${q.toLowerCase()}%`; params.push(like, like); where.push('(lower(p.name) LIKE ? OR lower(c.name) LIKE ?)'); }
+  if (q) { const like = likePattern(q.toLowerCase()); params.push(like, like); where.push('(lower(p.name) LIKE ? OR lower(c.name) LIKE ?)'); }
   const { rows } = await query(
     `SELECT p.*, c.name AS category_name FROM payment_providers p JOIN payment_categories c ON c.id = p.category_id
      WHERE ${where.join(' AND ')} ORDER BY p.name`, params);

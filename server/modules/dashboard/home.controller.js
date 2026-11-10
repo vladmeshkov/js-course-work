@@ -80,7 +80,7 @@ const INFO = {
 
 /** Статические страницы: политика, условия, тарифы, лицензия, восстановление пароля. */
 export function info(req, res) {
-  const page = INFO[req.params.slug];
+  const page = Object.hasOwn(INFO, req.params.slug) ? INFO[req.params.slug] : null;
   if (!page) throw new NotFoundError('Страница не найдена');
   res.json(page);
 }

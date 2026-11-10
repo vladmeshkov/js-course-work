@@ -2,9 +2,11 @@ import { Router } from 'express';
 import { requireClient, requirePermission } from '../../shared/middleware/auth.js';
 import * as loans from './loan.controller.js';
 import * as staffLoans from './staff-loan.controller.js';
+import { idParam } from '../../shared/validate.js';
 
 /** Кредиты клиента (каталог и калькулятор открыты гостю) и рабочее место кредитного специалиста. Подключается под /api. */
 const router = Router();
+router.param('id', idParam);
 
 router.get('/loans', loans.index);
 router.get('/loans/calc', loans.calc);

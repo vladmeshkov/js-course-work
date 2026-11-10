@@ -1,4 +1,5 @@
 import { pool, withTransaction } from './pool.js';
+import { config } from '../config/index.js';
 import { migrate } from './migrate.js';
 import { hashPassword } from '../modules/auth/auth.service.js';
 import { ensureInternalAccount } from '../modules/accounts/account.service.js';
@@ -20,6 +21,12 @@ const staff = [
 
 import { refreshRates } from '../modules/rates/rates.service.js';
 import { ensureModel } from '../modules/loans/scoring.service.js';
+
+// демонстрационные пользователи с общим паролем недопустимы на рабочем сервере
+if (config.isProd) {
+  console.error('db:seed создаёт демонстрационных пользователей с паролем Taler2026 и не запускается при NODE_ENV=production');
+  process.exit(1);
+}
 
 await migrate();
 await withTransaction(async (db) => {

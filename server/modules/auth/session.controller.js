@@ -1,8 +1,10 @@
 import { navFor } from './navigation.js';
+import { newCsrfToken } from '../../shared/middleware/csrf.js';
 import * as notificationService from '../notifications/notification.service.js';
 
 /** Состояние сессии для клиентской части: пользователь, меню, число непрочитанных уведомлений и токен CSRF. */
 export async function get(req, res) {
+  if (!req.session.csrfToken) req.session.csrfToken = newCsrfToken();
   const u = req.user;
   res.json({
     csrfToken: req.session.csrfToken,

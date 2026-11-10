@@ -1,9 +1,11 @@
 import { Router } from 'express';
 import { requirePermission } from '../../shared/middleware/auth.js';
 import * as admin from './admin.controller.js';
+import { idParam } from '../../shared/validate.js';
 
 /** Администрирование: курсы и тарифы, пользователи, журнал аудита, копии, отчёты, операционный день. Подключается под /api. */
 const router = Router();
+router.param('id', idParam);
 
 router.get('/admin/rates', requirePermission('rates.manage'), admin.rates);
 router.post('/admin/rates/spreads', requirePermission('rates.manage'), admin.saveSpreads);

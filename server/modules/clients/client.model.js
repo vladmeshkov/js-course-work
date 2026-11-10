@@ -25,6 +25,11 @@ export async function existsByIdHash(hash) {
   return rowCount > 0;
 }
 
+/** Освобождает хэш идентификационного номера отклонённой анкеты (сам номер остаётся зашифрованным в анкете). */
+export async function releaseIdNumber(db, clientId) {
+  await db.query("UPDATE clients SET id_number_hash = CONCAT('rejected:', id) WHERE id = ?", [clientId]);
+}
+
 export async function setKycStatus(db, clientId, status, comment = null) {
   await db.query('UPDATE clients SET kyc_status = ?, kyc_comment = ? WHERE id = ?', [status, comment, clientId]);
 }

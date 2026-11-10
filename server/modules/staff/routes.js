@@ -1,9 +1,11 @@
 import { Router } from 'express';
 import { requirePermission } from '../../shared/middleware/auth.js';
 import * as operator from './operator.controller.js';
+import { idParam } from '../../shared/validate.js';
 
 /** Рабочее место операциониста: анкеты, касса, входящие платежи, блокировка счетов. Подключается под /api. */
 const router = Router();
+router.param('id', idParam);
 
 router.get('/staff/kyc', requirePermission('kyc.review'), operator.kycQueue);
 router.get('/staff/kyc/:id', requirePermission('kyc.review'), operator.kycShow);

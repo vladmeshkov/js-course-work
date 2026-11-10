@@ -39,6 +39,7 @@ export async function showSetup(req, res) {
 export async function confirmSetup(req, res) {
   const secret = req.session.pendingSecret;
   if (!secret) throw new AppError('Начните настройку заново', 409, 'setup_expired');
+  await twoFactorService.checkPassword(req.user, req.body.password);
   req.session.recoveryCodes = await twoFactorService.confirmSetup(req.user, secret, req.body.code);
   delete req.session.pendingSecret;
   res.json({ status: 'ok', message: 'Двухфакторная защита включена' });

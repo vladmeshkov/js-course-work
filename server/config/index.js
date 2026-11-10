@@ -12,6 +12,10 @@ function required(name) {
 export const config = {
   isProd: env.NODE_ENV === 'production',
   isTest: env.NODE_ENV === 'test',
+  // стек ошибки в ответе API только при явном DEBUG=1 (в нём видны SQL и пути к файлам)
+  debug: env.DEBUG === '1' || env.DEBUG === 'true',
+  // за обратным прокси (nginx) укажите TRUST_PROXY=1, иначе адрес клиента можно подделать заголовком X-Forwarded-For
+  trustProxy: Number(env.TRUST_PROXY || 0),
   port: Number(env.PORT || 3000),
   databaseUrl: env.NODE_ENV === 'test' ? required('TEST_DATABASE_URL') : required('DATABASE_URL'),
   sessionSecret: required('SESSION_SECRET'),
@@ -39,4 +43,8 @@ export const config = {
 
 if (config.dataKey.length !== 32) {
   throw new Error('DATA_KEY должен содержать 64 шестнадцатеричных символа (32 байта)');
+}
+// значения-заглушки из .env.example: с ними шифрование персональных данных и подпись cookie ничего не защищают
+if (!config.isTest && (config.dataKey.every((b) => b === 0) || /замените/i.test(config.sessionSecret) || config.sessionSecret.length < 16)) {
+  throw new Error('В .env остались примерные значения SESSION_SECRET или DATA_KEY. Выполните npm run setup или задайте случайные ключи');
 }

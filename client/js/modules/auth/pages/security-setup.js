@@ -20,8 +20,9 @@ export default async function page({ navigate, refreshSession, session }) {
   </div>
   <form class="tile form grow" id="setup-form" novalidate>
     <h2>2. Введите код</h2>
-    <p class="muted m0">Приложение покажет шестизначный код. Введите его, чтобы подтвердить настройку.</p>
+    <p class="muted m0">Приложение покажет шестизначный код. Введите его и пароль от кабинета, чтобы подтвердить настройку.</p>
     <div class="field"><label for="code">Код из приложения</label><input id="code" name="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" class="otp-input">${errorSlot('code')}</div>
+    <div class="field"><label for="password">Пароль</label><input id="password" name="password" type="password" autocomplete="current-password">${errorSlot('password')}</div>
     ${formError()}
     <div><button class="btn btn--lg" type="submit">Включить</button></div>
   </form>

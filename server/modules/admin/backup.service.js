@@ -1,13 +1,14 @@
 import { execFile, spawn } from 'node:child_process';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
-import { mkdir, readdir, rm, stat } from 'node:fs/promises';
+import { mkdir, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import { pipeline } from 'node:stream/promises';
 import { config } from '../../config/index.js';
 import { AppError, BusinessError } from '../../shared/errors.js';
+import { pool } from '../../db/pool.js';
 import * as auditService from '../audit/audit.service.js';
 
 const run = promisify(execFile);
@@ -17,6 +18,8 @@ const run = promisify(execFile);
  * тем же ключом DATA_KEY, что и персональные данные: файл копии без ключа прочитать нельзя.
  * Формат файла: 12 байт IV, шифртекст, 16 байт тега аутентификации.
  * Восстановление выполняет клиент mysql: таблицы пересоздаются из копии.
+ * Таблица сессий в копию не входит, после восстановления все сессии завершаются. Журнал аудита не теряется:
+ * записи, сделанные после создания копии, переносятся в восстановленный журнал.
  */
 
 const EXT = '.sql.enc';
@@ -78,7 +81,7 @@ async function decryptFile(source, target) {
   fs.readSync(fd, iv, 0, 12, 0);
   fs.readSync(fd, tag, 0, 16, size - 16);
   fs.closeSync(fd);
-  const decipher = crypto.createDecipheriv('aes-256-gcm', config.dataKey, iv);
+  const decipher = crypto.createDecipheriv('aes-256-gcm', config.dataKey, iv, { authTagLength: 16 });
   decipher.setAuthTag(tag);
   try {
     await pipeline(fs.createReadStream(source, { start: 12, end: size - 17 }), decipher, fs.createWriteStream(target));
@@ -89,15 +92,22 @@ async function decryptFile(source, target) {
 
 const dir = () => path.resolve(config.backup.dir);
 
+/** Временный файл с незашифрованным дампом: создаётся с правами только для владельца процесса. */
+async function privateTempFile() {
+  const file = path.join(os.tmpdir(), `talerbank-${crypto.randomUUID()}.sql`);
+  await writeFile(file, '', { mode: 0o600 });
+  return file;
+}
+
 /** Создаёт зашифрованную копию базы данных. @returns {Promise<{name:string, size:number}>} */
 export async function createBackup(userId = null) {
   await mkdir(dir(), { recursive: true });
   const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
   const name = `talerbank-${stamp}${EXT}`;
-  const tmp = path.join(os.tmpdir(), `talerbank-${crypto.randomUUID()}.sql`);
+  const tmp = await privateTempFile();
   const { args, database, env } = connection();
   try {
-    await runTool('mysqldump', [...args, '--single-transaction', '--routines', '--triggers', '--no-tablespaces', '--set-gtid-purged=OFF', '--default-character-set=utf8mb4', '--result-file', tmp, database], env);
+    await runTool('mysqldump', [...args, `--ignore-table=${database}.sessions`, '--single-transaction', '--routines', '--triggers', '--no-tablespaces', '--set-gtid-purged=OFF', '--default-character-set=utf8mb4', '--result-file', tmp, database], env);
     await encryptFile(tmp, path.join(dir(), name));
   } finally {
     await rm(tmp, { force: true });
@@ -137,14 +147,22 @@ function safeName(name) {
 export async function restoreBackup(userId, name) {
   const file = path.join(dir(), safeName(name));
   if (!fs.existsSync(file)) throw new AppError('Копия не найдена', 404);
-  const tmp = path.join(os.tmpdir(), `talerbank-${crypto.randomUUID()}.sql`);
+  const tmp = await privateTempFile();
   const { args, database, env } = connection();
+  // журнал аудита неизменяем: перед восстановлением он сохраняется, потом новые записи возвращаются
+  await pool.query('DROP TABLE IF EXISTS audit_log_keep');
+  await pool.query('CREATE TABLE audit_log_keep AS SELECT * FROM audit_log');
   try {
     await decryptFile(file, tmp);
     await runSqlFile([...args, '--default-character-set=utf8mb4', database], env, tmp);
+    await pool.query(
+      'INSERT INTO audit_log SELECT * FROM audit_log_keep WHERE id > (SELECT max_id FROM (SELECT COALESCE(MAX(id), 0) AS max_id FROM audit_log) m) ORDER BY id');
   } finally {
     await rm(tmp, { force: true });
+    await pool.query('DROP TABLE IF EXISTS audit_log_keep');
   }
+  // состояние учётных записей вернулось к копии: все сессии завершаются, войти нужно заново
+  await pool.query('DELETE FROM sessions');
   await auditService.log({ userId, action: 'backup.restore', entity: 'backup', entityId: name });
 }
 

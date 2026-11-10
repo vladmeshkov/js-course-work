@@ -17,8 +17,11 @@ export const money = (minor, currency = 'BYN') => `${formatAmount(minor)} ${curr
  */
 export async function notify(userId, { type, title, body = '', link = null }, db = { query }) {
   if (!userId) return;
-  await db.query('INSERT INTO notifications (user_id, type, title, body, link) VALUES (?, ?, ?, ?, ?)', [userId, type, title, body, link]);
-  await mailService.enqueue(userId, { title, body }, db);
+  // текст уведомления может содержать ввод сотрудника (причина отказа и т. п.): обрезается под размер столбцов
+  const t = String(title).slice(0, 200);
+  const b = String(body ?? '').slice(0, 1000);
+  await db.query('INSERT INTO notifications (user_id, type, title, body, link) VALUES (?, ?, ?, ?, ?)', [userId, type, t, b, link]);
+  await mailService.enqueue(userId, { title: t, body: b }, db);
 }
 
 /** Уведомление владельцу счёта (если владелец клиент банка). */

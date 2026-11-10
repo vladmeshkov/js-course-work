@@ -32,7 +32,7 @@ const CLIENT_KINDS = {
  * @param {{clientId:number, kind:'current'|'savings', currency:string, userId?:number}} p
  */
 export async function openClientAccount(db, { clientId, kind, currency, userId }) {
-  if (!CLIENT_KINDS[kind]) throw new BusinessError('Неизвестный вид счёта');
+  if (!Object.hasOwn(CLIENT_KINDS, String(kind))) throw new BusinessError('Неизвестный вид счёта');
   const number = await accountModel.nextNumber(db);
   const account = await accountModel.insert(db, {
     iban: buildIban(config.bankCode, BALANCE_CODES[kind], number),
@@ -79,6 +79,7 @@ export function listForClient(clientId) {
  */
 export async function setFrozen(operatorId, accountId, frozen, reason) {
   if (frozen && !String(reason ?? '').trim()) throw new BusinessError('Укажите основание блокировки');
+  reason = String(reason ?? '').trim().slice(0, 300);
   return withTransaction(async (db) => {
     const { rows: [account] } = await db.query('SELECT id, status, kind FROM accounts WHERE id = ? FOR UPDATE', [accountId]);
     if (!account || account.kind === 'internal') throw new BusinessError('Счёт не найден');
@@ -100,7 +101,7 @@ export async function openForUser(userId, { kind, currency }) {
   const client = await clientModel.findByUserId(userId);
   if (!client || client.kyc_status !== 'verified') throw new BusinessError('Счета открываются после проверки анкеты сотрудником банка');
   const errors = {};
-  if (!CLIENT_KINDS[kind]) errors.kind = 'Выберите вид счёта';
+  if (!Object.hasOwn(CLIENT_KINDS, String(kind))) errors.kind = 'Выберите вид счёта';
   if (!['BYN', 'USD', 'EUR', 'RUB', 'CNY'].includes(currency)) errors.currency = 'Выберите валюту';
   if (Object.keys(errors).length) throw new ValidationError(errors);
   if ((await accountModel.listByClient(client.id)).filter((a) => ['current', 'savings'].includes(a.kind)).length >= 10) {

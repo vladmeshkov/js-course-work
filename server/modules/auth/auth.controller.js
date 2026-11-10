@@ -6,16 +6,18 @@ import * as notificationService from '../notifications/notification.service.js';
 import * as twoFactorService from './two-factor.service.js';
 import * as userModel from './user.model.js';
 import { config } from '../../config/index.js';
+import { newCsrfToken } from '../../shared/middleware/csrf.js';
 
 /**
  * Завершает вход: новый идентификатор сессии защищает от фиксации сессии.
  * Клиенту показывается экран «С возвращением» (время прошлого входа), сотрудники сразу идут на рабочее место.
  */
 async function completeLogin(req, res, user) {
-  const csrfToken = req.session.csrfToken;
   await new Promise((resolve, reject) => req.session.regenerate((e) => (e ? reject(e) : resolve())));
   req.session.userId = user.id;
-  req.session.csrfToken = csrfToken;
+  // новый токен CSRF вместе с новой сессией: клиент забирает его из GET /api/session после входа
+  req.session.csrfToken = newCsrfToken();
+  req.session.loginAt = Date.now();
   await userModel.registerSuccessfulLogin(user.id);
   await notificationService.notify(user.id, { type: 'security', title: 'Вход в кабинет', body: `Адрес ${req.ip}. Если это были не вы, смените пароль.`, link: '/security' });
   const isClient = user.role_code === 'client';

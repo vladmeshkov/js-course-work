@@ -1,16 +1,13 @@
 import { AppError, NotFoundError, ValidationError } from '../../shared/errors.js';
 import { parseAmount } from '../../shared/money.js';
+import { parseId } from '../../shared/validate.js';
 import { clearDemoCode, deliverCode, demoCodeFor } from '../../shared/demo-code.js';
 import * as accountService from '../accounts/account.service.js';
 import * as clientModel from '../clients/client.model.js';
 import * as interbankService from './interbank.service.js';
 
 /** Числовой идентификатор из адреса; иначе 404. */
-const idOf = (req) => {
-  const id = Number(req.params.id);
-  if (!Number.isInteger(id) || id <= 0) throw new NotFoundError('Перевод не найден');
-  return id;
-};
+const idOf = (req) => parseId(req.params.id, 'Перевод не найден');
 
 const accountView = (a) => ({ id: a.id, title: a.title, iban: a.iban, currency: a.currency, balance: a.balance });
 

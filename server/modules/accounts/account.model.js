@@ -1,4 +1,5 @@
 import { query } from '../../db/pool.js';
+import { likePattern } from '../../shared/validate.js';
 
 const COLUMNS = `id, iban, owner_client_id, balance_code, kind, title, purpose, currency, status, balance, min_balance, opened_at`;
 
@@ -79,7 +80,9 @@ export async function operations(accountId, limit = 50) {
 
 /** Поиск клиентских счетов по IBAN (часть номера) или логину владельца. */
 export async function search(text, limit = 30) {
-  const like = `%${String(text).replace(/\s/g, '').toLowerCase()}%`;
+  const clean = String(text ?? '').replace(/\s/g, '').toLowerCase();
+  if (clean.length < 2) return [];
+  const like = likePattern(clean);
   const { rows } = await query(
     `SELECT a.id, a.iban, a.kind, a.title, a.currency, a.status, a.balance, u.login, c.last_name, c.first_name
      FROM accounts a JOIN clients c ON c.id = a.owner_client_id JOIN users u ON u.id = c.user_id

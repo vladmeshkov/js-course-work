@@ -2,9 +2,12 @@ import { Router } from 'express';
 import { requireClient } from '../../shared/middleware/auth.js';
 import * as documents from '../accounts/document.controller.js';
 import * as payments from './payment.controller.js';
+import { idParam } from '../../shared/validate.js';
 
 /** Платежи по каталогу, шаблоны, автоплатежи, квитанции. Статичные пути раньше «:id». Подключается под /api. */
 const router = Router();
+router.param('id', idParam);
+router.param('providerId', idParam);
 
 router.get('/payments', requireClient, payments.hub);
 router.get('/payments/catalog', requireClient, payments.catalog);

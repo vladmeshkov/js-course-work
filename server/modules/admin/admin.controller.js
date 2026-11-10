@@ -104,7 +104,7 @@ export async function createBackup(req, res) {
 export async function restoreBackup(req, res) {
   if (req.body.confirm !== 'ВОССТАНОВИТЬ') throw new ValidationError({ confirm: 'Для восстановления введите слово ВОССТАНОВИТЬ' });
   await backupService.restoreBackup(req.user.id, req.body.name);
-  res.json({ status: 'ok', message: 'База данных восстановлена из копии' });
+  res.json({ status: 'ok', message: 'База данных восстановлена из копии. Все сеансы завершены, войдите заново' });
 }
 
 /** Отчёты: оборотно-сальдовая ведомость за период (ошибка периода даёт 422 с полем from) и показатели портфеля. */

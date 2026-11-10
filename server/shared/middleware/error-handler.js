@@ -19,7 +19,7 @@ export function errorHandler(error, req, res, next) {
       message: known ? error.message : 'Внутренняя ошибка сервера. Попробуйте позже',
       code: known ? error.code : 'server_error',
       ...(known && error.fields ? { fields: error.fields } : {}),
-      ...(!known && !config.isProd ? { details: error.stack } : {})
+      ...(!known && config.debug ? { details: error.stack } : {})
     }
   });
 }

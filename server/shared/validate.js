@@ -1,6 +1,10 @@
+import { NotFoundError } from './errors.js';
+
 /** Простые проверки полей форм. Каждая возвращает текст ошибки или null. */
 
 export const rules = {
+  /** Не длиннее n символов (под размер столбца в базе). */
+  maxLength: (n) => (v) => (String(v ?? '').length <= n ? null : `Не длиннее ${n} символов`),
   required: (v) => (String(v ?? '').trim() ? null : 'Поле обязательно для заполнения'),
   login: (v) => (/^[a-z0-9._-]{3,32}$/.test(String(v ?? '')) ? null : 'От 3 до 32 символов: латинские строчные буквы, цифры, точка, дефис, подчёркивание'),
   password: (v) => {
@@ -28,6 +32,9 @@ export const rules = {
  * @param {Record<string, Array<(v:any)=>string|null>>} schema
  * @returns {Record<string, string>} ошибки по полям (пусто, если всё верно)
  */
+/** Строковое значение поля формы: массивы и объекты (подделанный JSON) превращаются в пустую строку. */
+export const text = (v) => (typeof v === 'string' ? v : typeof v === 'number' ? String(v) : '');
+
 export function check(values, schema) {
   const errors = {};
   for (const [field, list] of Object.entries(schema)) {
@@ -40,4 +47,37 @@ export function check(values, schema) {
     }
   }
   return errors;
+}
+
+/**
+ * Числовой идентификатор (из адреса или поля формы): целое положительное число, иначе 404.
+ * Не даёт нечисловым значениям (NaN, «abc») дойти до SQL.
+ * @param {unknown} value
+ * @param {string} [message]
+ * @returns {number}
+ */
+export function parseId(value, message = 'Страница или запись не найдена') {
+  const id = Number(value);
+  if (!Number.isSafeInteger(id) || id <= 0) throw new NotFoundError(message);
+  return id;
+}
+
+/**
+ * Обработчик router.param: проверяет числовой параметр адреса до вызова контроллера.
+ * Подключение: router.param('id', idParam).
+ */
+export function idParam(req, res, next, value) {
+  parseId(value);
+  next();
+}
+
+/**
+ * Шаблон для LIKE «содержит текст»: символы % и _ из ввода ищутся буквально, а не как подстановка
+ * (иначе запрос «%» нашёл бы все записи).
+ * @param {string} value
+ * @param {{prefix?: boolean}} [options] prefix: только начало строки
+ */
+export function likePattern(value, { prefix = false } = {}) {
+  const escaped = String(value).replace(/[\\%_]/g, (ch) => `\\${ch}`);
+  return prefix ? `${escaped}%` : `%${escaped}%`;
 }

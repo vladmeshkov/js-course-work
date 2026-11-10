@@ -4,11 +4,12 @@ import { check, rules } from '../../shared/validate.js';
 import * as userModel from '../auth/user.model.js';
 import * as auditService from '../audit/audit.service.js';
 import { hashPassword } from '../auth/auth.service.js';
+import { likePattern } from '../../shared/validate.js';
 
 export async function listUsers({ q = '', role = '' } = {}) {
   const params = [];
   const where = [];
-  if (q) { params.push(`%${q.toLowerCase()}%`, `%${q.toLowerCase()}%`); where.push('(lower(u.login) LIKE ? OR lower(c.last_name) LIKE ?)'); }
+  if (q) { params.push(likePattern(q.toLowerCase()), likePattern(q.toLowerCase())); where.push('(lower(u.login) LIKE ? OR lower(c.last_name) LIKE ?)'); }
   if (role) { params.push(role); where.push('r.code = ?'); }
   const { rows } = await query(
     `SELECT u.id, u.login, u.status, u.last_login_at, u.created_at, r.code AS role_code, r.name AS role_name,
@@ -62,8 +63,8 @@ export async function changeRole(adminId, userId, roleCode) {
 export async function auditLog({ login = '', action = '', result = '', days = 0 } = {}, limit = 200) {
   const params = [];
   const where = [];
-  if (login) { params.push(`%${login.toLowerCase()}%`); where.push('lower(u.login) LIKE ?'); }
-  if (action) { params.push(`${action}%`); where.push('a.action LIKE ?'); }
+  if (login) { params.push(likePattern(login.toLowerCase())); where.push('lower(u.login) LIKE ?'); }
+  if (action) { params.push(likePattern(action, { prefix: true })); where.push('a.action LIKE ?'); }
   if (result) { params.push(result); where.push('a.result = ?'); }
   if (days) { params.push(days); where.push('a.at >= UTC_TIMESTAMP(3) - INTERVAL ? DAY'); }
   params.push(limit);

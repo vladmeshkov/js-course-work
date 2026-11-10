@@ -18,7 +18,7 @@ export default async function page({ navigate, refreshSession }) {
         <input class="mini mini--wide" name="confirm" placeholder="Слово ВОССТАНОВИТЬ" aria-label="Подтверждение восстановления" autocomplete="off">
         <button class="btn btn--ghost btn--small text-bad" type="submit">Восстановить</button>${errorSlot('confirm')}</form>
     </div>`)}
-  <div class="alert alert--info mt10">Восстановление заменяет все текущие данные данными из копии. Действие необратимо, перед ним создайте свежую копию.</div>
+  <div class="alert alert--info mt10">Восстановление заменяет все текущие данные данными из копии. Действие необратимо, перед ним создайте свежую копию. Журнал аудита сохраняется, все пользователи должны будут войти заново.</div>
 </section>`,
     mount(root) {
       bindForm(root.querySelector('#create-form'), async () => {
@@ -28,9 +28,10 @@ export default async function page({ navigate, refreshSession }) {
       });
       root.querySelectorAll('[data-restore]').forEach((form) => bindForm(form, async (data) => {
         const result = await api.post('/admin/backups/restore', { name: form.dataset.restore, confirm: data.confirm });
-        await refreshSession();   // после восстановления сессия могла измениться
+        // после восстановления все сеансы завершены: обновляем сессию и переходим ко входу
+        await refreshSession();
         flash('success', result.message);
-        await navigate('/admin/backups', { replace: true });
+        await navigate('/login', { replace: true });
       }));
     }
   };

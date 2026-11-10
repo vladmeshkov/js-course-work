@@ -7,6 +7,7 @@ import { csrf } from './shared/middleware/csrf.js';
 import { loadUser, enforceStaff2fa } from './shared/middleware/auth.js';
 import { notFound, errorHandler } from './shared/middleware/error-handler.js';
 import routes from './routes.js';
+import { config } from './config/index.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const publicDir = path.join(root, 'client');
@@ -18,7 +19,7 @@ const publicDir = path.join(root, 'client');
  */
 export function createApp() {
   const app = express();
-  app.set('trust proxy', 1);
+  app.set('trust proxy', config.trustProxy);
 
   app.use(helmet({
     contentSecurityPolicy: {
@@ -38,6 +39,8 @@ export function createApp() {
 
   const api = express.Router();
   api.use(express.json({ limit: '100kb' }));
+  // в Express 5 тела без JSON нет вовсе (undefined): контроллеры всегда получают объект
+  api.use((req, res, next) => { req.body ??= {}; next(); });
   api.use(sessionMiddleware());
   api.use(csrf);
   api.use(loadUser);

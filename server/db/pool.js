@@ -43,7 +43,17 @@ function adapt([result]) {
 
 /** Обёртка над соединением или пулом: db.query(sql, params) с плейсхолдерами «?», массивы раскрываются в IN (?). */
 function wrap(target) {
-  return { query: async (sql, params = []) => adapt(await target.query(sql, params)) };
+  return { query: async (sql, params = []) => adapt(await target.query(sql, params.map(safeParam))) };
+}
+
+/**
+ * NaN и Infinity mysql2 подставил бы в SQL как текст (WHERE id = NaN) и получил бы ошибку синтаксиса.
+ * Такие значения передаются как NULL: запрос просто ничего не найдёт, а сервис ответит «не найдено».
+ */
+function safeParam(value) {
+  if (typeof value === 'number' && !Number.isFinite(value)) return null;
+  if (Array.isArray(value)) return value.map(safeParam);
+  return value;
 }
 
 export const pool = {

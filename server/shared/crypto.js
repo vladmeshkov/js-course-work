@@ -18,7 +18,8 @@ export function encrypt(plain) {
  */
 export function decrypt(payload) {
   const [iv, tag, data] = payload.split(':').map((s) => Buffer.from(s, 'base64'));
-  const decipher = crypto.createDecipheriv('aes-256-gcm', config.dataKey, iv);
+  // длина тега задана явно: укороченный тег (слабее проверка подлинности) не принимается
+  const decipher = crypto.createDecipheriv('aes-256-gcm', config.dataKey, iv, { authTagLength: 16 });
   decipher.setAuthTag(tag);
   return Buffer.concat([decipher.update(data), decipher.final()]).toString('utf8');
 }

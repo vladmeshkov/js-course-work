@@ -137,10 +137,14 @@ describe('двухфакторная защита', () => {
     expect(setup.qrSvg).toContain('<svg');
     // повторный запрос отдаёт тот же секрет
     expect((await client.get('/security/2fa/setup')).body.secret).toBe(setup.secret);
-    const bad = await client.post('/security/2fa/setup', { code: '000000' });
+    const bad = await client.post('/security/2fa/setup', { code: '000000', password: 'Parol2026' });
     expect(bad.status).toBe(422);
     expect(bad.body.error.fields.code).toBeTruthy();
-    expect((await client.post('/security/2fa/setup', { code: totp(setup.secret) })).status).toBe(200);
+    // без пароля открытая сессия не может привязать свой аутентификатор
+    const noPassword = await client.post('/security/2fa/setup', { code: totp(setup.secret), password: 'неверный' });
+    expect(noPassword.status).toBe(422);
+    expect(noPassword.body.error.fields.password).toBeTruthy();
+    expect((await client.post('/security/2fa/setup', { code: totp(setup.secret), password: 'Parol2026' })).status).toBe(200);
     const shown = (await client.get('/security')).body;
     expect(shown.recoveryCodes).toHaveLength(10);
     expect((await client.get('/security')).body.recoveryCodes).toBeNull();

@@ -85,8 +85,21 @@ export async function enqueue(userId, { title, body }, db = { query }) {
 }
 
 /** Отправляет накопившиеся письма. Неудачные повторяются, после пяти попыток письмо помечается как неотправленное. */
+let processing = false;
+
 export async function processOutbox(limit = 20) {
   if (!enabled()) return { sent: 0, failed: 0 };
+  // медленный SMTP: следующий запуск по таймеру не берёт те же письма, пока идёт предыдущий
+  if (processing) return { sent: 0, failed: 0 };
+  processing = true;
+  try {
+    return await sendBatch(limit);
+  } finally {
+    processing = false;
+  }
+}
+
+async function sendBatch(limit) {
   const { rows } = await query("SELECT id, to_email, subject, body, attempts FROM mail_outbox WHERE status = 'pending' ORDER BY id LIMIT ?", [limit]);
   let sent = 0;
   let failed = 0;

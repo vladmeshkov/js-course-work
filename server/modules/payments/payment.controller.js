@@ -1,15 +1,11 @@
 import { NotFoundError, ValidationError } from '../../shared/errors.js';
 import { parseAmount } from '../../shared/money.js';
+import { parseId } from '../../shared/validate.js';
 import * as clientModel from '../clients/client.model.js';
 import * as accountService from '../accounts/account.service.js';
 import * as paymentService from './payment.service.js';
 
-/** Числовой идентификатор из адреса; иначе 404. */
-function idOf(value, message = 'Страница или запись не найдена') {
-  const id = Number(value);
-  if (!Number.isInteger(id) || id <= 0) throw new NotFoundError(message);
-  return id;
-}
+const idOf = parseId;
 
 /** Платежи и переводы: шаблоны, автоплатежи, последние платежи. */
 export async function hub(req, res) {

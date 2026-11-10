@@ -48,7 +48,7 @@ export function generateCardNumber(system) {
 export async function issueCard(userId, { accountId, system, pin }) {
   const client = await verifiedClient(userId);
   const errors = {};
-  if (!SYSTEMS[system]) errors.system = 'Выберите платёжную систему';
+  if (!Object.hasOwn(SYSTEMS, String(system))) errors.system = 'Выберите платёжную систему';
   if (!/^\d{4}$/.test(String(pin ?? ''))) errors.pin = 'PIN-код: ровно четыре цифры';
   const account = await accountModel.findById(accountId);
   if (!account || account.owner_client_id !== client.id || account.status !== 'open' || !['current', 'savings'].includes(account.kind)) {

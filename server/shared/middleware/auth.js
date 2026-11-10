@@ -2,9 +2,25 @@ import { AppError, ForbiddenError } from '../errors.js';
 import * as userModel from '../../modules/auth/user.model.js';
 import * as settingsModel from '../../modules/settings/settings.model.js';
 
-/** Загружает пользователя сессии в req.user. */
+/** Абсолютный срок сессии после входа и допустимый простой. */
+const SESSION_ABSOLUTE_MS = 8 * 60 * 60 * 1000;
+const SESSION_IDLE_MS = 30 * 60 * 1000;
+
+/**
+ * Загружает пользователя сессии в req.user. Сессия завершается через 8 часов после входа
+ * и после 30 минут без запросов, даже если cookie ещё действует (украденный идентификатор живёт недолго).
+ */
 export async function loadUser(req, res, next) {
   req.user = null;
+  const now = Date.now();
+  const s = req.session;
+  if (s.userId && s.loginAt && (now - s.loginAt > SESSION_ABSOLUTE_MS || now - (s.seenAt ?? s.loginAt) > SESSION_IDLE_MS)) {
+    delete s.userId;
+    delete s.loginAt;
+    delete s.seenAt;
+  }
+  // отметка активности пишется не чаще раза в минуту, чтобы не сохранять сессию на каждый запрос
+  if (s.userId && now - (s.seenAt ?? 0) > 60 * 1000) s.seenAt = now;
   if (req.session.userId) {
     const user = await userModel.findById(req.session.userId);
     if (user && user.status === 'active') req.user = user;

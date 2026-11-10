@@ -2,6 +2,7 @@
 // заявка на ручном рассмотрении и задержанный перевод. Запускается после npm run db:seed на пустой базе.
 // Использование: npm run db:demo
 import { pool } from '../server/db/pool.js';
+import { config } from '../server/config/index.js';
 import * as userModel from '../server/modules/auth/user.model.js';
 import * as clientModel from '../server/modules/clients/client.model.js';
 import * as accountModel from '../server/modules/accounts/account.model.js';
@@ -13,6 +14,11 @@ import { pay } from '../server/modules/payments/payment.service.js';
 import * as transferService from '../server/modules/transfers/transfer.service.js';
 import * as interbankService from '../server/modules/transfers/interbank.service.js';
 import { buildIban } from '../server/shared/iban.js';
+
+if (config.isProd) {
+  console.error('db:demo создаёт демонстрационные операции и не запускается при NODE_ENV=production');
+  process.exit(1);
+}
 
 const one = async (sql, params) => (await pool.query(sql, params)).rows[0];
 const userOf = async (login) => {

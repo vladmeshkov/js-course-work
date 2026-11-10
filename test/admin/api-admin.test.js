@@ -22,11 +22,14 @@ async function makeUser(prefix, roleCode) {
   return { id, login };
 }
 
+let adminLogin;
+
 beforeAll(async () => {
   backupDir = await mkdtemp(path.join(os.tmpdir(), 'taler-api-backup-'));
   config.backup.dir = backupDir;
   const a = await makeUser('apiadm', 'admin');
   adminId = a.id;
+  adminLogin = a.login;
   admin = await loggedIn(app, a.login);
 });
 
@@ -267,13 +270,19 @@ describe('резервные копии', () => {
     expect(noWord.body.error.fields.confirm).toContain('ВОССТАНОВИТЬ');
     expect((await pool.query("SELECT value FROM settings WHERE `key` = 'test.api_marker'")).rows[0].value).toBe('после копии');
 
+    // запись журнала, сделанная после копии, должна пережить восстановление
+    const { insertId: lateAudit } = await pool.query("INSERT INTO audit_log (action, result) VALUES ('test.after_backup', 'success')");
     const restored = await admin.post('/admin/backups/restore', { name, confirm: 'ВОССТАНОВИТЬ' });
     expect(restored.status).toBe(200);
-    expect(restored.body.message).toBe('База данных восстановлена из копии');
+    expect(restored.body.message).toMatch(/^База данных восстановлена из копии/);
     expect((await pool.query("SELECT value FROM settings WHERE `key` = 'test.api_marker'")).rows[0].value).toBe('до копии');
     await pool.query("DELETE FROM settings WHERE `key` = 'test.api_marker'");
+    expect((await pool.query('SELECT action FROM audit_log WHERE id = ?', [lateAudit])).rows[0].action).toBe('test.after_backup');
+    expect((await pool.query("SELECT 1 FROM audit_log WHERE action = 'backup.restore' AND entity_id = ?", [name])).rows).toHaveLength(1);
 
-    // сессия администратора после восстановления работает
+    // все сеансы завершены: прежняя сессия администратора больше не действует, после входа работа продолжается
+    expect((await admin.get('/admin/backups')).status).toBe(401);
+    admin = await loggedIn(app, adminLogin);
     expect((await admin.get('/admin/backups')).status).toBe(200);
   }, 60000);
 

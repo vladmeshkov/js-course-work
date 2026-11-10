@@ -38,6 +38,8 @@ export function rejectClient(clientId, operatorId, comment) {
   return withTransaction(async (db) => {
     const client = await lockPending(db, clientId);
     await clientModel.setKycStatus(db, clientId, 'rejected', reason);
+    // номер документа освобождается: если анкету подал не его владелец, настоящий владелец сможет зарегистрироваться
+    await clientModel.releaseIdNumber(db, clientId);
     await auditService.log({ userId: operatorId, action: 'kyc.reject', entity: 'client', entityId: clientId, details: { comment: reason } }, db);
     await notify(client.user_id, { type: 'account', title: 'Заявка отклонена', body: `Причина: ${reason}`, link: '/cabinet' }, db);
   });

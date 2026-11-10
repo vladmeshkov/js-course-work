@@ -46,6 +46,15 @@ const normalizeCode = (code) => String(code ?? '').toUpperCase().replace(/[^A-Z0
  * Подтверждает настройку кодом из приложения и включает 2FA.
  * @returns {Promise<string[]>} резервные коды
  */
+/**
+ * Проверка пароля перед изменением защиты: без неё 2FA мог бы привязать к чужой учётной записи
+ * любой, кто получил её открытую сессию.
+ */
+export async function checkPassword(user, password) {
+  const fresh = await userModel.findById(user.id);
+  if (!(await bcrypt.compare(String(password ?? ''), fresh.password_hash))) throw new ValidationError({ password: 'Неверный пароль' });
+}
+
 export async function confirmSetup(user, secret, code) {
   if (user.totp_enabled) throw new BusinessError('Двухфакторная защита уже включена');
   const step = verify(secret, code);
