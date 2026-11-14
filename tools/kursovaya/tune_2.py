@@ -18,8 +18,11 @@ if ARGS[:1] == ['--part']:
 LAY = os.path.join(ROOT, 'docs', 'kursovaya', 'src', f'layout-{PART}.json')
 KEYS = {
     '2': ['func', 'arch', 'transfer', 'loans', 'deposits', 'cabinet', 'transfer-ui', 'deposit-ui', 'statement', 'workplace', 'loan-review', 'security'],
-    '3': ['run', 'iban', 'code'],
+    '3': ['run'],
 }[PART]
+if PART == '3':
+    from build_3 import SCEN
+    KEYS += [x[0] for x in SCEN if x[0] != 'lead']
 OPTIONS = [('after', 1.0), ('before', 1.0), ('after', 0.9), ('before', 0.9), ('after', 0.8), ('before', 0.8)] + (
     [('after', 0.7), ('before', 0.7), ('after', 0.6), ('before', 0.6)] + [(k, sc) for k in (2, 3) for sc in (1.0, 0.8, 0.7, 0.6)]
     if PART == '3' else [])
@@ -44,7 +47,8 @@ def main():
     print('исходно', best)
     for key in keys:
         cur = layout.get(key, {'mode': 'after', 'scale': 1.0})
-        for mode, scale in OPTIONS:
+        opts = OPTIONS if key == 'run' or PART != '3' else [('after', 1.0), ('before', 1.0), ('after', 0.8), ('before', 0.8)]
+        for mode, scale in opts:
             trial = dict(layout, **{key: {'mode': mode, 'scale': scale}})
             sc = score(trial)
             # меньшая пустота; при равенстве – крупнее рисунок
