@@ -17,40 +17,46 @@ const Lf = (o, t = 0.5) => [o.x, o.y + o.h * t];
 const Rt = (o, t = 0.5) => [o.x + o.w, o.y + o.h * t];
 
 /* =====================  Варианты использования  ===================== */
-// По правилам методички: актёр — должность, вариант использования — эллипс с глаголом,
-// «include» идёт от базового варианта к включаемому, «extend» — от расширяющего к базовому,
-// обобщение (Клиент — Гость) — линия с пустым треугольником к родителю.
-// Столбцы: A — основные действия клиента, B — включаемые и расширяющие, C — действия сотрудников.
+// По правилам методички: актёр – роль, вариант использования – эллипс с глаголом, «include» идёт от базового
+// варианта к включаемому, «extend» – от расширяющего к базовому, обобщение – линия с пустым треугольником.
+// Расстановка ручная (как в учебных диаграммах StarUML): основные варианты крупнее, включаемые и расширяющие
+// мельче и стоят рядом с базовыми, общие для всех ролей варианты (вход, безопасность) – в отдельном пакете.
 function useCases() {
   const d = new Diagram('Варианты использования');
-  const rx = 118, ry = 27, P = 60, y0 = 92;
-  const cxA = 265, cxB = 625, cxC = 1000, axL = 40, axR = 1290;
-  const Y = (r) => y0 + r * P;
-  const mk = (cx, r, text) => ({ cx, cy: Y(r), rx, ry, text, size: 15 });
-  d.frame({ x: 115, y: 30, w: 1060, h: Y(19.1) - 30, title: 'Система дистанционного банковского обслуживания', center: true });
+  const U = (cx, cy, rx, ry, text, size = 15) => d.ellipse({ cx, cy, rx, ry, text, size });
+  const big = (cx, cy, text) => U(cx, cy, 112, 31, text, 16);
+  const mid = (cx, cy, text) => U(cx, cy, 104, 27, text, 15);
+  const small = (cx, cy, text) => U(cx, cy, 92, 24, text, 13);
 
-  const a = {
-    rates: mk(cxA, 0, 'Просмотреть\nкурсы валют'), reg: mk(cxA, 1, 'Зарегистрироваться'), acc: mk(cxA, 2, 'Открыть счёт'),
-    xfer: mk(cxA, 4, 'Перевести деньги'), pay: mk(cxA, 6, 'Оплатить услугу'), dep: mk(cxA, 8, 'Оформить вклад'),
-    loan: mk(cxA, 10, 'Оформить кредит'), repay: mk(cxA, 12, 'Погасить кредит'), card: mk(cxA, 14, 'Выпустить карту'),
-    stmt: mk(cxA, 16, 'Получить выписку')
-  };
-  const b = {
-    conv: mk(cxB, 0, 'Рассчитать\nконвертацию'),
-    fx: mk(cxB, 3, 'Конвертировать\nвалюту'), hold: mk(cxB, 4, 'Передать\nна проверку'), code: mk(cxB, 5, 'Подтвердить\nоперацию кодом'),
-    auto: mk(cxB, 6, 'Настроить\nавтоплатёж'), tpl: mk(cxB, 7, 'Сохранить\nшаблон платежа'),
-    calc: mk(cxB, 8, 'Рассчитать доход\nпо вкладу'), early: mk(cxB, 9, 'Закрыть вклад\nдосрочно'),
-    score: mk(cxB, 10, 'Оценить кредито-\nспособность'), sched: mk(cxB, 11, 'Составить график\nплатежей'),
-    prepay: mk(cxB, 12, 'Погасить\nдосрочно'), block: mk(cxB, 14, 'Заблокировать\nкарту'), limit: mk(cxB, 15, 'Установить\nлимиты'),
-  };
-  const c = {
-    check: mk(cxC, 1, 'Проверить анкету\nклиента'), lock: mk(cxC, 2, 'Заблокировать\nсчёт клиента'), cash: mk(cxC, 3, 'Принять и выдать\nналичные'),
-    fraud: mk(cxC, 4, 'Разобрать\nзадержанный перевод'), special: mk(cxC, 5.45, 'Назначить особый\nконтроль'),
-    review: mk(cxC, 10, 'Рассмотреть заявку\nна кредит'), issue: mk(cxC, 11.45, 'Выдать средства\nпо кредиту'),
-    rates: mk(cxC, 13, 'Задать курсы\nи тарифы'), users: mk(cxC, 14, 'Управлять\nпользователями'), audit: mk(cxC, 15, 'Просмотреть\nжурнал аудита'),
-    report: mk(cxC, 16, 'Сформировать\nотчёты'), eod: mk(cxC, 17, 'Закрыть\nоперационный день'), backup: mk(cxC, 18.45, 'Создать\nрезервную копию')
-  };
-  for (const g of [a, b, c]) Object.values(g).forEach((e) => d.ellipse(e));
+  d.frame({ x: 170, y: 15, w: 1150, h: 1255, title: 'Система дистанционного банковского обслуживания', center: true });
+  d.frame({ x: 185, y: 1012, w: 535, h: 245, title: 'Общие варианты использования', center: true, size: 14 });
+
+  // гость
+  const rates = mid(320, 82, 'Просмотреть\nкурсы валют'), conv = small(585, 72, 'Рассчитать\nконвертацию');
+  const reg = mid(320, 152, 'Зарегистрироваться'), form = small(585, 150, 'Заполнить анкету');
+  // клиент: основные варианты слева, включаемые и расширяющие правее
+  const acc = mid(310, 232, 'Открыть счёт');
+  const xfer = big(320, 320, 'Перевести деньги'), fx = small(585, 238, 'Конвертировать\nвалюту');
+  const code = U(605, 380, 112, 29, 'Подтвердить\nоперацию кодом', 15), hold = small(840, 300, 'Передать\nна проверку');
+  const pay = big(320, 440, 'Оплатить услугу'), tpl = small(590, 460, 'Сохранить\nшаблон платежа'), auto = small(590, 520, 'Настроить\nавтоплатёж');
+  const dep = big(320, 560, 'Оформить вклад'), calc = small(590, 585, 'Рассчитать\nдоход по вкладу'), early = small(590, 645, 'Закрыть вклад\nдосрочно');
+  const loan = big(320, 685, 'Оформить кредит'), score = U(845, 712, 112, 29, 'Оценить\nкредитоспособность', 15), sched = small(590, 740, 'Составить график\nплатежей');
+  const repay = mid(315, 780, 'Погасить кредит'), prepay = small(590, 803, 'Погасить\nдосрочно');
+  const card = mid(315, 870, 'Выпустить карту'), block = small(590, 864, 'Заблокировать\nкарту'), limit = small(590, 920, 'Установить\nлимиты');
+  const stmt = mid(315, 965, 'Получить выписку'), pdf = small(590, 978, 'Сформировать\nдокумент PDF');
+  // общие варианты
+  const auth = mid(320, 1085, 'Авторизоваться'), tfa = small(590, 1078, 'Подтвердить вход\nкодом 2FA');
+  const sec = mid(320, 1150, 'Управлять\nбезопасностью'), setup = small(590, 1150, 'Настроить\n2FA');
+  const notif = mid(320, 1215, 'Просмотреть\nуведомления');
+  // сотрудники
+  const kyc = mid(1075, 95, 'Проверить анкету\nклиента'), first = small(860, 160, 'Открыть первый\nсчёт клиента');
+  const cash = mid(1075, 180, 'Принять и выдать\nналичные'), lock = mid(1075, 250, 'Заблокировать\nсчёт клиента');
+  const fraud = big(1070, 360, 'Разобрать\nзадержанный перевод'), special = small(1110, 445, 'Назначить особый\nконтроль');
+  const review = big(1070, 630, 'Рассмотреть заявку\nна кредит'), issue = small(1110, 715, 'Выдать средства\nпо кредиту');
+  const trf = mid(1090, 790, 'Задать курсы\nи тарифы'), users = mid(1090, 853, 'Управлять\nпользователями');
+  const audit = mid(1090, 916, 'Просмотреть\nжурнал аудита'), reports = mid(1090, 979, 'Сформировать\nотчёты');
+  const backup = mid(1090, 1042, 'Создать\nрезервную копию'), eod = big(1080, 1125, 'Закрыть\nоперационный день');
+  const accrue = small(845, 1062, 'Начислить проценты\nпо вкладам'), charge = small(828, 1125, 'Списать платежи\nпо кредитам'), clear = small(845, 1192, 'Отправить\nклиринговый пакет');
 
   // точка на границе эллипса в сторону заданной точки
   const edge = (e, [tx, ty]) => {
@@ -59,50 +65,40 @@ function useCases() {
   };
   const link = (from, to, kind) => {
     const p = edge(from, [to.cx, to.cy]); const q = edge(to, [from.cx, from.cy]);
-    const horiz = Math.abs(p[1] - q[1]) < 3;
     const mx = (p[0] + q[0]) / 2, my = (p[1] + q[1]) / 2;
-    const vertical = Math.abs(p[0] - q[0]) < 3;
-    d.line({
-      pts: [p, q], dashed: true, arrow: 'open', label: `«${kind}»`, italic: true, size: 14,
-      at: vertical ? { x: mx + 8, y: my + 5, anchor: 'start' } : { x: mx, y: my - (horiz ? 6 : 5) }
-    });
+    const vertical = Math.abs(p[0] - q[0]) < Math.abs(p[1] - q[1]);
+    d.line({ pts: [p, q], dashed: true, arrow: 'open', label: `«${kind}»`, italic: true, size: 12,
+      at: vertical ? { x: mx + 6, y: my + 4, anchor: 'start' } : { x: mx, y: my - 5 } });
   };
-  const inc = (from, to) => link(from, to, 'include');
-  const ext = (from, to) => link(from, to, 'extend');
+  const inc = (a, b) => link(a, b, 'include');
+  const ext = (a, b) => link(a, b, 'extend');
+  inc(reg, form); ext(conv, rates);
+  ext(fx, xfer); inc(xfer, code); inc(pay, code); ext(hold, xfer); inc(hold, fraud);
+  ext(tpl, pay); ext(auto, pay); inc(dep, calc); ext(early, dep);
+  inc(loan, score); inc(loan, sched); inc(review, score); ext(issue, review); ext(prepay, repay);
+  ext(block, card); ext(limit, card); inc(stmt, pdf);
+  ext(tfa, auth); inc(sec, setup);
+  inc(kyc, first); ext(special, fraud);
+  inc(eod, accrue); inc(eod, charge); inc(eod, clear);
 
-  // включение: от базового варианта к включаемому
-  inc(a.xfer, b.code); inc(a.pay, b.code); inc(a.dep, b.calc);
-  inc(a.loan, b.score); inc(a.loan, b.sched); inc(c.review, b.score); inc(b.hold, c.fraud);
-  // расширение: от расширяющего варианта к базовому
-  ext(b.conv, a.rates); ext(b.fx, a.xfer); ext(b.hold, a.xfer); ext(b.auto, a.pay); ext(b.tpl, a.pay); ext(b.early, a.dep);
-  ext(b.prepay, a.repay); ext(b.block, a.card); ext(b.limit, a.card);
-  ext(c.special, c.fraud); ext(c.issue, c.review);
-
-  // актёры слева: Гость и Клиент (обобщение)
-  const actor = (cx, rMid, name) => { d.actor({ cx, y: Y(rMid) - 37, name }); return Y(rMid); };
-  const gy = actor(axL, 0.5, 'Гость');
-  const cy = actor(axL, 9, 'Клиент');
-  d.line({ pts: [[axL, cy - 37], [axL, Y(0.5) - 37 + 102]], arrow: 'hollow' });
-  const assoc = (ax, ay, e, side, ends) => {
-    const start = [ax + side * 22, ay];
-    const q = [e.cx - side * e.rx, e.cy];
-    d.line({ pts: [start, q], arrow: 'open' });
-    return { start, q, ends };
-  };
-  const g = [assoc(axL, gy, a.rates, 1), assoc(axL, gy, a.reg, 1)];
-  ['acc', 'xfer', 'pay', 'dep', 'loan', 'repay', 'card', 'stmt'].forEach((k) => assoc(axL, cy, a[k], 1));
-  void g;
-  // сотрудники справа
-  const staff = (name, rMid, cases) => {
-    const sy = actor(axR, rMid, name);
+  // актёры и ассоциации (стрелка к варианту использования)
+  const actor = (cx, mid, name) => { d.actor({ cx, y: mid - 37, name }); return [cx, mid]; };
+  // линия идёт в крайнюю точку эллипса со стороны актёра: так она не пересекает соседние варианты
+  const assoc = ([ax, ay], side, cases) => {
     for (const e of cases) {
-      const start = [axR - 22, sy]; d.line({ pts: [start, [e.cx + e.rx, e.cy]], arrow: 'open' });
+      const start = [ax + side * 22, ay];
+      d.line({ pts: [start, [e.cx - side * e.rx, e.cy]], arrow: 'open' });
     }
   };
-  staff('Операционист', 2, [c.check, c.lock, c.cash]);
-  staff('Специалист по\nмониторингу', 4.5, [c.fraud, c.special]);
-  staff('Кредитный\nспециалист', 10.5, [c.review, c.issue]);
-  staff('Администратор', 15.7, [c.rates, c.users, c.audit, c.report, c.eod, c.backup]);
+  const guest = actor(60, 115, 'Гость'), client = actor(60, 590, 'Клиент'), user = actor(60, 1150, 'Пользователь');
+  d.line({ pts: [[60, client[1] - 37], [60, guest[1] - 37 + 102]], arrow: 'hollow' });
+  assoc(guest, 1, [rates, reg]);
+  assoc(client, 1, [acc, xfer, pay, dep, loan, repay, card, stmt]);
+  assoc(user, 1, [auth, sec, notif]);
+  assoc(actor(1420, 170, 'Операционист'), -1, [kyc, cash, lock]);
+  assoc(actor(1420, 400, 'Специалист по\nмониторингу'), -1, [fraud, special]);
+  assoc(actor(1420, 660, 'Кредитный\nспециалист'), -1, [review, issue]);
+  assoc(actor(1420, 960, 'Администратор'), -1, [trf, users, audit, reports, backup, eod]);
 
   d.checkCrossings = () => {
     const segs = d.items.filter((i) => i.t === 'line').map((l) => l.pts);

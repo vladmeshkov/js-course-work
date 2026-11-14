@@ -45,7 +45,7 @@ export async function createTransfer(userId, input) {
     const iban = String(input.toIban ?? '').replace(/\s/g, '').toUpperCase();
     if (!isValidIban(iban)) throw new ValidationError({ toIban: 'Неверный номер счёта: проверьте символы и контрольные цифры' });
     to = await accountModel.findByIban(iban);
-    if (!to || !['current', 'savings'].includes(to.kind) || to.status === 'closed') throw new ValidationError({ toIban: 'Счёт получателя не найден в ТалерБанке' });
+    if (!to || !['current', 'savings'].includes(to.kind) || to.status === 'closed') throw new ValidationError({ toIban: 'Счёт получателя не найден в банке' });
   }
   if (to.id === from.id) throw new ValidationError({ toAccountId: 'Счета списания и зачисления совпадают' });
 

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Приложения пояснительной записки в оформлении образца:
 А (обязательное) – отчёт о проверке на заимствования (рисунок вставляется после проверки, сейчас жёлтая пометка);
-Б (обязательное) – листинг кода алгоритмов, реализующих основную бизнес-логику (фрагменты берутся из исходников);
-В (обязательное) – листинг скрипта генерации базы данных (db/schema.sql, собирается `npm run db:schema`).
+Б (обязательное) – листинги алгоритмов, для которых в разделе 2.4 приведены схемы (перевод, кредиты, вклады);
+В (обязательное) – операторы CREATE TABLE основных таблиц из ER-диаграммы (из db/schema.sql, `npm run db:schema`).
 Код набран Courier New 10 пт, одинарный интервал; перенесённая часть длинной строки получает отступ.
 Использование: python3 build_app.py [выход.docx]
 """
@@ -17,15 +17,35 @@ ROOT = os.path.abspath(os.path.join(KURS, '..', '..'))
 
 # (подпись листинга, файл, функции по порядку)
 LISTINGS = [
-    ('Проведение документа двойной записи', 'server/modules/ledger/ledger.service.js', ['post', 'postInTransaction']),
-    ('Подтверждение и проведение перевода', 'server/modules/transfers/transfer.service.js', ['checkDailyLimit', 'confirmTransfer', 'executeIntentIn']),
-    ('Расчёт аннуитетного платежа и графика платежей по кредиту', 'server/modules/loans/schedule.js', ['annuityPayment', 'buildSchedule']),
-    ('Скоринговая оценка заявки на кредит', 'server/modules/loans/scoring-card.js', ['scoreApplication']),
-    ('Начисление процентов по вкладам', 'server/shared/interest.js', ['interestForPeriod']),
-    ('Начисление процентов и закрытие вкладов при закрытии операционного дня', 'server/modules/deposits/deposit.service.js', ['processDeposits']),
-    ('Досрочное закрытие вклада с перерасчётом процентов', 'server/modules/deposits/deposit.service.js', ['quoteEarlyClose', 'closeEarly']),
-    ('Закрытие операционного дня', 'server/modules/admin/eod.service.js', ['closeDay']),
+    ('Перевод клиенту банка', 'server/modules/transfers/transfer.service.js', ['createTransfer', 'confirmTransfer', 'executeIntentIn']),
+    ('Обслуживание кредитов при закрытии операционного дня', 'server/modules/loans/loan.service.js', ['canPay', 'chargeInstallment', 'processLoans']),
+    ('Начисление процентов и возврат вкладов', 'server/modules/deposits/deposit.service.js', ['processDeposits']),
 ]
+# таблицы общей ER-диаграммы (рисунок 1.10, tools/er-drawio.js: corePage) – в приложение В идут только они
+ER_TABLES = ['roles', 'users', 'currencies', 'payment_providers', 'interbank_transfers', 'audit_log', 'clients', 'accounts',
+             'payments', 'documents', 'deposit_products', 'deposits', 'cards', 'postings', 'transfer_intents',
+             'loan_products', 'loan_applications', 'loans', 'fraud_cases']
+
+
+def er_tables_sql():
+    """Операторы CREATE TABLE основных таблиц в порядке скрипта db/schema.sql (с комментарием над таблицей)."""
+    lines = open(os.path.join(ROOT, 'db', 'schema.sql'), encoding='utf-8').read().split('\n')
+    out = ['-- Основные таблицы базы данных (MySQL 8)', '']
+    i = 0
+    while i < len(lines):
+        m = re.match(r'CREATE TABLE (\w+) \(', lines[i])
+        if m and m.group(1) in ER_TABLES:
+            top = i
+            while top > 0 and lines[top - 1].startswith('--') and not re.match(r'-- \d{3}_', lines[top - 1]):
+                top -= 1
+            end = i
+            while not lines[end].rstrip().endswith(');'):
+                end += 1
+            out += lines[top:end + 1] + ['']
+            i = end
+        i += 1
+    return out[:-1]
+
 
 
 def extract(path, name):
@@ -95,10 +115,8 @@ def build(out):
             body += extract(path, name)
         b.code(body)
 
-    b.heading('В', 'обязательное', 'Листинг скрипта генерации базы данных')
-    sql = open(os.path.join(ROOT, 'db', 'schema.sql'), encoding='utf-8').read().rstrip('\n').split('\n')
-    sql[0] = '-- Полный скрипт создания базы данных (MySQL 8)'
-    b.code(sql)
+    b.heading('В', 'обязательное', 'Листинг скрипта генерации основных таблиц базы данных')
+    b.code(er_tables_sql())
     b.save(out)
 
 
