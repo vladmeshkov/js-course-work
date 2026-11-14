@@ -146,6 +146,11 @@ def measure(seq):
             m = measure_merge(n)
             L, R = max(L, m['L'] - x), max(R, x + m['R'])
             H += m['H']
+        elif n[0] == 'close':
+            m = measure_close(n)
+            L, R = max(L, m['L'] - x), max(R, x + m['R'])
+            H += m['H']
+            x += close_shift(n)
         else:
             hw, h = size(n)
             L, R = max(L, hw - x), max(R, x + hw)
@@ -175,6 +180,50 @@ def measure_if(n):
     return dict(offL=offL, offR=offR, body=body, both=both, H=H, shift=shift,
                 ended=y['ended'] and no_['ended'], ye=y, ne=no_,
                 L=max(DW / 2, offL + y['L']), R=max(DW / 2, offR + no_['R']))
+
+
+STEP_X, STEP_Y = 62, 44
+
+
+def measure_close(n):
+    """('close', [k1, k2, ...]): соединители выходов в порядке вложенности условий – от самого внутреннего.
+    Первые два сливаются друг с другом, каждый следующий присоединяется ниже, на своём уровне."""
+    k = len(n[1])
+    width = (k - 1) * STEP_X
+    H = 2 * CR + 24 + (k - 1) * STEP_Y
+    return dict(L=CR, R=width + CR, H=H)
+
+
+def close_shift(n):
+    """Сдвиг оси после лесенки: ствол уходит вправо при каждом слиянии."""
+    xs = [i * STEP_X for i in range(len(n[1]))]
+    trunk = (xs[0] + xs[1]) / 2
+    for x in xs[2:]:
+        trunk = (trunk + x) / 2
+    return trunk
+
+
+def draw_close(s, n, cx, y):
+    labels = n[1]
+    xs = [cx + i * STEP_X for i in range(len(labels))]
+    for x, lab in zip(xs, labels):
+        s.connector(x, y, lab)
+    top = y + 2 * CR
+    # уровень 1: сливаются ветви самого внутреннего условия
+    level = top + 24
+    s.line([(xs[0], top), (xs[0], level)])
+    s.line([(xs[1], top), (xs[1], level)])
+    s.line([(xs[0], level), (xs[1], level)])
+    trunk = (xs[0] + xs[1]) / 2
+    # каждое внешнее условие закрывается ниже: ствол продолжается, его ветвь присоединяется справа
+    for x in xs[2:]:
+        nxt = level + STEP_Y
+        s.line([(trunk, level), (trunk, nxt)])
+        s.line([(x, top), (x, nxt)])
+        s.line([(trunk, nxt), (x, nxt)])
+        trunk = (trunk + x) / 2
+        level = nxt
+    return level, trunk
 
 
 def measure_merge(n):
@@ -214,6 +263,8 @@ def draw(s, seq, cx, y):
             y, cx = draw_if(s, n, cx, y)
         elif n[0] == 'merge':
             y = draw_merge(s, n, cx, y)
+        elif n[0] == 'close':
+            y, cx = draw_close(s, n, cx, y)
         else:
             y = draw_node(s, n, cx, y)
     return y, cx
@@ -271,14 +322,28 @@ def draw_merge(s, n, cx, y):
     return merge
 
 
+STACK_GAP = 50
+
+
+def measure_column(col):
+    """Колонка – последовательность или несколько последовательностей одна под другой (список списков)."""
+    parts = col if col and isinstance(col[0], list) else [col]
+    ms = [measure(p) for p in parts]
+    return dict(L=max(m['L'] for m in ms), R=max(m['R'] for m in ms),
+                H=sum(m['H'] for m in ms) + STACK_GAP * (len(ms) - 1), parts=parts)
+
+
 def chart(name, columns, colgap=60, margin=24):
-    ms = [measure(c) for c in columns]
+    ms = [measure_column(c) for c in columns]
     W = margin * 2 + sum(m['L'] + m['R'] for m in ms) + colgap * (len(ms) - 1)
     H = margin * 2 + max(m['H'] for m in ms)
     s = Svg(int(W), int(H))
     x = margin
-    for c, m in zip(columns, ms):
-        draw(s, c, x + m['L'], margin)
+    for m in ms:
+        y = margin
+        for p in m['parts']:
+            draw(s, p, x + m['L'], y)
+            y += measure(p)['H'] + STACK_GAP
         x += m['L'] + m['R'] + colgap
     s.save(name)
 
@@ -289,36 +354,36 @@ def err(*lines):
 
 def flow_transfer():
     """Перевод клиенту банка: createTransfer, confirmTransfer, executeIntentIn.
-    Условия сформулированы так, чтобы продолжение алгоритма поочерёдно шло влево и вправо."""
+    Условия вложены друг в друга: продолжение алгоритма – внутри ветви, выходы нумеруются от самого
+    внутреннего условия (1, 2) к внешнему (6) и закрываются лесенкой в том же порядке."""
     col1 = [
         ('term', ['Начало']),
         ('io', ['Получить данные', 'формы: счета,', 'сумма']),
         ('if', ['Счета и сумма', 'корректны?'],
          [('proc', ['Пересчитать', 'сумму в BYN', 'по курсу НБ'])],
-         [err('неверные данные', 'перевода'), ('exit', 1)]),
+         [err('неверные данные', 'перевода'), ('exit', 6)]),
         ('if', ['Суточный лимит', 'превышен?'],
-         [err('превышен', 'суточный лимит'), ('exit', 2)],
+         [err('превышен', 'суточный лимит'), ('exit', 5)],
          [('proc', ['Вычислить', 'баллы риска', 'антифрода'])]),
         ('if', ['Баллы ниже', 'порога', 'проверки?'],
          [('exit', 'А')],
-         [('proc', ['Зарезервировать', 'сумму, открыть', 'случай антифрода']), ('io', ['Вывести:', 'перевод', 'на проверке']), ('exit', 3)]),
+         [('proc', ['Зарезервировать', 'сумму, открыть', 'случай антифрода']), ('io', ['Вывести:', 'перевод', 'на проверке']), ('exit', 4)]),
     ]
     col2 = [
         ('in', 'А'),
-        ('if', ['Нужен код', 'подтверждения?'],
-         [('proc', ['Отправить', 'одноразовый', 'код']), ('io', ['Получить код', 'от клиента']),
-          ('if', ['Код', 'верен?'], [], [err('неверный код'), ('exit', 4)])],
-         []),
-        ('pred', ['Провести', 'перевод', 'в транзакции']),
+        ('pred', ['Запросить код', 'подтверждения,', 'если требуется']),
+        ('if', ['Код верен или', 'не требуется?'],
+         [('pred', ['Провести', 'перевод', 'в транзакции'])],
+         [err('неверный код'), ('exit', 3)]),
         ('if', ['Проводка', 'выполнена?'],
-         [('proc', ['Отметить', 'перевод', 'проведённым']), ('io', ['Вывести:', 'перевод', 'выполнен']), ('exit', 5)],
-         [err('недостаточно', 'средств'), ('exit', 6)]),
+         [('proc', ['Отметить', 'перевод', 'проведённым']), ('io', ['Вывести:', 'перевод', 'выполнен']), ('exit', 1)],
+         [err('недостаточно', 'средств'), ('exit', 2)]),
     ]
-    col3 = [
-        ('merge', [[('in', k)] for k in (1, 2, 3, 4, 5, 6)]),
+    closing = [
+        ('close', [1, 2, 3, 4, 5, 6]),
         ('term', ['Конец']),
     ]
-    chart('flow-transfer.svg', [col1, col2, col3], colgap=40)
+    chart('flow-transfer.svg', [col1, [col2, closing]], colgap=50)
 
 
 def flow_loans():
