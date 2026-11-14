@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1204" height="1202" viewBox="0 0 1204 1202">
-<rect x="0" y="0" width="1204" height="1202" fill="white"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1376" height="1080" viewBox="0 0 1376 1080">
+<rect x="0" y="0" width="1376" height="1080" fill="white"/>
 <defs><marker id="a" markerWidth="9" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,4 L0,8 z" fill="#000"/></marker></defs>
 <rect x='250.0' y='24' width='142' height='42' rx='21.0' ry='21.0' fill='white' stroke='#000' stroke-width='1.4'/>
 <text x='321.0' y='49.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Начало</text>
@@ -77,95 +77,95 @@
 <path d='M434.0,994.0 L434.0,1020.0' fill='none' stroke='#000' stroke-width='1.4' marker-end='url(#a)'/>
 <circle cx='434.0' cy='1038.0' r='18' fill='white' stroke='#000' stroke-width='1.4'/>
 <text x='434.0' y='1042.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>4</text>
-<circle cx='852.0' cy='42' r='18' fill='white' stroke='#000' stroke-width='1.4'/>
-<text x='852.0' y='46.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>А</text>
-<path d='M852.0,60 L852.0,86' fill='none' stroke='#000' stroke-width='1.4' marker-end='url(#a)'/>
-<rect x='781.0' y='86' width='142' height='64' fill='white' stroke='#000' stroke-width='1.4'/>
-<text x='852.0' y='106.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Запросить код</text>
-<text x='852.0' y='122.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>подтверждения,</text>
-<text x='852.0' y='138.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>если требуется</text>
-<path d='M790.0,86 L790.0,150' fill='none' stroke='#000' stroke-width='1.4'/>
-<path d='M914.0,86 L914.0,150' fill='none' stroke='#000' stroke-width='1.4'/>
-<path d='M852.0,150 L852.0,176' fill='none' stroke='#000' stroke-width='1.4' marker-end='url(#a)'/>
-<polygon points='852.0,176 935.0,222.0 852.0,268 769.0,222.0' fill='white' stroke='#000' stroke-width='1.4'/>
-<text x='852.0' y='218.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Код верен или</text>
-<text x='852.0' y='234.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>не требуется?</text>
-<path d='M769.0,222.0 L739.0,222.0' fill='none' stroke='#000' stroke-width='1.4'/>
-<path d='M935.0,222.0 L965.0,222.0' fill='none' stroke='#000' stroke-width='1.4'/>
-<text x='763.0' y='215.0' text-anchor='end' font-size='12' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Да</text>
-<text x='941.0' y='215.0' text-anchor='start' font-size='12' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Нет</text>
-<path d='M739.0,222.0 L739.0,294' fill='none' stroke='#000' stroke-width='1.4' marker-end='url(#a)'/>
-<rect x='668.0' y='294' width='142' height='64' fill='white' stroke='#000' stroke-width='1.4'/>
-<text x='739.0' y='314.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Провести</text>
-<text x='739.0' y='330.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>перевод</text>
-<text x='739.0' y='346.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>в транзакции</text>
-<path d='M677.0,294 L677.0,358' fill='none' stroke='#000' stroke-width='1.4'/>
-<path d='M801.0,294 L801.0,358' fill='none' stroke='#000' stroke-width='1.4'/>
-<path d='M965.0,222.0 L965.0,294' fill='none' stroke='#000' stroke-width='1.4' marker-end='url(#a)'/>
-<polygon points='908.0,294 1036.0,294 1022.0,358 894.0,358' fill='white' stroke='#000' stroke-width='1.4'/>
-<text x='965.0' y='322.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Вывести ошибку:</text>
-<text x='965.0' y='338.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>неверный код</text>
-<path d='M965.0,358 L965.0,384' fill='none' stroke='#000' stroke-width='1.4' marker-end='url(#a)'/>
-<circle cx='965.0' cy='402' r='18' fill='white' stroke='#000' stroke-width='1.4'/>
-<text x='965.0' y='406.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>3</text>
-<path d='M739.0,358 L739.0,420.0' fill='none' stroke='#000' stroke-width='1.4'/>
-<path d='M739.0,420.0 L739.0,446.0' fill='none' stroke='#000' stroke-width='1.4' marker-end='url(#a)'/>
-<polygon points='739.0,446.0 822.0,492.0 739.0,538.0 656.0,492.0' fill='white' stroke='#000' stroke-width='1.4'/>
-<text x='739.0' y='488.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Проводка</text>
-<text x='739.0' y='504.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>выполнена?</text>
-<path d='M656.0,492.0 L626.0,492.0' fill='none' stroke='#000' stroke-width='1.4'/>
-<path d='M822.0,492.0 L852.0,492.0' fill='none' stroke='#000' stroke-width='1.4'/>
-<text x='650.0' y='485.0' text-anchor='end' font-size='12' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Да</text>
-<text x='828.0' y='485.0' text-anchor='start' font-size='12' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Нет</text>
-<path d='M626.0,492.0 L626.0,564.0' fill='none' stroke='#000' stroke-width='1.4' marker-end='url(#a)'/>
-<rect x='555.0' y='564.0' width='142' height='64' fill='white' stroke='#000' stroke-width='1.4'/>
-<text x='626.0' y='584.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Отметить</text>
-<text x='626.0' y='600.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>перевод</text>
-<text x='626.0' y='616.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>проведённым</text>
-<path d='M626.0,628.0 L626.0,654.0' fill='none' stroke='#000' stroke-width='1.4' marker-end='url(#a)'/>
-<polygon points='569.0,654.0 697.0,654.0 683.0,718.0 555.0,718.0' fill='white' stroke='#000' stroke-width='1.4'/>
-<text x='626.0' y='674.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Вывести:</text>
-<text x='626.0' y='690.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>перевод</text>
-<text x='626.0' y='706.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>выполнен</text>
-<path d='M626.0,718.0 L626.0,744.0' fill='none' stroke='#000' stroke-width='1.4' marker-end='url(#a)'/>
-<circle cx='626.0' cy='762.0' r='18' fill='white' stroke='#000' stroke-width='1.4'/>
-<text x='626.0' y='766.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>1</text>
-<path d='M852.0,492.0 L852.0,564.0' fill='none' stroke='#000' stroke-width='1.4' marker-end='url(#a)'/>
-<polygon points='795.0,564.0 923.0,564.0 909.0,628.0 781.0,628.0' fill='white' stroke='#000' stroke-width='1.4'/>
-<text x='852.0' y='584.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Вывести ошибку:</text>
-<text x='852.0' y='600.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>недостаточно</text>
-<text x='852.0' y='616.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>средств</text>
-<path d='M852.0,628.0 L852.0,654.0' fill='none' stroke='#000' stroke-width='1.4' marker-end='url(#a)'/>
-<circle cx='852.0' cy='672.0' r='18' fill='white' stroke='#000' stroke-width='1.4'/>
-<text x='852.0' y='676.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>2</text>
-<circle cx='852.0' cy='848.0' r='18' fill='white' stroke='#000' stroke-width='1.4'/>
-<text x='852.0' y='852.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>1</text>
-<circle cx='914.0' cy='848.0' r='18' fill='white' stroke='#000' stroke-width='1.4'/>
-<text x='914.0' y='852.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>2</text>
-<circle cx='976.0' cy='848.0' r='18' fill='white' stroke='#000' stroke-width='1.4'/>
-<text x='976.0' y='852.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>3</text>
-<circle cx='1038.0' cy='848.0' r='18' fill='white' stroke='#000' stroke-width='1.4'/>
-<text x='1038.0' y='852.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>4</text>
-<circle cx='1100.0' cy='848.0' r='18' fill='white' stroke='#000' stroke-width='1.4'/>
-<text x='1100.0' y='852.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>5</text>
-<circle cx='1162.0' cy='848.0' r='18' fill='white' stroke='#000' stroke-width='1.4'/>
-<text x='1162.0' y='852.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>6</text>
-<path d='M852.0,866.0 L852.0,890.0' fill='none' stroke='#000' stroke-width='1.4'/>
-<path d='M914.0,866.0 L914.0,890.0' fill='none' stroke='#000' stroke-width='1.4'/>
-<path d='M852.0,890.0 L914.0,890.0' fill='none' stroke='#000' stroke-width='1.4'/>
-<path d='M883.0,890.0 L883.0,934.0' fill='none' stroke='#000' stroke-width='1.4'/>
-<path d='M976.0,866.0 L976.0,934.0' fill='none' stroke='#000' stroke-width='1.4'/>
-<path d='M883.0,934.0 L976.0,934.0' fill='none' stroke='#000' stroke-width='1.4'/>
-<path d='M929.5,934.0 L929.5,978.0' fill='none' stroke='#000' stroke-width='1.4'/>
-<path d='M1038.0,866.0 L1038.0,978.0' fill='none' stroke='#000' stroke-width='1.4'/>
-<path d='M929.5,978.0 L1038.0,978.0' fill='none' stroke='#000' stroke-width='1.4'/>
-<path d='M983.75,978.0 L983.75,1022.0' fill='none' stroke='#000' stroke-width='1.4'/>
-<path d='M1100.0,866.0 L1100.0,1022.0' fill='none' stroke='#000' stroke-width='1.4'/>
-<path d='M983.75,1022.0 L1100.0,1022.0' fill='none' stroke='#000' stroke-width='1.4'/>
-<path d='M1041.875,1022.0 L1041.875,1066.0' fill='none' stroke='#000' stroke-width='1.4'/>
-<path d='M1162.0,866.0 L1162.0,1066.0' fill='none' stroke='#000' stroke-width='1.4'/>
-<path d='M1041.875,1066.0 L1162.0,1066.0' fill='none' stroke='#000' stroke-width='1.4'/>
-<path d='M1101.9375,1066.0 L1101.9375,1092.0' fill='none' stroke='#000' stroke-width='1.4' marker-end='url(#a)'/>
-<rect x='1030.9375' y='1092.0' width='142' height='42' rx='21.0' ry='21.0' fill='white' stroke='#000' stroke-width='1.4'/>
-<text x='1101.9375' y='1117.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Конец</text>
+<circle cx='832.0' cy='42' r='18' fill='white' stroke='#000' stroke-width='1.4'/>
+<text x='832.0' y='46.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>А</text>
+<path d='M832.0,60 L832.0,86' fill='none' stroke='#000' stroke-width='1.4' marker-end='url(#a)'/>
+<rect x='761.0' y='86' width='142' height='64' fill='white' stroke='#000' stroke-width='1.4'/>
+<text x='832.0' y='106.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Запросить код</text>
+<text x='832.0' y='122.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>подтверждения,</text>
+<text x='832.0' y='138.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>если требуется</text>
+<path d='M770.0,86 L770.0,150' fill='none' stroke='#000' stroke-width='1.4'/>
+<path d='M894.0,86 L894.0,150' fill='none' stroke='#000' stroke-width='1.4'/>
+<path d='M832.0,150 L832.0,176' fill='none' stroke='#000' stroke-width='1.4' marker-end='url(#a)'/>
+<polygon points='832.0,176 915.0,222.0 832.0,268 749.0,222.0' fill='white' stroke='#000' stroke-width='1.4'/>
+<text x='832.0' y='218.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Код верен или</text>
+<text x='832.0' y='234.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>не требуется?</text>
+<path d='M749.0,222.0 L719.0,222.0' fill='none' stroke='#000' stroke-width='1.4'/>
+<path d='M915.0,222.0 L945.0,222.0' fill='none' stroke='#000' stroke-width='1.4'/>
+<text x='743.0' y='215.0' text-anchor='end' font-size='12' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Да</text>
+<text x='921.0' y='215.0' text-anchor='start' font-size='12' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Нет</text>
+<path d='M719.0,222.0 L719.0,294' fill='none' stroke='#000' stroke-width='1.4' marker-end='url(#a)'/>
+<rect x='648.0' y='294' width='142' height='64' fill='white' stroke='#000' stroke-width='1.4'/>
+<text x='719.0' y='314.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Провести</text>
+<text x='719.0' y='330.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>перевод</text>
+<text x='719.0' y='346.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>в транзакции</text>
+<path d='M657.0,294 L657.0,358' fill='none' stroke='#000' stroke-width='1.4'/>
+<path d='M781.0,294 L781.0,358' fill='none' stroke='#000' stroke-width='1.4'/>
+<path d='M945.0,222.0 L945.0,294' fill='none' stroke='#000' stroke-width='1.4' marker-end='url(#a)'/>
+<polygon points='888.0,294 1016.0,294 1002.0,358 874.0,358' fill='white' stroke='#000' stroke-width='1.4'/>
+<text x='945.0' y='322.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Вывести ошибку:</text>
+<text x='945.0' y='338.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>неверный код</text>
+<path d='M945.0,358 L945.0,384' fill='none' stroke='#000' stroke-width='1.4' marker-end='url(#a)'/>
+<circle cx='945.0' cy='402' r='18' fill='white' stroke='#000' stroke-width='1.4'/>
+<text x='945.0' y='406.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>3</text>
+<path d='M719.0,358 L719.0,420.0' fill='none' stroke='#000' stroke-width='1.4'/>
+<path d='M719.0,420.0 L719.0,446.0' fill='none' stroke='#000' stroke-width='1.4' marker-end='url(#a)'/>
+<polygon points='719.0,446.0 802.0,492.0 719.0,538.0 636.0,492.0' fill='white' stroke='#000' stroke-width='1.4'/>
+<text x='719.0' y='488.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Проводка</text>
+<text x='719.0' y='504.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>выполнена?</text>
+<path d='M636.0,492.0 L606.0,492.0' fill='none' stroke='#000' stroke-width='1.4'/>
+<path d='M802.0,492.0 L832.0,492.0' fill='none' stroke='#000' stroke-width='1.4'/>
+<text x='630.0' y='485.0' text-anchor='end' font-size='12' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Да</text>
+<text x='808.0' y='485.0' text-anchor='start' font-size='12' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Нет</text>
+<path d='M606.0,492.0 L606.0,564.0' fill='none' stroke='#000' stroke-width='1.4' marker-end='url(#a)'/>
+<rect x='535.0' y='564.0' width='142' height='64' fill='white' stroke='#000' stroke-width='1.4'/>
+<text x='606.0' y='584.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Отметить</text>
+<text x='606.0' y='600.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>перевод</text>
+<text x='606.0' y='616.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>проведённым</text>
+<path d='M606.0,628.0 L606.0,654.0' fill='none' stroke='#000' stroke-width='1.4' marker-end='url(#a)'/>
+<polygon points='549.0,654.0 677.0,654.0 663.0,718.0 535.0,718.0' fill='white' stroke='#000' stroke-width='1.4'/>
+<text x='606.0' y='674.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Вывести:</text>
+<text x='606.0' y='690.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>перевод</text>
+<text x='606.0' y='706.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>выполнен</text>
+<path d='M606.0,718.0 L606.0,744.0' fill='none' stroke='#000' stroke-width='1.4' marker-end='url(#a)'/>
+<circle cx='606.0' cy='762.0' r='18' fill='white' stroke='#000' stroke-width='1.4'/>
+<text x='606.0' y='766.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>1</text>
+<path d='M832.0,492.0 L832.0,564.0' fill='none' stroke='#000' stroke-width='1.4' marker-end='url(#a)'/>
+<polygon points='775.0,564.0 903.0,564.0 889.0,628.0 761.0,628.0' fill='white' stroke='#000' stroke-width='1.4'/>
+<text x='832.0' y='584.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Вывести ошибку:</text>
+<text x='832.0' y='600.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>недостаточно</text>
+<text x='832.0' y='616.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>средств</text>
+<path d='M832.0,628.0 L832.0,654.0' fill='none' stroke='#000' stroke-width='1.4' marker-end='url(#a)'/>
+<circle cx='832.0' cy='672.0' r='18' fill='white' stroke='#000' stroke-width='1.4'/>
+<text x='832.0' y='676.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>2</text>
+<circle cx='1064.0' cy='42' r='18' fill='white' stroke='#000' stroke-width='1.4'/>
+<text x='1064.0' y='46.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>1</text>
+<circle cx='1118.0' cy='42' r='18' fill='white' stroke='#000' stroke-width='1.4'/>
+<text x='1118.0' y='46.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>2</text>
+<circle cx='1172.0' cy='42' r='18' fill='white' stroke='#000' stroke-width='1.4'/>
+<text x='1172.0' y='46.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>3</text>
+<circle cx='1226.0' cy='42' r='18' fill='white' stroke='#000' stroke-width='1.4'/>
+<text x='1226.0' y='46.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>4</text>
+<circle cx='1280.0' cy='42' r='18' fill='white' stroke='#000' stroke-width='1.4'/>
+<text x='1280.0' y='46.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>5</text>
+<circle cx='1334.0' cy='42' r='18' fill='white' stroke='#000' stroke-width='1.4'/>
+<text x='1334.0' y='46.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>6</text>
+<path d='M1064.0,60 L1064.0,84' fill='none' stroke='#000' stroke-width='1.4'/>
+<path d='M1118.0,60 L1118.0,84' fill='none' stroke='#000' stroke-width='1.4'/>
+<path d='M1064.0,84 L1118.0,84' fill='none' stroke='#000' stroke-width='1.4'/>
+<path d='M1091.0,84 L1091.0,128' fill='none' stroke='#000' stroke-width='1.4'/>
+<path d='M1172.0,60 L1172.0,128' fill='none' stroke='#000' stroke-width='1.4'/>
+<path d='M1091.0,128 L1172.0,128' fill='none' stroke='#000' stroke-width='1.4'/>
+<path d='M1131.5,128 L1131.5,172' fill='none' stroke='#000' stroke-width='1.4'/>
+<path d='M1226.0,60 L1226.0,172' fill='none' stroke='#000' stroke-width='1.4'/>
+<path d='M1131.5,172 L1226.0,172' fill='none' stroke='#000' stroke-width='1.4'/>
+<path d='M1178.75,172 L1178.75,216' fill='none' stroke='#000' stroke-width='1.4'/>
+<path d='M1280.0,60 L1280.0,216' fill='none' stroke='#000' stroke-width='1.4'/>
+<path d='M1178.75,216 L1280.0,216' fill='none' stroke='#000' stroke-width='1.4'/>
+<path d='M1229.375,216 L1229.375,260' fill='none' stroke='#000' stroke-width='1.4'/>
+<path d='M1334.0,60 L1334.0,260' fill='none' stroke='#000' stroke-width='1.4'/>
+<path d='M1229.375,260 L1334.0,260' fill='none' stroke='#000' stroke-width='1.4'/>
+<path d='M1281.6875,260 L1281.6875,286' fill='none' stroke='#000' stroke-width='1.4' marker-end='url(#a)'/>
+<rect x='1210.6875' y='286' width='142' height='42' rx='21.0' ry='21.0' fill='white' stroke='#000' stroke-width='1.4'/>
+<text x='1281.6875' y='311.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Конец</text>
 </svg>

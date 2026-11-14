@@ -182,7 +182,7 @@ def measure_if(n):
                 L=max(DW / 2, offL + y['L']), R=max(DW / 2, offR + no_['R']))
 
 
-STEP_X, STEP_Y = 62, 44
+STEP_X, STEP_Y = 54, 44
 
 
 def measure_close(n):
@@ -383,7 +383,7 @@ def flow_transfer():
         ('close', [1, 2, 3, 4, 5, 6]),
         ('term', ['Конец']),
     ]
-    chart('flow-transfer.svg', [col1, [col2, closing]], colgap=50)
+    chart('flow-transfer.svg', [col1, col2, closing], colgap=30)
 
 
 def flow_loans():
