@@ -6,9 +6,10 @@
 абзацы переносятся как есть. Меняются только ссылки на рисунки (картинки добавляются в основу заново),
 номера объектов рисунков и список с тире (numId 22 шаблона -> numId 1 основы). Каждый раздел и список источников
 начинаются с новой страницы (свойство заголовка), служебный sectPr разделов не переносится.
+Отдельные рисунки уменьшаются по src/merge-scales.json (его подбирает fit_all.py).
 Использование: python3 merge_all.py [выход.docx]   (по умолчанию docs/kursovaya/zapiska.docx)
 """
-import copy, io, os, sys
+import copy, io, json, os, re, sys
 import docx
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
@@ -20,6 +21,21 @@ A = 'http://schemas.openxmlformats.org/drawingml/2006/main'
 R = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships'
 WP = 'http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing'
 DASH_SRC, DASH_DST = '22', '1'
+SCALES = os.path.join(KURS, 'src', 'merge-scales.json')   # {"номер рисунка": множитель} – подбирает fit_all.py
+
+
+def apply_scales(body, scales):
+    """Уменьшает рисунки по номеру из подписи «Рисунок X.Y – …», которая идёт следом за абзацем с картинкой."""
+    els = list(body)
+    for i, el in enumerate(els):
+        if el.tag != qn('w:p') or el.find('.//' + qn('w:drawing')) is None:
+            continue
+        num = next((m.group(1) for e in els[i + 1:i + 4] if (m := re.match(r'\s*Рисунок (\d+\.\d+) –', text_of(e)))), None)
+        k = scales.get(num)
+        if not k:
+            continue
+        for ext in list(el.iter(f'{{{WP}}}extent')) + [x for x in el.iter(f'{{{A}}}ext') if x.get('cx')]:
+            ext.set('cx', str(round(int(ext.get('cx')) * k))); ext.set('cy', str(round(int(ext.get('cy')) * k)))
 
 
 def text_of(el):
@@ -67,6 +83,7 @@ def main(out):
             if first and el.tag == qn('w:p'):
                 break_before(el); first = False
             anchor.addprevious(el)
+    apply_scales(body, json.load(open(SCALES, encoding='utf-8')) if os.path.exists(SCALES) else {})
     base.save(out)
     print(out)
 

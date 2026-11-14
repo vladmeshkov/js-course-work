@@ -40,7 +40,7 @@
   "scale": 1.0
  },
  "payment-requisite": {
-  "mode": "after",
+  "mode": "before",
   "scale": 1.0
  },
  "deposit-min": {

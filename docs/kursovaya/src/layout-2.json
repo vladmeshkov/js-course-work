@@ -46,5 +46,9 @@
  "security": {
   "mode": "after",
   "scale": 1.0
+ },
+ "dark": {
+  "mode": "before",
+  "scale": 1.0
  }
 }
