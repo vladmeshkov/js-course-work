@@ -119,3 +119,19 @@ describe('анкеты', () => {
     expect(owner.clientId).toBeGreaterThan(first.clientId);
   });
 });
+
+describe('ограничение частоты запросов', () => {
+  it('превышение отдаётся ошибкой API 429 с русским текстом', async () => {
+    const express = (await import('express')).default;
+    const { limiter } = await import('../../server/modules/auth/routes.js');
+    const { errorHandler } = await import('../../server/shared/middleware/error-handler.js');
+    const supertest = (await import('supertest')).default;
+    const mini = express();
+    mini.post('/x', limiter(60000, 2, 'Слишком много попыток', { skip: () => false }), (req, res) => res.json({ ok: true }));
+    mini.use(errorHandler);
+    await supertest(mini).post('/x').expect(200);
+    await supertest(mini).post('/x').expect(200);
+    const res = await supertest(mini).post('/x').expect(429);
+    expect(res.body.error).toMatchObject({ code: 'rate_limited', message: 'Слишком много попыток' });
+  });
+});

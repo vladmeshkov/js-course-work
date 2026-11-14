@@ -45,7 +45,7 @@ export default async function page({ params, navigate }) {
 </section>
 <section class="tile">
   <h2 class="mb10">Как посчитан балл</h2>
-  ${a.scoring_notes.map((n) => html`<div class="account"><div class="account__title">${n.factor}</div><div><span class="muted2">${n.text}</span> &nbsp; <b>${n.points}</b></div></div>`)}
+  ${a.scoring_notes.map((n) => html`<div class="account"><div class="account__title">${n.factor}</div><div><span class="muted2">${n.text}</span> &nbsp; <b>${String(n.points).replace('.', ',')}</b></div></div>`)}
 </section>`,
     mount(root) {
       const form = root.querySelector('#sign-form');

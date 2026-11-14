@@ -105,7 +105,7 @@ export async function apply(userId, input) {
   const result = model ? await scoringService.assess(model, { ...scoringInput, dti: card.dti }, scoringInput.limits) : card;
   const status = { approve: 'approved', manual: 'manual_review', reject: 'rejected' }[result.decision];
   const comment = result.decision === 'reject'
-    ? (result.dti > (await limits()).maxDti ? `Долговая нагрузка ${result.dti} % выше допустимой (Инструкция Нацбанка № 149)` : (model ? `Высокая вероятность дефолта по модели: ${String(result.pdPercent).replace('.', ',')} %` : 'Низкий скоринговый балл'))
+    ? (result.dti > (await limits()).maxDti ? `Долговая нагрузка ${String(result.dti).replace('.', ',')} % выше допустимой (Инструкция Нацбанка № 149)` : (model ? `Высокая вероятность дефолта по модели: ${String(result.pdPercent).replace('.', ',')} %` : 'Низкий скоринговый балл'))
     : null;
 
   return withTransaction(async (db) => {

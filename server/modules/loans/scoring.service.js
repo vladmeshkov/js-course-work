@@ -36,6 +36,15 @@ export async function ensureModel() {
 
 const pct = (v) => String(Math.round(v * 10) / 10).replace('.', ',');
 
+/** «1 год», «3 года», «31 год», «25 лет»; дробное число лет – «2,5 года». */
+export function yearsWord(n) {
+  if (!Number.isInteger(n)) return 'года';
+  const d = n % 10, h = n % 100;
+  if (d === 1 && h !== 11) return 'год';
+  if (d >= 2 && d <= 4 && (h < 12 || h > 14)) return 'года';
+  return 'лет';
+}
+
 /**
  * Оценка заявки моделью. Решение: нагрузка выше предела: отказ; PD не выше порога автоодобрения и сумма до лимита: одобрение;
  * PD не выше порога ручного рассмотрения: ручное рассмотрение; иначе отказ.
@@ -51,7 +60,7 @@ export async function assess(model, application, limits) {
   const pdPercent = pd * 100;
 
   const notes = [{ factor: 'Вероятность дефолта', points: Math.round(pdPercent * 10) / 10, text: `${pct(pdPercent)} % (порог одобрения ${pdApprove} %, рассмотрения ${pdManual} %), модель версии ${model.version}` }];
-  const shown = (key, v) => ({ age: `${Math.round(v)} лет`, incomeLog: `${Math.round(Math.exp(v))} BYN в месяц`, dti: `${pct(v)} %`, experienceYears: `${pct(v)} лет`, dependents: `${Math.round(v)}`, loanToIncome: `${pct(v * 100)} % годового дохода` })[key];
+  const shown = (key, v) => ({ age: `${Math.round(v)} ${yearsWord(Math.round(v))}`, incomeLog: `${Math.round(Math.exp(v))} BYN в месяц`, dti: `${pct(v)} %`, experienceYears: `${pct(v)} ${yearsWord(v)}`, dependents: `${Math.round(v)}`, loanToIncome: `${pct(v * 100)} % годового дохода` })[key];
   FEATURES.forEach((f, j) => {
     // вклад признака в PD: разница между вероятностью с реальным значением и со средним значением признака
     const without = predict(model.coefficients, features.map((v, k) => (k === j ? model.coefficients.mean[j] : v))).pd;

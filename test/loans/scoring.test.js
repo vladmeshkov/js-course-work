@@ -98,3 +98,11 @@ describe('решение по модели', () => {
     expect(card.model_version).toBeNull();
   });
 });
+
+describe('подписи признаков', () => {
+  it('склоняет «год»', async () => {
+    const { yearsWord } = await import('../../server/modules/loans/scoring.service.js');
+    expect([1, 2, 5, 11, 12, 21, 22, 31, 2.5].map((n) => `${n} ${yearsWord(n)}`))
+      .toEqual(['1 год', '2 года', '5 лет', '11 лет', '12 лет', '21 год', '22 года', '31 год', '2.5 года']);
+  });
+});

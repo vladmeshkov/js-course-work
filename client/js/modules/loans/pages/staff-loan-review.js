@@ -32,7 +32,7 @@ export default async function page({ params, navigate }) {
         ${a.scoring_notes.slice(1).map((n) => html`<div class="check-row"><span>${n.factor}<small>${n.text}</small></span><b class="${n.points > 0 ? 'text-bad' : n.points < 0 ? 'text-good' : ''}">${points(n)}</b></div>`)}
         <p class="muted2 small m0">Вклад признака: на сколько процентных пунктов он меняет вероятность дефолта относительно среднего заёмщика.</p>`
       : html`<div class="check-row"><span>Скоринговый балл</span><b>${a.score} из 100</b></div>
-        ${a.scoring_notes.map((n) => html`<div class="check-row"><span>${n.factor}<small>${n.text}</small></span><b>${n.points}</b></div>`)}`}
+        ${a.scoring_notes.map((n) => html`<div class="check-row"><span>${n.factor}<small>${n.text}</small></span><b>${String(n.points).replace('.', ',')}</b></div>`)}`}
     </div>
     ${a.status === 'manual_review' ? html`<form class="panel form" id="decision-form" novalidate>
       <h2>Решение</h2>
