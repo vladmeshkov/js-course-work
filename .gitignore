@@ -5,3 +5,4 @@ coverage/
 *.log
 docs/kursovaya/zapiska-obedinennaya.*
 __pycache__/
+docs/kursovaya/*.pdf
