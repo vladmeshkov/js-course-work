@@ -1,0 +1,30 @@
+{
+ "install": {
+  "mode": "before",
+  "scale": 1.0
+ },
+ "c-cabinet": {
+  "mode": "before",
+  "scale": 1.0
+ },
+ "c-transfer-done": {
+  "mode": "before",
+  "scale": 1.0
+ },
+ "c-loan-approved": {
+  "mode": "before",
+  "scale": 1.0
+ },
+ "c-2fa": {
+  "mode": "before",
+  "scale": 1.0
+ },
+ "a-workplace": {
+  "mode": "before",
+  "scale": 1.0
+ },
+ "a-clearing-after": {
+  "mode": "before",
+  "scale": 1.0
+ }
+}

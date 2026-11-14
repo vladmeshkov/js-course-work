@@ -110,9 +110,11 @@ class Doc:
             end = '.' if i == len(items) - 1 else ';'
             p.add_run(t + end)
 
-    def figure(self, name, caption, max_h=21.5, scale=1.0):
+    def figure(self, name, caption, max_h=None, scale=1.0):
         """Рисунок на ширину текста (scale < 1 – уменьшение для вёрстки); пустые строки вокруг, подпись по центру."""
         self.fig += 1
+        if max_h is None:
+            max_h = getattr(self, 'max_fig_h', 21.5)
         path = os.path.join(KURS, name)
         im = Image.open(path)
         w = TEXT_W
