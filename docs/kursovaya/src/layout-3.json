@@ -1,7 +1,7 @@
 {
  "run": {
   "mode": "before",
-  "scale": 1.0
+  "scale": 0.9
  },
  "register-empty": {
   "mode": "after",
