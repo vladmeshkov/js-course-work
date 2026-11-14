@@ -1,4 +1,8 @@
 {
+ "func": {
+  "mode": "before",
+  "scale": 1.0
+ },
  "arch": {
   "mode": "after",
   "scale": 1.0
@@ -37,6 +41,10 @@
  },
  "loan-review": {
   "mode": "before",
+  "scale": 1.0
+ },
+ "security": {
+  "mode": "after",
   "scale": 1.0
  }
 }

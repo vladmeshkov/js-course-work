@@ -12,7 +12,7 @@ import check_layout
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, '..', '..'))
 LAY = os.path.join(ROOT, 'docs', 'kursovaya', 'src', 'layout-2.json')
-KEYS = ['arch', 'transfer', 'loans', 'deposits', 'cabinet', 'transfer-ui', 'deposit-ui', 'statement', 'workplace', 'loan-review']
+KEYS = ['func', 'arch', 'transfer', 'loans', 'deposits', 'cabinet', 'transfer-ui', 'deposit-ui', 'statement', 'workplace', 'loan-review', 'security']
 OPTIONS = [('after', 1.0), ('before', 1.0), ('after', 0.9), ('before', 0.9), ('after', 0.8), ('before', 0.8)]
 LIMIT = 2.5
 

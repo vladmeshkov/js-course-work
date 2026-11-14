@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="890" viewBox="0 0 1000 890">
+<rect x="0" y="0" width="1000" height="890" fill="white"/>
+<defs><marker id="a" markerWidth="9" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,4 L0,8 z" fill="#000"/></marker></defs>
+<rect x='465.0' y='16' width='220' height='44' rx='22' ry='22' fill='white' stroke='#000' stroke-width='1.4'/>
+<text x='575.0' y='42.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Запрос из браузера</text>
+<path d='M575.0,60 L575.0,90' fill='none' stroke='#000' stroke-width='1.4' marker-end='url(#a)'/>
+<rect x='170' y='90' width='810' height='140' fill='white' stroke='#000' stroke-width='1' stroke-dasharray='6 4'/>
+<text x='85' y='156.4' text-anchor='middle' font-size='15' font-weight='bold' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Передача</text>
+<text x='85' y='174.4' text-anchor='middle' font-size='15' font-weight='bold' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>данных</text>
+<rect x='190' y='122.0' width='244.66666666666666' height='76' fill='white' stroke='#000' stroke-width='1.4'/>
+<text x='312.3333333333333' y='164.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>HTTPS (TLS)</text>
+<rect x='452.66666666666663' y='122.0' width='244.66666666666666' height='76' fill='white' stroke='#000' stroke-width='1.4'/>
+<text x='575.0' y='156.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Заголовки helmet,</text>
+<text x='575.0' y='172.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>политика CSP</text>
+<rect x='715.3333333333333' y='122.0' width='244.66666666666666' height='76' fill='white' stroke='#000' stroke-width='1.4'/>
+<text x='837.6666666666666' y='156.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Cookie сессии</text>
+<text x='837.6666666666666' y='172.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>httpOnly, SameSite</text>
+<path d='M575.0,230 L575.0,270' fill='none' stroke='#000' stroke-width='1.4' marker-end='url(#a)'/>
+<rect x='170' y='270' width='810' height='140' fill='white' stroke='#000' stroke-width='1' stroke-dasharray='6 4'/>
+<text x='85' y='345.4' text-anchor='middle' font-size='15' font-weight='bold' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Доступ</text>
+<rect x='190' y='302.0' width='179.0' height='76' fill='white' stroke='#000' stroke-width='1.4'/>
+<text x='279.5' y='336.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Ограничение</text>
+<text x='279.5' y='352.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>частоты запросов</text>
+<rect x='387.0' y='302.0' width='179.0' height='76' fill='white' stroke='#000' stroke-width='1.4'/>
+<text x='476.5' y='336.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Пароль bcrypt,</text>
+<text x='476.5' y='352.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>блокировка входа</text>
+<rect x='584.0' y='302.0' width='179.0' height='76' fill='white' stroke='#000' stroke-width='1.4'/>
+<text x='673.5' y='336.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Двухфакторная</text>
+<text x='673.5' y='352.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>защита TOTP</text>
+<rect x='781.0' y='302.0' width='179.0' height='76' fill='white' stroke='#000' stroke-width='1.4'/>
+<text x='870.5' y='336.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Токен CSRF,</text>
+<text x='870.5' y='352.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>права роли</text>
+<path d='M575.0,410 L575.0,450' fill='none' stroke='#000' stroke-width='1.4' marker-end='url(#a)'/>
+<rect x='170' y='450' width='810' height='140' fill='white' stroke='#000' stroke-width='1' stroke-dasharray='6 4'/>
+<text x='85' y='525.4' text-anchor='middle' font-size='15' font-weight='bold' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Операции</text>
+<rect x='190' y='482.0' width='179.0' height='76' fill='white' stroke='#000' stroke-width='1.4'/>
+<text x='279.5' y='516.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Проверка</text>
+<text x='279.5' y='532.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>входных данных</text>
+<rect x='387.0' y='482.0' width='179.0' height='76' fill='white' stroke='#000' stroke-width='1.4'/>
+<text x='476.5' y='516.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Код</text>
+<text x='476.5' y='532.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>подтверждения</text>
+<rect x='584.0' y='482.0' width='179.0' height='76' fill='white' stroke='#000' stroke-width='1.4'/>
+<text x='673.5' y='516.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Антифрод</text>
+<text x='673.5' y='532.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>и лимиты</text>
+<rect x='781.0' y='482.0' width='179.0' height='76' fill='white' stroke='#000' stroke-width='1.4'/>
+<text x='870.5' y='516.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Транзакции</text>
+<text x='870.5' y='532.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>и блокировки</text>
+<path d='M575.0,590 L575.0,630' fill='none' stroke='#000' stroke-width='1.4' marker-end='url(#a)'/>
+<rect x='170' y='630' width='810' height='140' fill='white' stroke='#000' stroke-width='1' stroke-dasharray='6 4'/>
+<text x='85' y='696.4' text-anchor='middle' font-size='15' font-weight='bold' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Хранение</text>
+<text x='85' y='714.4' text-anchor='middle' font-size='15' font-weight='bold' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>данных</text>
+<rect x='190' y='662.0' width='244.66666666666666' height='76' fill='white' stroke='#000' stroke-width='1.4'/>
+<text x='312.3333333333333' y='696.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Шифрование</text>
+<text x='312.3333333333333' y='712.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>AES-256-GCM</text>
+<rect x='452.66666666666663' y='662.0' width='244.66666666666666' height='76' fill='white' stroke='#000' stroke-width='1.4'/>
+<text x='575.0' y='696.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Неизменяемые</text>
+<text x='575.0' y='712.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>проводки и аудит</text>
+<rect x='715.3333333333333' y='662.0' width='244.66666666666666' height='76' fill='white' stroke='#000' stroke-width='1.4'/>
+<text x='837.6666666666666' y='696.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Шифрованные</text>
+<text x='837.6666666666666' y='712.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>резервные копии</text>
+<path d='M575.0,770 L575.0,800' fill='none' stroke='#000' stroke-width='1.4' marker-end='url(#a)'/>
+<path d='M500.0,810 L500.0,860 A75.0,10 0 0 0 650.0,860 L650.0,810' fill='white' stroke='#000' stroke-width='1.4'/>
+<ellipse cx='575.0' cy='810' rx='75.0' ry='10' fill='white' stroke='#000' stroke-width='1.4'/>
+<text x='575.0' y='844.7' text-anchor='middle' font-size='13' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>База данных MySQL</text>
+</svg>

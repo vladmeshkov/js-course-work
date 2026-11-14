@@ -485,7 +485,79 @@ def arch():
     s.save('arch-layers.svg')
 
 
+def func_arch():
+    """Функциональная архитектура: программное средство в центре, подсистемы вокруг (как в образце записки)."""
+    s = Svg(1000, 700, size=14)
+    bw, bh = 200, 82
+    cx, cy, cw, ch = 500, 350, 330, 190
+    s.add(f"<rect x='{cx - cw / 2}' y='{cy - ch / 2}' width='{cw}' height='{ch}' rx='34' ry='34' fill='white' stroke='#000' stroke-width='{LW}'/>")
+    s.text(cx, cy, ['Программное средство', 'дистанционного', 'банковского обслуживания', '«ТалерБанк»'], size=16, bold=True)
+    boxes = [
+        # (x, y) левого верхнего угла и строки
+        (30, 30, ['Регистрация', 'и проверка анкет']), (280, 30, ['Счета и двойная', 'запись']), (520, 30, ['Переводы', 'и клиринг']), (770, 30, ['Платежи', 'и автоплатежи']),
+        (30, 175, ['Вклады', 'и начисление', 'процентов']), (770, 175, ['Кредиты', 'и скоринг']),
+        (30, 445, ['Платёжные', 'карты']), (770, 445, ['Антифрод', 'и мониторинг']),
+        (30, 590, ['Документы PDF', 'и отчёты']), (280, 590, ['Администрирование', 'и закрытие дня']), (520, 590, ['Безопасность', 'и журнал аудита']), (770, 590, ['Уведомления', 'и почта']),
+    ]
+    for x, y, lines in boxes:
+        s.add(f"<rect x='{x}' y='{y}' width='{bw}' height='{bh}' fill='white' stroke='#000' stroke-width='{LW}'/>")
+        s.text(x + bw / 2, y + bh / 2, lines, bold=True)
+        # стрелка от ближайшей к ядру точки блока по прямой к центру ядра, обрывается у границы ядра
+        sx, sy = min(max(cx, x), x + bw), min(max(cy, y), y + bh)
+        dx, dy = cx - sx, cy - sy
+        t = min((cw / 2) / abs(dx) if dx else 9, (ch / 2) / abs(dy) if dy else 9)
+        ex, ey = cx - dx * t, cy - dy * t
+        L = (dx * dx + dy * dy) ** 0.5
+        ux, uy = dx / L, dy / L
+        s.line([(sx + ux * 8, sy + uy * 8), (ex - ux * 6, ey - uy * 6)], arrow=True)
+    s.save('func-arch.svg')
+
+
+def security_layers():
+    """Уровни защиты: запрос проходит защиту передачи, доступа, операций и хранения данных."""
+    s = Svg(1000, 760, size=13)
+    left, width = 170, 810
+    bands = [
+        ('Передача', 'данных', [['HTTPS (TLS)'], ['Заголовки helmet,', 'политика CSP'], ['Cookie сессии', 'httpOnly, SameSite']]),
+        ('Доступ', '', [['Ограничение', 'частоты запросов'], ['Пароль bcrypt,', 'блокировка входа'], ['Двухфакторная', 'защита TOTP'], ['Токен CSRF,', 'права роли']]),
+        ('Операции', '', [['Проверка', 'входных данных'], ['Код', 'подтверждения'], ['Антифрод', 'и лимиты'], ['Транзакции', 'и блокировки']]),
+        ('Хранение', 'данных', [['Шифрование', 'AES-256-GCM'], ['Неизменяемые', 'проводки и аудит'], ['Шифрованные', 'резервные копии']]),
+    ]
+    s.add(f"<rect x='{left + width / 2 - 110}' y='16' width='220' height='44' rx='22' ry='22' fill='white' stroke='#000' stroke-width='{LW}'/>")
+    s.text(left + width / 2, 38, ['Запрос из браузера'])
+    y = 90
+    bh_band, box_h = 140, 76
+    prev_bottom = 60
+    for title1, title2, items in bands:
+        s.line([(left + width / 2, prev_bottom), (left + width / 2, y)], arrow=True)
+        s.add(f"<rect x='{left}' y='{y}' width='{width}' height='{bh_band}' fill='white' stroke='#000' stroke-width='1' stroke-dasharray='6 4'/>")
+        s.text(85, y + bh_band / 2, [t for t in (title1, title2) if t], size=15, bold=True)
+        pairs = items
+        n = len(pairs)
+        gap = 18
+        bw = (width - 40 - gap * (n - 1)) / n
+        x = left + 20
+        for p in pairs:
+            s.add(f"<rect x='{x}' y='{y + (bh_band - box_h) / 2}' width='{bw}' height='{box_h}' fill='white' stroke='#000' stroke-width='{LW}'/>")
+            s.text(x + bw / 2, y + bh_band / 2, p)
+            x += bw + gap
+        prev_bottom = y + bh_band
+        y += bh_band + 40
+    # база данных
+    cx, w, h, t = left + width / 2, 150, 70, y - 10
+    s.line([(cx, prev_bottom), (cx, t)], arrow=True)
+    s.add(f"<path d='M{cx - w / 2},{t + 10} L{cx - w / 2},{t + h - 10} A{w / 2},10 0 0 0 {cx + w / 2},{t + h - 10} L{cx + w / 2},{t + 10}' fill='white' stroke='#000' stroke-width='{LW}'/>")
+    s.add(f"<ellipse cx='{cx}' cy='{t + 10}' rx='{w / 2}' ry='10' fill='white' stroke='#000' stroke-width='{LW}'/>")
+    s.text(cx, t + h / 2 + 5, ['База данных MySQL'])
+    s.h = int(t + h + 20)
+    s.parts[0] = f'<svg xmlns="http://www.w3.org/2000/svg" width="{s.w}" height="{s.h}" viewBox="0 0 {s.w} {s.h}">'
+    s.parts[1] = f'<rect x="0" y="0" width="{s.w}" height="{s.h}" fill="white"/>'
+    s.save('security-layers.svg')
+
+
 if __name__ == '__main__':
+    func_arch()
+    security_layers()
     arch()
     flow_transfer()
     flow_loans()
