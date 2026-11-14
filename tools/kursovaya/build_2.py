@@ -13,7 +13,7 @@ import json, os, sys
 import docx
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import parse_xml
-from docx.shared import Cm
+from docx.shared import Cm, Twips
 from PIL import Image
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -158,14 +158,15 @@ class Doc:
         return num
 
     def where(self, parts):
-        """Расшифровка: «где X – …;» без отступа, каждое следующее обозначение – отдельной строкой с отступом."""
+        """Расшифровка: «где X – …;» без отступа, каждое следующее обозначение – отдельной строкой точно под первым."""
         for i, (sym, expl) in enumerate(parts):
             p = self._p('No Spacing')
             p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
             if i == 0:
                 p.add_run('где ')
             else:
-                p.paragraph_format.first_line_indent = Cm(1.25)
+                # ширина «где » в Times New Roman 14 пт: обозначение стоит точно под первым
+                p.paragraph_format.left_indent = Twips(438)
             p._p.append(parse_xml(f'<m:oMath {M}>{sym}</m:oMath>'))
             p.add_run(f' – {expl}' + ('.' if i == len(parts) - 1 else ';'))
 
