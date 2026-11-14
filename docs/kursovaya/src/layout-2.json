@@ -1,0 +1,42 @@
+{
+ "arch": {
+  "mode": "after",
+  "scale": 1.0
+ },
+ "transfer": {
+  "mode": "before",
+  "scale": 1.0
+ },
+ "loans": {
+  "mode": "before",
+  "scale": 1.0
+ },
+ "deposits": {
+  "mode": "after",
+  "scale": 1.0
+ },
+ "cabinet": {
+  "mode": "before",
+  "scale": 1.0
+ },
+ "transfer-ui": {
+  "mode": "after",
+  "scale": 1.0
+ },
+ "deposit-ui": {
+  "mode": "after",
+  "scale": 1.0
+ },
+ "statement": {
+  "mode": "after",
+  "scale": 1.0
+ },
+ "workplace": {
+  "mode": "after",
+  "scale": 1.0
+ },
+ "loan-review": {
+  "mode": "after",
+  "scale": 1.0
+ }
+}

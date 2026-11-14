@@ -108,142 +108,269 @@ class Svg:
         print(path)
 
 
+# ---------------- раскладка блок-схем ----------------
+# Узлы: ('term', строки) ('proc', строки) ('pred', строки) ('data', строки) ('loop', строки) ('loopend', строки)
+# ('in', n) – входной соединитель; ('exit', n) – выходной соединитель (поток в этой ветви заканчивается);
+# ('if', условие, ветвь_да, ветвь_нет) – решение: «Да» влево, «Нет» вправо, обе ветви уходят вниз
+# и закрываются горизонтальной линией слияния, от её середины поток продолжается вниз по оси;
+# ('par', [ветви]) – несколько входящих потоков рядом, сходятся в одну линию.
+G = 26          # промежуток между блоками
+DROP = 24       # спуск ветви от уровня вершины решения до первого блока
+SIDE = 22       # минимальный вынос оси ветви за вершину ромба
+
+
+def node_h(n):
+    k = n[0]
+    if k == 'term':
+        return TH
+    if k in ('in', 'exit'):
+        return 2 * CR
+    if k in ('proc', 'pred', 'data', 'loop', 'loopend'):
+        return BH if len(n[1]) <= 2 else BH + 14
+    raise ValueError(k)
+
+
+def node_half(n):
+    k = n[0]
+    if k == 'term':
+        return TW / 2
+    if k in ('in', 'exit'):
+        return CR
+    if k == 'data':
+        return (BW + 34) / 2
+    if k in ('loop', 'loopend'):
+        return (BW + 10) / 2
+    return BW / 2
+
+
+def measure(seq):
+    """(левый вынос, правый вынос, высота, поток закончился)."""
+    L = R = 0
+    H = 0
+    ended = False
+    for i, n in enumerate(seq):
+        if i:
+            H += G
+        if n[0] == 'if':
+            m = measure_if(n)
+            L, R = max(L, m['L']), max(R, m['R'])
+            H += m['H']
+            ended = m['ended']
+        elif n[0] == 'par':
+            m = measure_par(n)
+            L, R = max(L, m['L']), max(R, m['R'])
+            H += m['H']
+        else:
+            h = node_half(n)
+            L, R = max(L, h), max(R, h)
+            H += node_h(n)
+            if n[0] == 'exit' or (n[0] == 'term' and i == len(seq) - 1 and i > 0):
+                ended = True
+    return L, R, H, ended
+
+
+def measure_if(n):
+    _, cond, yes, no = n
+    dw = DW + (14 if len(cond) > 2 else 0)
+    dh = DH + (12 if len(cond) > 2 else 0)
+    yl, yr, yh, ye = measure(yes) if yes else (0, 0, 0, False)
+    nl, nr, nh, ne = measure(no) if no else (0, 0, 0, False)
+    # оси ветвей: не ближе вершин ромба, блоки двух ветвей не пересекаются
+    offL = max(dw / 2, yr + 16)
+    offR = max(dw / 2, nl + 16)
+    body = max(yh, nh)
+    ended = ye and ne
+    # ромб, спуск от его нижней вершины до первых блоков ветвей, ветви, линия слияния
+    H = dh + G + body + (0 if ended else 26)
+    return dict(dw=dw, dh=dh, offL=offL, offR=offR, L=max(dw / 2, offL + yl), R=max(dw / 2, offR + nr),
+                H=H, body=body, ended=ended, yh=yh, nh=nh, ye=ye, ne=ne)
+
+
+def measure_par(n):
+    lanes = [measure(x) for x in n[1]]
+    gap = 30
+    widths = [l + r for l, r, h, e in lanes]
+    total = sum(widths) + gap * (len(lanes) - 1)
+    body = max(h for l, r, h, e in lanes)
+    return dict(lanes=lanes, total=total, L=total / 2, R=total / 2, H=body + 26, body=body)
+
+
+def draw_node(s, n, cx, y):
+    k = n[0]
+    h = node_h(n)
+    if k == 'term':
+        s.terminator(cx, y, n[1])
+    elif k == 'proc':
+        s.process(cx, y, n[1], h=h)
+    elif k == 'pred':
+        s.predefined(cx, y, n[1], h=h)
+    elif k == 'data':
+        s.data(cx, y, n[1], h=h)
+    elif k == 'loop':
+        s.loop(cx, y, n[1], h=h)
+    elif k == 'loopend':
+        s.loop(cx, y, n[1], end=True, h=h)
+    elif k in ('in', 'exit'):
+        s.connector(cx, y + CR, n[1])
+    return y + h
+
+
+def draw(s, seq, cx, y, enter=False):
+    """Рисует последовательность от y вниз. enter: к первому узлу ведёт входящая линия сверху (уже нарисована до y).
+    Возвращает y конца потока (нижняя точка, откуда идёт линия дальше)."""
+    for i, n in enumerate(seq):
+        if i or enter:
+            s.line([(cx, y), (cx, y + G)], arrow=n[0] not in ('if',) or True)
+            y += G
+        if n[0] == 'if':
+            y = draw_if(s, n, cx, y)
+        elif n[0] == 'par':
+            y = draw_par(s, n, cx, y)
+        else:
+            y = draw_node(s, n, cx, y)
+    return y
+
+
+def draw_branch(s, seq, bx, cy, ystart, merge):
+    """Ветвь решения: от уровня вершины ромба вниз. Пустая ветвь – линия до уровня слияния."""
+    if not seq:
+        if merge is not None:
+            s.line([(bx, cy), (bx, merge)])
+        return
+    s.line([(bx, cy), (bx, ystart)], arrow=True)
+    yend = draw(s, seq, bx, ystart)
+    _, _, _, ended = measure(seq)
+    if not ended and merge is not None:
+        s.line([(bx, yend), (bx, merge)])
+
+
+def draw_if(s, n, cx, y):
+    m = measure_if(n)
+    _, cond, yes, no = n
+    cy = s.decision(cx, y, cond, w=m['dw'], h=m['dh'])
+    lx, rx = cx - m['offL'], cx + m['offR']
+    s.line([(cx - m['dw'] / 2, cy), (lx, cy)])
+    s.label(cx - m['dw'] / 2 - 24, cy - 7, 'Да')
+    s.line([(cx + m['dw'] / 2, cy), (rx, cy)])
+    s.label(cx + m['dw'] / 2 + 4, cy - 7, 'Нет')
+    ystart = y + m['dh'] + G
+    merge = None if m['ended'] else ystart + m['body'] + 26
+    draw_branch(s, yes, lx, cy, ystart, merge)
+    draw_branch(s, no, rx, cy, ystart, merge)
+    if m['ended']:
+        return ystart + m['body']
+    # линия слияния закрывает обе ветви; ветвь, ушедшая в соединитель, в слиянии не участвует
+    xs = [x for x, e in ((lx, m['ye']), (rx, m['ne'])) if not e] + [cx]
+    s.line([(min(xs), merge), (max(xs), merge)])
+    return merge
+
+
+def draw_par(s, n, cx, y):
+    m = measure_par(n)
+    x = cx - m['total'] / 2
+    merge = y + m['body'] + 26
+    ends = []
+    for seq, (l, r, h, e) in zip(n[1], m['lanes']):
+        ax = x + l
+        yend = draw(s, seq, ax, y)
+        s.line([(ax, yend), (ax, merge)])
+        ends.append(ax)
+        x += l + r + 30
+    s.line([(min(ends + [cx]), merge), (max(ends + [cx]), merge)])
+    return merge
+
+
+def chart(name, columns, colgap=60, margin=20):
+    """columns: список последовательностей, каждая колонка рисуется сверху вниз."""
+    ms = [measure(c) for c in columns]
+    W = margin * 2 + 30 + sum(l + r for l, r, h, e in ms) + colgap * (len(ms) - 1)
+    H = margin * 2 + max(h for l, r, h, e in ms)
+    s = Svg(int(W), int(H))
+    x = margin
+    for c, (l, r, h, e) in zip(columns, ms):
+        draw(s, c, x + l, margin)
+        x += l + r + colgap
+    s.save(name)
+
+
 def flow_transfer():
     """Перевод клиенту банка: createTransfer, confirmTransfer, executeIntentIn."""
-    s = Svg(1000, 1060)
-    A, AL, AR = 270, 95, 445          # колонка 1: ось, левая ветвь, полоса отказа
-    B, BL, BR = 655, 530, 805         # колонка 2
-    C = 900                           # колонка 3 (сообщение об ошибке)
-    gap = 30
-
-    # колонка 1
-    y = s.terminator(A, 20, ['Начало'])
-    y = s.down(A, y, y + gap)
-    y = s.data(A, y, ['Получить данные формы:', 'счета, сумма'])
-    y = s.down(A, y, y + gap)
-    c1 = s.decision(A, y, ['Данные', 'корректны?'])
-    s.line([(A + DW / 2, c1), (AR, c1)]); s.label(A + DW / 2 + 8, c1 - 6, 'Нет')
-    y = s.down(A, y + DH, y + DH + gap); s.label(A + 6, y - 10, 'Да')
-    y = s.process(A, y, ['Пересчитать сумму', 'в BYN по курсу НБ'])
-    y = s.down(A, y, y + gap)
-    c2 = s.decision(A, y, ['Суточный лимит', 'превышен?'])
-    s.line([(A + DW / 2, c2), (AR, c2)]); s.label(A + DW / 2 + 8, c2 - 6, 'Да')
-    y = s.down(A, y + DH, y + DH + gap); s.label(A + 6, y - 10, 'Нет')
-    y = s.process(A, y, ['Вычислить баллы', 'риска антифрода'])
-    y = s.down(A, y, y + gap)
-    c3 = s.decision(A, y, ['Баллы не ниже', 'порога', 'проверки?'], w=DW + 14, h=DH + 10)
-    yb = y + DH + 10
-    s.line([(A - (DW + 14) / 2, c3), (AL, c3)]); s.label(A - (DW + 14) / 2 - 22, c3 - 6, 'Да')
-    ya = s.down(AL, c3, c3 + 50)
-    ya = s.process(AL, ya, ['Зарезервировать', 'сумму, открыть', 'случай антифрода'], h=72)
-    ya = s.down(AL, ya, ya + gap)
-    ya = s.data(AL, ya, ['Сообщить: перевод', 'на проверке'])
-    bottom = 990
-    s.down(AL, ya, bottom - CR)
-    s.connector(AL, bottom, 2)
-    s.down(A, yb, bottom - CR); s.label(A + 6, yb + 18, 'Нет')
-    s.connector(A, bottom, 3)
-    s.down(AR, c1, bottom - CR)
-    s.connector(AR, bottom, 1)
-
-    # колонка 2
-    s.connector(B, 40, 3)
-    y = s.down(B, 40 + CR, 40 + CR + gap)
-    c4 = s.decision(B, y, ['Нужен код', 'подтверждения?'], w=DW + 10)
-    s.line([(B + (DW + 10) / 2, c4), (BR, c4)]); s.label(B + (DW + 10) / 2 + 8, c4 - 6, 'Нет')
-    y = s.down(B, y + DH, y + DH + gap); s.label(B + 6, y - 10, 'Да')
-    y = s.process(B, y, ['Отправить', 'одноразовый код'])
-    y = s.down(B, y, y + gap)
-    y = s.data(B, y, ['Получить код', 'от клиента'])
-    y = s.down(B, y, y + gap)
-    c5 = s.decision(B, y, ['Код верен?'])
-    s.line([(B - DW / 2, c5), (BL, c5)]); s.label(B - DW / 2 - 30, c5 - 6, 'Нет')
-    merge = y + DH + 40
-    s.line([(B, y + DH), (B, merge)]); s.label(B + 6, y + DH + 18, 'Да')
-    s.line([(BR, c4), (BR, merge), (B, merge)])
-    y = s.down(B, merge, merge + gap)
-    y = s.predefined(B, y, ['Провести перевод', 'в транзакции'])
-    y = s.down(B, y, y + gap)
-    c6 = s.decision(B, y, ['Проводка', 'выполнена?'])
-    s.line([(B - DW / 2, c6), (BL, c6)]); s.label(B - DW / 2 - 30, c6 - 6, 'Нет')
-    y = s.down(B, y + DH, y + DH + gap); s.label(B + 6, y - 10, 'Да')
-    y = s.process(B, y, ['Отметить перевод', 'проведённым,', 'уведомить стороны'], h=72)
-    s.down(BL, c5, 860 - CR)
-    s.connector(BL, 860, 1)
-
-    # колонка 3: ошибка и общий конец
-    s.connector(C, 40, 1)
-    yc = s.down(C, 40 + CR, 40 + CR + gap)
-    yc = s.data(C, yc, ['Отобразить', 'сообщение', 'об ошибке'], w=BW - 10, h=72)
-    join = 960
-    s.line([(B, y), (B, join)])
-    s.line([(C, yc), (C, join)])
-    s.line([(B, join), (C, join)])
-    s.connector(BR, 860, 2)
-    s.line([(BR, 860 + CR), (BR, join)])
-    mid = BR
-    s.down(mid, join, join + 30)
-    s.terminator(mid, join + 30, ['Конец'])
-    s.save('flow-transfer.svg')
+    col1 = [
+        ('term', ['Начало']),
+        ('data', ['Получить данные формы:', 'счета, сумма']),
+        ('if', ['Данные', 'корректны?'], [('proc', ['Пересчитать сумму', 'в BYN по курсу НБ'])], [('exit', 1)]),
+        ('if', ['Суточный лимит', 'превышен?'], [('exit', 1)], [('proc', ['Вычислить баллы', 'риска антифрода'])]),
+        ('if', ['Баллы не ниже', 'порога', 'проверки?'],
+         [('proc', ['Зарезервировать', 'сумму, открыть', 'случай антифрода']), ('data', ['Сообщить: перевод', 'на проверке']), ('exit', 2)],
+         [('exit', 3)]),
+    ]
+    col2 = [
+        ('in', 3),
+        ('if', ['Нужен код', 'подтверждения?'],
+         [('proc', ['Отправить', 'одноразовый код']), ('data', ['Получить код', 'от клиента']),
+          ('if', ['Код', 'верен?'], [], [('exit', 1)])],
+         []),
+        ('pred', ['Провести перевод', 'в транзакции']),
+        ('if', ['Проводка', 'выполнена?'], [('proc', ['Отметить перевод', 'проведённым,', 'уведомить стороны'])], [('exit', 1)]),
+        ('exit', 4),
+    ]
+    col3 = [
+        ('par', [[('in', 1), ('data', ['Отобразить', 'сообщение', 'об ошибке'])], [('in', 2)], [('in', 4)]]),
+        ('term', ['Конец']),
+    ]
+    chart('flow-transfer.svg', [col1, col2, col3])
 
 
 def flow_loans():
     """Обслуживание кредитов при закрытии операционного дня: processLoans."""
-    s = Svg(1000, 1060)
-    A, AL, AR = 270, 95, 445
-    B, BR = 655, 840
-    gap = 30
-    y = s.terminator(A, 20, ['Начало'])
-    y = s.down(A, y, y + gap)
-    y = s.predefined(A, y, ['Выбрать активные', 'кредиты', 'с блокировкой'], h=72)
-    y = s.down(A, y, y + gap)
-    y = s.loop(A, y, ['Обработка кредитов', 'Пока есть кредиты'])
-    y = s.down(A, y, y + gap)
-    y = s.process(A, y, ['Выбрать платежи', 'со сроком до', 'банковской даты'], h=72)
-    y = s.down(A, y, y + gap)
-    y = s.loop(A, y, ['Обработка платежей', 'Пока есть платежи'])
-    y = s.down(A, y, y + gap)
-    c1 = s.decision(A, y, ['Платёж уже', 'просрочен?'])
-    s.line([(A - DW / 2, c1), (AL, c1)]); s.label(A - DW / 2 - 22, c1 - 6, 'Да')
-    s.line([(A + DW / 2, c1), (AR, c1)]); s.label(A + DW / 2 + 6, c1 - 6, 'Нет')
-    ya = s.down(AL, c1, c1 + 50)
-    ya = s.process(AL, ya, ['Начислить пеню', 'за дни просрочки'])
-    m1 = ya + 30
-    s.line([(AL, ya), (AL, m1), (AR, m1), (AR, c1)])
-    y = s.down(A, m1, m1 + gap)
-    c2 = s.decision(A, y, ['Ранний платёж', 'не оплачен или', 'не хватает денег?'], w=DW + 30, h=DH + 20)
-    s.line([(A - (DW + 30) / 2, c2), (AL, c2)]); s.label(A - (DW + 30) / 2 - 22, c2 - 6, 'Да')
-    s.line([(A + (DW + 30) / 2, c2), (AR, c2)]); s.label(A + (DW + 30) / 2 + 6, c2 - 6, 'Нет')
-    ya = s.down(AL, c2, c2 + 50)
-    ya = s.process(AL, ya, ['Отметить платёж', 'просроченным'])
-    yr = s.down(AR, c2, c2 + 50)
-    yr = s.predefined(AR, yr, ['Списать долг,', 'проценты и пеню'])
-    yr = s.down(AR, yr, yr + gap)
-    yr = s.process(AR, yr, ['Отметить платёж', 'оплаченным'])
-    m2 = yr + 30
-    s.line([(AL, ya), (AL, m2), (AR, m2), (AR, yr)])
-    bottom = m2 + 60
-    s.down(A, m2, bottom - CR)
-    s.connector(A, bottom, 1)
+    col1 = [
+        ('term', ['Начало']),
+        ('pred', ['Выбрать активные', 'кредиты', 'с блокировкой']),
+        ('loop', ['Обработка кредитов', 'Пока есть кредиты']),
+        ('proc', ['Выбрать платежи', 'со сроком до', 'банковской даты']),
+        ('loop', ['Обработка платежей', 'Пока есть платежи']),
+        ('if', ['Платёж уже', 'просрочен?'], [('proc', ['Начислить пеню', 'за дни просрочки'])], []),
+        ('if', ['Ранний платёж', 'не оплачен или', 'не хватает денег?'],
+         [('proc', ['Отметить платёж', 'просроченным'])],
+         [('pred', ['Списать долг,', 'проценты и пеню']), ('proc', ['Отметить платёж', 'оплаченным'])]),
+        ('exit', 1),
+    ]
+    col2 = [
+        ('in', 1),
+        ('loopend', ['Обработка платежей']),
+        ('if', ['Все платежи', 'погашены?'], [('proc', ['Закрыть кредит', 'и ссудный счёт'])], []),
+        ('proc', ['Сохранить остаток', 'долга и дату', 'оплаты']),
+        ('loopend', ['Обработка кредитов']),
+        ('term', ['Конец']),
+    ]
+    chart('flow-loans.svg', [col1, col2], colgap=90)
 
-    s.connector(B, 40, 1)
-    y = s.down(B, 40 + CR, 40 + CR + gap)
-    y = s.loop(B, y, ['Обработка платежей'], end=True)
-    y = s.down(B, y, y + gap)
-    c3 = s.decision(B, y, ['Все платежи', 'погашены?'])
-    s.line([(B + DW / 2, c3), (BR, c3)]); s.label(B + DW / 2 + 6, c3 - 6, 'Да')
-    yr = s.down(BR, c3, c3 + 50)
-    yr = s.process(BR, yr, ['Закрыть кредит', 'и ссудный счёт'])
-    m3 = yr + 30
-    s.line([(B, y + DH), (B, m3)]); s.label(B + 6, y + DH + 18, 'Нет')
-    s.line([(BR, yr), (BR, m3), (B, m3)])
-    y = s.down(B, m3, m3 + gap)
-    y = s.process(B, y, ['Сохранить остаток', 'долга и дату', 'оплаты'], h=72)
-    y = s.down(B, y, y + gap)
-    y = s.loop(B, y, ['Обработка кредитов'], end=True)
-    y = s.down(B, y, y + gap)
-    s.terminator(B, y, ['Конец'])
-    s.save('flow-loans.svg')
+
+def flow_deposits():
+    """Начисление процентов и возврат вкладов при закрытии дня: processDeposits."""
+    col1 = [
+        ('term', ['Начало']),
+        ('pred', ['Выбрать вклады', 'с наступившей', 'датой выплаты']),
+        ('loop', ['Обработка вкладов', 'Пока есть вклады']),
+        ('proc', ['Создать точку', 'сохранения']),
+        ('loop', ['Обработка периодов', 'Пока дата выплаты', 'не позже даты дня']),
+        ('proc', ['Рассчитать проценты', 'за период по дням']),
+        ('if', ['Проценты', 'больше нуля?'],
+         [('if', ['Капитализация?'], [('proc', ['Зачислить', 'проценты', 'на вклад'])], [('proc', ['Выплатить', 'проценты на', 'текущий счёт'])])],
+         []),
+        ('exit', 1),
+    ]
+    col2 = [
+        ('in', 1),
+        ('if', ['Наступил срок', 'вклада?'],
+         [('pred', ['Вернуть вклад', 'на текущий счёт']), ('proc', ['Закрыть вклад', 'и его счёт'])],
+         [('proc', ['Сохранить дату', 'и число периодов'])]),
+        ('loopend', ['Обработка периодов']),
+        ('if', ['Произошла', 'ошибка?'], [('proc', ['Откатить', 'к точке', 'сохранения'])], [('proc', ['Освободить', 'точку', 'сохранения'])]),
+        ('loopend', ['Обработка вкладов']),
+        ('term', ['Конец']),
+    ]
+    chart('flow-deposits.svg', [col1, col2], colgap=90)
 
 
 def arch():
@@ -295,3 +422,4 @@ if __name__ == '__main__':
     arch()
     flow_transfer()
     flow_loans()
+    flow_deposits()
