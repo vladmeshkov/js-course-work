@@ -62,10 +62,14 @@ def paren(a):
 
 
 class Doc:
-    def __init__(self):
+    def __init__(self, chap=2, layout=None, ref=None):
         self.d = docx.Document(os.path.join(KURS, 'src', 'template-oformlenie.docx'))
+        self.chap = chap
+        self.layout = LAYOUT if layout is None else layout
+        self.ref = REF if ref is None else ref
         self.fig = 0
         self.eq = 0
+        self.tab = 0
 
     def _p(self, style='Normal'):
         return self.d.add_paragraph(style=self.d.styles[style])
@@ -127,20 +131,20 @@ class Doc:
         self.empty('No Spacing').paragraph_format.keep_with_next = True
         c = self._p('No Spacing')
         c.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        c.add_run(f'Рисунок 2.{self.fig} – {caption}')
+        c.add_run(f'Рисунок {self.chap}.{self.fig} – {caption}')
         self.empty('No Spacing')
         return self.fig
 
     def unit(self, key, paras, name, caption):
         """Блок «текст + рисунок». Ссылка «рисунок 2.N» дописывается в абзац перед рисунком.
         Раскладка из layout-2.json: mode after – первый абзац, рисунок, остальные абзацы;
-        mode before – все абзацы, затем рисунок; scale – уменьшение рисунка."""
-        lay = LAYOUT.get(key, {})
+        mode before – все абзацы, затем рисунок; число – рисунок после стольких абзацев; scale – уменьшение рисунка."""
+        lay = self.layout.get(key, {})
         mode, scale = lay.get('mode', 'after'), lay.get('scale', 1.0)
         n = self.fig + 1
-        cut = 1 if mode == 'after' else len(paras)
+        cut = 1 if mode == 'after' else len(paras) if mode == 'before' else min(int(mode), len(paras))
         for i, t in enumerate(paras[:cut]):
-            self.text(t + (f' {REF[key].format(n=f"2.{n}")}' if i == cut - 1 else ''))
+            self.text(t + (f' {self.ref[key].format(n=f"{self.chap}.{n}")}' if i == cut - 1 else ''))
         self.figure(name, caption, scale=scale)
         for t in paras[cut:]:
             self.text(t)
@@ -149,7 +153,7 @@ class Doc:
         """Формула отдельной строкой с номером у правого края: в Word это запись «формула#(2.N)»
         (массив уравнений eqArr, знак # отделяет номер). Пустые строки до и после формулы."""
         self.eq += 1
-        num = f'2.{self.eq}'
+        num = f'{self.chap}.{self.eq}'
         self.empty('No Spacing')
         p = self._p('No Spacing')
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -171,6 +175,43 @@ class Doc:
                 p.paragraph_format.left_indent = Twips(438)
             p._p.append(parse_xml(f'<m:oMath {M}>{sym}</m:oMath>'))
             p.add_run(f' – {expl}' + ('.' if i == len(parts) - 1 else ';'))
+
+    def table(self, title, header, rows, widths_cm, center_cols=()):
+        """Таблица как в образце: подпись «Таблица N.M – …» над таблицей (выступ 3 см), сетка, шрифт 14,
+        шапка по центру и повторяется на каждой странице, строки не разрываются; после таблицы пустая строка."""
+        self.tab += 1
+        cap = self._p('Normal')
+        cap.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+        cap.paragraph_format.left_indent = Cm(3)
+        cap.paragraph_format.first_line_indent = Cm(-3)
+        cap.paragraph_format.keep_with_next = True
+        cap.add_run(f'Таблица {self.chap}.{self.tab} – {title}')
+        t = self.d.add_table(rows=1 + len(rows), cols=len(header))
+        t.style = self.d.styles['Table Grid']
+        t.autofit = False
+        # ширины колонок и в сетке таблицы (её читает LibreOffice), и в ячейках (их читает Word)
+        tblPr = t._tbl.tblPr
+        tblPr.append(parse_xml(f'<w:tblW {W} w:w="{int(sum(widths_cm) * 567)}" w:type="dxa"/>'))
+        tblPr.append(parse_xml(f'<w:tblLayout {W} w:type="fixed"/>'))
+        for gc, wcm in zip(t._tbl.tblGrid.findall('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}gridCol'), widths_cm):
+            gc.set('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}w', str(int(wcm * 567)))
+        for i, row in enumerate([header] + rows):
+            tr = t.rows[i]._tr.get_or_add_trPr()
+            tr.append(parse_xml(f'<w:cantSplit {W}/>'))
+            if i == 0:
+                tr.append(parse_xml(f'<w:tblHeader {W}/>'))
+            for j, v in enumerate(row):
+                c = t.rows[i].cells[j]
+                c.width = Cm(widths_cm[j])
+                p = c.paragraphs[0]
+                p.style = self.d.styles['Normal']
+                p.paragraph_format.first_line_indent = Cm(0)
+                p.alignment = WD_ALIGN_PARAGRAPH.CENTER if i == 0 or j in center_cols else WD_ALIGN_PARAGRAPH.LEFT
+                if i == 0:
+                    p.paragraph_format.keep_with_next = True
+                p.add_run(v)
+        self.empty()
+        return self.tab
 
     def save(self, out):
         self.d.save(out)

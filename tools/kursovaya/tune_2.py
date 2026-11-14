@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Подбор раскладки раздела 2: для каждого блока «текст + рисунок» по порядку пробует
+"""Подбор раскладки раздела 2 или 3: для каждого блока «текст + рисунок» по порядку пробует
 положение рисунка (после первого абзаца или после всех) и уменьшение (1,0 / 0,9 / 0,8)
 и оставляет вариант с наименьшей суммарной пустотой внизу страниц (порог 2,5 см).
-Результат: docs/kursovaya/src/layout-2.json (его читает build_2.py).
-Использование: python3 tune_2.py [ключи блоков – подобрать только их, остальное из layout-2.json]
+Результат: docs/kursovaya/src/layout-N.json (его читает build_N.py).
+Использование: python3 tune_2.py [--part 3] [ключи блоков – подобрать только их, остальное из layout-N.json]
 """
 import json, os, shutil, subprocess, sys, tempfile
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -11,17 +11,26 @@ import check_layout
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, '..', '..'))
-LAY = os.path.join(ROOT, 'docs', 'kursovaya', 'src', 'layout-2.json')
-KEYS = ['func', 'arch', 'transfer', 'loans', 'deposits', 'cabinet', 'transfer-ui', 'deposit-ui', 'statement', 'workplace', 'loan-review', 'security']
-OPTIONS = [('after', 1.0), ('before', 1.0), ('after', 0.9), ('before', 0.9), ('after', 0.8), ('before', 0.8)]
+ARGS = sys.argv[1:]
+PART = '2'
+if ARGS[:1] == ['--part']:
+    PART, ARGS = ARGS[1], ARGS[2:]
+LAY = os.path.join(ROOT, 'docs', 'kursovaya', 'src', f'layout-{PART}.json')
+KEYS = {
+    '2': ['func', 'arch', 'transfer', 'loans', 'deposits', 'cabinet', 'transfer-ui', 'deposit-ui', 'statement', 'workplace', 'loan-review', 'security'],
+    '3': ['run', 'iban', 'code'],
+}[PART]
+OPTIONS = [('after', 1.0), ('before', 1.0), ('after', 0.9), ('before', 0.9), ('after', 0.8), ('before', 0.8)] + (
+    [('after', 0.7), ('before', 0.7), ('after', 0.6), ('before', 0.6)] + [(k, sc) for k in (2, 3) for sc in (1.0, 0.8, 0.7, 0.6)]
+    if PART == '3' else [])
 LIMIT = 2.5
 
 
 def score(layout):
     json.dump(layout, open(LAY, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
     tmp = tempfile.mkdtemp()
-    out = os.path.join(tmp, 'r2.docx')
-    subprocess.run([sys.executable, os.path.join(HERE, 'build_2.py'), out], check=True, capture_output=True)
+    out = os.path.join(tmp, f'r{PART}.docx')
+    subprocess.run([sys.executable, os.path.join(HERE, f'build_{PART}.py'), out], check=True, capture_output=True)
     rows = check_layout.analyze(out, skip=0)
     gaps = [r['gap'] for r in rows if r['gap'] > LIMIT]
     shutil.rmtree(tmp, ignore_errors=True)
@@ -29,8 +38,8 @@ def score(layout):
 
 
 def main():
-    keys = sys.argv[1:] or KEYS
-    layout = json.load(open(LAY, encoding='utf-8')) if os.path.exists(LAY) and sys.argv[1:] else {}
+    keys = ARGS or KEYS
+    layout = json.load(open(LAY, encoding='utf-8')) if os.path.exists(LAY) and ARGS else {}
     best = score(layout)
     print('исходно', best)
     for key in keys:

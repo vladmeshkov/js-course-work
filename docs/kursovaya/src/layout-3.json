@@ -1,0 +1,14 @@
+{
+ "run": {
+  "mode": "after",
+  "scale": 0.8
+ },
+ "iban": {
+  "mode": "after",
+  "scale": 1.0
+ },
+ "code": {
+  "mode": "after",
+  "scale": 1.0
+ }
+}
