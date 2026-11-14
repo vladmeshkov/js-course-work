@@ -95,10 +95,17 @@ function useCases() {
   assoc(guest, 1, [rates, reg]);
   assoc(client, 1, [acc, xfer, pay, dep, loan, repay, card, stmt]);
   assoc(user, 1, [auth, sec, notif]);
-  assoc(actor(1420, 170, 'Операционист'), -1, [kyc, cash, lock]);
-  assoc(actor(1420, 400, 'Специалист по\nмониторингу'), -1, [fraud, special]);
-  assoc(actor(1420, 660, 'Кредитный\nспециалист'), -1, [review, issue]);
-  assoc(actor(1420, 960, 'Администратор'), -1, [trf, users, audit, reports, backup, eod]);
+  const op = actor(1420, 170, 'Операционист'), mon = actor(1420, 400, 'Специалист по\nмониторингу');
+  const cr = actor(1420, 660, 'Кредитный\nспециалист'), adm = actor(1420, 960, 'Администратор');
+  assoc(op, -1, [kyc, cash, lock]); assoc(mon, -1, [fraud, special]); assoc(cr, -1, [review, issue]);
+  assoc(adm, -1, [trf, users, audit, reports, backup, eod]);
+
+  // обобщение: «Пользователь» – абстрактный актёр (любой вошедший в систему), клиент и сотрудник банка – его
+  // специализации; «Сотрудник банка» – абстрактный актёр над четырьмя ролями сотрудников
+  const staff = actor(1650, 565, 'Сотрудник\nбанка');
+  for (const [x, y] of [op, mon, cr, adm]) d.line({ pts: [[x + 20, y], [staff[0] - 20, staff[1]]], arrow: 'hollow' });
+  d.line({ pts: [[60, client[1] + 80], [60, user[1] - 37]], arrow: 'hollow' });
+  d.line({ pts: [[staff[0], staff[1] + 110], [staff[0], 1310], [20, 1310], [20, user[1]], [38, user[1]]], arrow: 'hollow' });
 
   d.checkCrossings = () => {
     const segs = d.items.filter((i) => i.t === 'line').map((l) => l.pts);
