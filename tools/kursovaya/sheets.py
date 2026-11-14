@@ -106,64 +106,94 @@ def frame(s, code, title):
 
 
 # ------------------------------------------------------------------ чертёж 1: IDEF0, декомпозиция A0
+def ruler(s, gx, gy, cw, rh, ncol, nrow, size=4):
+    """Координатная сетка листа: номера колонок сверху, буквы строк слева (как в образцах)."""
+    s.line([(gx, gy - 6), (gx + ncol * cw, gy - 6)], w=0.6)
+    for c in range(ncol + 1):
+        s.line([(gx + c * cw, gy - 9), (gx + c * cw, gy - 3)], w=0.6)
+    for c in range(1, ncol + 1):
+        s.text(gx + (c - 0.5) * cw, gy - 12, f'{c:02d}', size=size, anchor='middle', bold=True, italic=True)
+    s.line([(gx - 12, gy), (gx - 12, gy + nrow * rh)], w=0.6)
+    for r in range(nrow + 1):
+        s.line([(gx - 15, gy + r * rh), (gx - 9, gy + r * rh)], w=0.6)
+    for r in range(1, nrow + 1):
+        s.text(gx - 7, gy + (r - 0.5) * rh, 'ABCDEFGHIJKLMNOPQR'[r - 1], size=size, anchor='middle', bold=True, italic=True)
+
+
 def idef0():
     s = Sheet()
     frame(s, CODE + ' ПД', {'suffix': 'ПД', 'name': 'IDEF0-модель процесса\n«Предоставить потребительский\nкредит физическому лицу»'})
-    bw, bh = 120, 56
-    B = [(105 + i * 138, 112 + i * 72) for i in range(5)]
-    names = ['Принять и проверить\nкредитную заявку', 'Оценить\nкредитоспособность\nзаёмщика', 'Принять решение\nо предоставлении\nкредита',
-             'Оформить кредитный\nдоговор', 'Выдать кредит']
-    for (x, y), n in zip(B, names):
-        s.rect(x, y, bw, bh, sw=0.6)
-        s.text(x + bw / 2, y + bh / 2, n, size=4.2, anchor='middle-v')
+    GXI, GYI, CWI, RHI = 50, 50, 58, 39
+    ruler(s, GXI, GYI, CWI, RHI, 13, 12)
+    pad = 2.5
+    names = ['Принять\nи проверить\nкредитную заявку', 'Оценить\nкредитоспособность\nзаёмщика', 'Принять решение\nо предоставлении\nкредита',
+             'Оформить\nкредитный\nдоговор', 'Выдать кредит']
+    B = []
+    for i, n in enumerate(names):
+        c, r = 2 + 2 * i, 2 + 2 * i
+        x, y = GXI + (c - 1) * CWI + pad, GYI + (r - 1) * RHI + pad
+        w, h = CWI - 2 * pad, RHI - 2 * pad
+        B.append((x, y, w, h))
+        s.rect(x, y, w, h, sw=0.6)
+        s.text(x + w / 2, y + h / 2 + 1.5, n, size=3.6, anchor='middle-v')
+        s.text(x + 1, y - 2, f'{"ABCDEFGHIJKL"[r - 1]}{c:02d}', size=3.2, bold=True)
+    X = lambda i, f: B[i][0] + B[i][2] * f
+    Y = lambda i, f: B[i][1] + B[i][3] * f
     top = lambda i: B[i][1]
-    bot = lambda i: B[i][1] + bh
-    left = lambda i: B[i][0]
-    right = lambda i: B[i][0] + bw
-    T = 52  # верхний край линий управления
-    lab = lambda x, y, t, a='start': s.text(x, y, t, size=4, anchor=a)
+    bot = lambda i: B[i][1] + B[i][3]
+    lft = lambda i: B[i][0]
+    rgt = lambda i: B[i][0] + B[i][2]
+    lab = lambda x, y, t, a='start': s.text(x, y, t, size=3.6, anchor=a)
 
-    # управление (сверху)
-    s.line([(145, T), (145, top(0))], arrow=True); lab(147, T - 9, 'Законодательство и\nнормативные акты НБ РБ')
-    s.line([(145, 70), (290, 70), (290, top(1))], arrow=True)
-    s.line([(320, T), (320, top(1))], arrow=True); lab(322, T - 9, 'Методические\nправила скоринга')
-    s.line([(450, T), (450, top(2))], arrow=True); lab(452, T - 9, 'Кредитная политика\nбанка')
-    s.line([(450, 80), (580, 80), (580, top(3))], arrow=True)
-    s.line([(615, T), (615, top(3))], arrow=True); lab(617, T - 9, 'Условия кредитных\nпродуктов')
-    s.line([(615, 92), (175, 92), (175, top(0))], arrow=True)
-    s.line([(615, 92), (750, 92), (750, top(4))], arrow=True)
-    # входы (слева)
-    s.line([(35, 124), (left(0), 124)], arrow=True); lab(37, 120, 'Кредитная заявка')
-    s.line([(35, 152), (left(0), 152)], arrow=True); lab(37, 145, 'Анкетные данные\nзаёмщика')
-    s.line([(35, 222), (left(1), 222)], arrow=True); lab(37, 215, 'Сведения о счетах\nи обязательствах клиента')
-    # выходы, переходящие на следующий блок
+    def squiggle(lx, ly, px, py):
+        mx, my = (lx + px) / 2, (ly + py) / 2
+        s.line([(lx, ly), (mx + 1.5, my - 1.5), (mx - 1.5, my + 1.5), (px, py)], w=0.3)
+
+    T = GYI
+    # управление
+    s.line([(X(0, .35), T), (X(0, .35), top(0))], arrow=True); lab(X(0, .35) - 2, T + 4, 'Законодательство и\nнормативные акты НБ РБ', 'end')
+    s.line([(X(0, .35), T + 12), (X(1, .3), T + 12), (X(1, .3), top(1))], arrow=True)
+    s.line([(X(1, .65), T), (X(1, .65), top(1))], arrow=True); lab(X(1, .65) - 2, T + 4, 'Методические\nправила скоринга', 'end')
+    s.line([(X(2, .4), T), (X(2, .4), top(2))], arrow=True); lab(X(2, .4) - 2, T + 4, 'Кредитная политика\nбанка', 'end')
+    s.line([(X(2, .4), T + 22), (X(3, .3), T + 22), (X(3, .3), top(3))], arrow=True)
+    s.line([(X(3, .65), T), (X(3, .65), top(3))], arrow=True); lab(X(3, .65) - 2, T + 4, 'Условия кредитных\nпродуктов', 'end')
+    s.line([(X(3, .65), T + 32), (X(0, .7), T + 32), (X(0, .7), top(0))], arrow=True)
+    s.line([(X(3, .65), T + 32), (X(4, .5), T + 32), (X(4, .5), top(4))], arrow=True)
+    # входы
+    for y, t in [(Y(0, .3), 'Кредитная заявка'), (Y(0, .72), 'Анкетные данные\nзаёмщика')]:
+        s.line([(GXI, y), (lft(0), y)], arrow=True); lab(GXI + 1, y - (3 if '\n' not in t else 7), t)
+    s.line([(GXI, Y(1, .55)), (lft(1), Y(1, .55))], arrow=True); lab(GXI + 1, Y(1, .55) - 7, 'Сведения о счетах\nи обязательствах клиента')
+    # стрелки между блоками с подписями-«молниями»
     links = ['Проверенная\nзаявка', 'Результат оценки\nкредитоспособности', 'Одобренные\nусловия кредита', 'Открытый\nссудный счёт']
     for i, t in enumerate(links):
-        y1 = top(i) + bh / 2 if i < 3 else top(3) + 46
-        xm = right(i) + 9
-        y2 = top(i + 1) + bh / 2 - 8
-        s.line([(right(i), y1), (xm, y1), (xm, y2), (left(i + 1), y2)], arrow=True)
-        lab(xm + 2, y1 - 9, t)
+        y1 = Y(i, .5) if i < 3 else Y(3, .8)
+        xm = rgt(i) + (lft(i + 1) - rgt(i)) / 2
+        y2 = Y(i + 1, .35)
+        s.line([(rgt(i), y1), (xm, y1), (xm, y2), (lft(i + 1), y2)], arrow=True)
+        if i < 3:
+            lab(xm + 9, y1 - 13, t); squiggle(xm + 8, y1 - 9, xm, y1 + 6)
+        else:  # над этой стрелкой проходят выходы блока H08, подпись ставится ниже
+            lab(xm + 9, y1 + 12, t); squiggle(xm + 8, y1 + 9, xm, y1 + 3)
     # выходы наружу
-    for y, t in [(top(3) + 12, 'Подписанный кредитный договор'), (top(3) + 26, 'График платежей')]:
-        s.line([(right(3), y), (830, y)], arrow=True); lab(828, y - 3, t, 'end')
-    for y, t in [(top(4) + 14, 'Зачисленные\nкредитные средства'), (top(4) + 40, 'Сведения для\nкредитного регистра')]:
-        s.line([(right(4), y), (830, y)], arrow=True); lab(828, y - 8, t, 'end')
-    # механизмы (снизу): шины программного средства и кредитного специалиста
-    yb1, yb2, ylab = 478, 490, 512
-    s.line([(130, ylab - 6), (130, bot(0))], arrow=True)
-    s.line([(130, yb1), (715, yb1)])
-    for x, i in [(275, 1), (420, 2), (555, 3), (700, 4)]:
-        s.line([(x, yb1), (x, bot(i))], arrow=True)
-    lab(130, ylab, 'Программное\nсредство ДБО', 'middle')
-    s.line([(640, ylab - 6), (640, yb2)])
-    s.line([(640, yb2), (160, yb2), (160, bot(0))], arrow=True)
-    for x, i in [(300, 1), (440, 2), (585, 3)]:
-        s.line([(x, yb2), (x, bot(i))], arrow=True)
-    s.line([(640, yb2), (735, yb2), (735, bot(4))], arrow=True)
-    lab(640, ylab, 'Кредитный\nспециалист', 'middle')
-    s.line([(340, ylab - 6), (340, bot(1))], arrow=True)
-    lab(340, ylab, 'Кредитный регистр\nНБ РБ', 'middle')
+    xe = GXI + 13 * CWI + 6
+    for y, t in [(Y(3, .2), 'Подписанный кредитный договор'), (Y(3, .45), 'График платежей')]:
+        s.line([(rgt(3), y), (xe, y)], arrow=True); lab(xe - 1, y - 3, t, 'end')
+    for y, t in [(Y(4, .3), 'Зачисленные кредитные средства'), (Y(4, .7), 'Сведения для кредитного регистра')]:
+        s.line([(rgt(4), y), (xe, y)], arrow=True); lab(xe - 1, y - 3, t, 'end')
+    # механизмы: шины в строках K и L
+    yK, yL, ylab = GYI + 10.5 * RHI, GYI + 11.4 * RHI, GYI + 12 * RHI + 10
+    s.line([(X(0, .3), ylab - 5), (X(0, .3), bot(0))], arrow=True)
+    s.line([(X(0, .3), yK), (X(4, .3), yK)])
+    for i in range(1, 5):
+        s.line([(X(i, .3), yK), (X(i, .3), bot(i))], arrow=True)
+    lab(X(0, .3), ylab, 'Программное\nсредство ДБО', 'middle')
+    s.line([(X(3, .9), ylab - 5), (X(3, .9), yL)])
+    s.line([(X(0, .6), yL), (X(4, .6), yL)])
+    for i in range(5):
+        s.line([(X(i, .6), yL), (X(i, .6), bot(i))], arrow=True)
+    lab(X(3, .9), ylab, 'Кредитный\nспециалист', 'middle')
+    s.line([(X(1, .88), ylab - 5), (X(1, .88), bot(1))], arrow=True)
+    lab(X(1, .88), ylab, 'Кредитный регистр\nНБ РБ', 'middle')
     s.save('chertezh-1-idef0')
 
 
@@ -212,6 +242,8 @@ def algorithm():
         elif kind == 'con':
             s.add(f'<circle cx="{x}" cy="{y}" r="{w / 2}" fill="#fff" stroke="#000" stroke-width="0.45"/>')
         s.text(x, y, text, size=3.0 if kind != 'con' else 3.5, anchor='middle-v')
+        if kind != 'con':
+            s.text(x - w / 2, y - h / 2 - 2, f'{"ABCDEFGHIJKLMNOPQR"[r - 1]}{c:02d}', size=2.8, bold=True)
 
     bottom = lambda k: (N[k][0], N[k][1] + N[k][3] / 2)
     topp = lambda k: (N[k][0], N[k][1] - N[k][3] / 2)
@@ -308,13 +340,11 @@ def posters():
     n = poster('plakat-1-klassy', 'UML диаграмма классов',
                [('Диаграмма классов предметной области', k('class-domain.png')), ('Диаграмма классов слоя бизнес-логики', k('class-services.png'))], 2, 1)
     n = poster('plakat-2-modeli', 'Модели представления программного средства',
-               [('Диаграмма вариантов использования', k('view-uc.png')), ('Диаграмма последовательности', k('view-seq-loan.png')),
-                ('Диаграмма деятельности', k('view-act-loan.png')), ('Диаграмма состояний', k('view-st-loan.png')),
-                ('Диаграмма развёртывания', k('view-deployment.png')), ('Схема базы данных', k('er-diagram.png'))], 3, n)
+               [('Диаграмма состояний', k('view-st-loan.png')), ('Диаграмма развёртывания системы', k('view-deployment.png')),
+                ('Схема базы данных', k('er-diagram.png')), ('Диаграмма последовательности', k('view-seq-loan.png'))], 2, n)
     poster('plakat-3-skrinshoty', 'Скриншоты рабочих окон программного средства',
            [('Главная страница кабинета клиента', k('fig-ui-cabinet.png')), ('Перевод между счетами', k('fig-ui-transfer.png')),
-            ('Оформление вклада', k('fig-ui-deposit.png')), ('Выписка по счёту', k('fig-ui-statement.png')),
-            ('Рабочее место операциониста', k('fig-ui-workplace.png')), ('Рассмотрение заявки на кредит', k('fig-ui-loan-review.png'))], 3, n)
+            ('Рабочее место операциониста', k('fig-ui-workplace.png')), ('Рассмотрение заявки на кредит', k('fig-ui-loan-review.png'))], 2, n)
 
 
 if __name__ == '__main__':
