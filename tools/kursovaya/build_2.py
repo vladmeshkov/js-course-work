@@ -115,6 +115,9 @@ class Doc:
         path = os.path.join(KURS, name)
         im = Image.open(path)
         w = TEXT_W
+        # скриншоты сценариев: один масштаб для всех (ширина окна браузера = ширина текста), узкие карточки не растягиваются
+        if getattr(self, 'px_full', None) and os.path.basename(name).startswith('fig-test-') and name != 'fig-test-run.png':
+            w = min(TEXT_W, TEXT_W * im.width / self.px_full)
         h = w * im.height / im.width
         max_h *= scale
         if scale < 1 and h <= max_h:

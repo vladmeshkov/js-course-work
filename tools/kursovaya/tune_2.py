@@ -47,7 +47,7 @@ def main():
     print('исходно', best)
     for key in keys:
         cur = layout.get(key, {'mode': 'after', 'scale': 1.0})
-        opts = OPTIONS if key == 'run' or PART != '3' else [('after', 1.0), ('before', 1.0), ('after', 0.8), ('before', 0.8), ('after', 0.7), ('before', 0.7)]
+        opts = OPTIONS if key == 'run' or PART != '3' else [('after', 1.0), ('before', 1.0)]
         for mode, scale in opts:
             trial = dict(layout, **{key: {'mode': mode, 'scale': scale}})
             sc = score(trial)
