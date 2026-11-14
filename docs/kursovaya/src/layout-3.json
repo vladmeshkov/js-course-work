@@ -4,7 +4,7 @@
   "scale": 1.0
  },
  "register-empty": {
-  "mode": "before",
+  "mode": "after",
   "scale": 1.0
  },
  "register-invalid": {
@@ -16,15 +16,15 @@
   "scale": 1.0
  },
  "lockout": {
-  "mode": "after",
+  "mode": "before",
   "scale": 1.0
  },
  "amount-bad": {
-  "mode": "after",
+  "mode": "before",
   "scale": 1.0
  },
  "same-account": {
-  "mode": "before",
+  "mode": "after",
   "scale": 1.0
  },
  "iban": {
@@ -36,11 +36,11 @@
   "scale": 1.0
  },
  "code": {
-  "mode": "after",
+  "mode": "before",
   "scale": 1.0
  },
  "payment-requisite": {
-  "mode": "before",
+  "mode": "after",
   "scale": 1.0
  },
  "deposit-min": {
@@ -52,11 +52,11 @@
   "scale": 1.0
  },
  "loan-partial": {
-  "mode": "before",
+  "mode": "after",
   "scale": 1.0
  },
  "card-limits": {
-  "mode": "before",
+  "mode": "after",
   "scale": 1.0
  },
  "card-blocked": {
@@ -81,7 +81,7 @@
  },
  "session": {
   "mode": "before",
-  "scale": 0.8
+  "scale": 1.0
  },
  "kyc-reject": {
   "mode": "after",
@@ -92,7 +92,7 @@
   "scale": 1.0
  },
  "spread": {
-  "mode": "before",
+  "mode": "after",
   "scale": 1.0
  },
  "user-weak": {
