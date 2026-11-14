@@ -164,7 +164,7 @@ npm run staff2fa:off
 npm test
 ```
 
-Должно быть написано `274 passed` (число может расти по мере развития проекта). Тесты используют базу `talerbank_test`.
+Должно быть написано `Tests  30 passed (30)`. Тесты используют базу `talerbank_test`.
 
 Адрес `http://localhost:3000/health` отвечает `{"status":"ok"}`, если сервер работает.
 

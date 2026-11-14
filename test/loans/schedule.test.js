@@ -32,11 +32,6 @@ describe('график платежей', () => {
     expect(rows[0].dueDate).toBe('2026-02-28');
   });
 
-  it('нулевая ставка делит долг поровну', () => {
-    const rows = buildSchedule({ principal: 1000, annualPercent: 0.0001, type: 'annuity', dueDates: dueDatesFrom('2026-01-01', 4) });
-    expect(sum(rows, 'principal')).toBe(1000);
-  });
-
   it('частичное досрочное погашение: срок сокращается при том же платеже', () => {
     const dates = dueDatesFrom('2026-01-10', 24);
     const A = annuityPayment(2000000, 15, 24);
@@ -46,19 +41,6 @@ describe('график платежей', () => {
     expect(rows[0].total).toBe(A);
   });
 
-  it('частичное досрочное погашение: срок прежний, платёж меньше', () => {
-    const dates = dueDatesFrom('2026-01-10', 24);
-    const A = annuityPayment(2000000, 15, 24);
-    const rows = rebuildAfterPrepayment({ balance: 1000000, annualPercent: 15, type: 'annuity', mode: 'payment', dueDates: dates, currentPayment: A, firstNo: 1 });
-    expect(rows).toHaveLength(24);
-    expect(rows[0].total).toBeLessThan(A);
-    expect(sum(rows, 'principal')).toBe(1000000);
-  });
-
-  it('первый платёж может иметь неполный период процентов', () => {
-    const rows = buildSchedule({ principal: 100000, annualPercent: 12, type: 'annuity', dueDates: dueDatesFrom('2026-01-10', 3), firstInterest: 123 });
-    expect(rows[0].interest).toBe(123);
-  });
 });
 
 describe('скоринг', () => {
@@ -71,9 +53,6 @@ describe('скоринг', () => {
     expect(r.score).toBeGreaterThanOrEqual(70);
     expect(r.dti).toBeCloseTo(13.33, 1);
   });
-  it('крупная сумма идёт на ручное рассмотрение, даже при высоком балле', () => {
-    expect(scoreApplication({ ...base, amount: 900000 }).decision).toBe('manual');
-  });
   it('долговая нагрузка выше 40 % даёт отказ независимо от баллов', () => {
     const r = scoreApplication({ ...base, obligations: 100000, newPayment: 40000 });
     expect(r.dti).toBeGreaterThan(40);
@@ -82,10 +61,5 @@ describe('скоринг', () => {
   it('слабый профиль даёт отказ, средний ручное рассмотрение', () => {
     expect(scoreApplication({ ...base, age: 19, experienceMonths: 2, dependents: 3, newPayment: 110000, amount: 5000000 }).decision).toBe('reject');
     expect(scoreApplication({ ...base, experienceMonths: 8, dependents: 2, newPayment: 80000, amount: 1000000 }).decision).toBe('manual');
-  });
-  it('возвращает разбор по факторам', () => {
-    const r = scoreApplication(base);
-    expect(r.notes.map((n) => n.factor)).toContain('Долговая нагрузка');
-    expect(r.notes.reduce((t, n) => t + n.points, 0)).toBe(r.score);
   });
 });

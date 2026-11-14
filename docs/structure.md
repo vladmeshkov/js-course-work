@@ -73,7 +73,7 @@ docs/                      документация
 
 ## Тесты: `test/`
 
-Тесты лежат в папке своего модуля: `test/loans/loan.test.js` проверяет сервис кредитов, `test/loans/api-loans.test.js` их API. Общие помощники: `test/helpers.js` (создание клиентов и счетов), `test/http.js` (клиент API с cookie и CSRF-токеном), `test/env.js`, `test/globalSetup.js` (пересоздаёт тестовую базу). Запуск: `npm test`.
+30 тестов бизнес-логики в папках модулей: `ledger` (двойная запись), `transfers` (переводы и курсы), `loans/schedule.test.js` (графики и скоринг), `deposits` (вклады), `shared/lib.test.js` (деньги, IBAN, шифрование), `auth/totp.test.js` (коды 2FA). Общие помощники: `test/helpers.js` (создание клиентов и счетов), `test/env.js`, `test/globalSetup.js` (пересоздаёт тестовую базу). Запуск: `npm test`.
 
 ## Служебные скрипты: `tools/`
 

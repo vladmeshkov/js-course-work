@@ -36,8 +36,6 @@
     "qrcode": "^1.5.4"
   },
   "devDependencies": {
-    "@vitest/coverage-v8": "^5.0.3",
-    "supertest": "^7.3.1",
     "vitest": "^5.0.3"
   }
 }

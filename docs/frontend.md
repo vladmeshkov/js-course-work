@@ -81,4 +81,4 @@ bindForm(root.querySelector('#f'), async (data, form) => {
 
 ## Тесты
 
-`test/http.js`: `apiClient(app)` и `loggedIn(app, login, пароль)` держат cookie и токен CSRF: `client.get('/accounts')`, `client.post('/transfers', {...})` (без префикса `/api`). Пример: `test/app.test.js`.
+Автотесты проверяют бизнес-логику сервера (30 тестов в `test/<модуль>/`, см. `docs/structure.md`); интерфейс проверяется вручную по сценариям.
