@@ -6,7 +6,7 @@
 <text x='60' y='200.0' text-anchor='middle' font-size='14' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>модуль</text>
 <text x='60' y='217.0' text-anchor='middle' font-size='14' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>страницы</text>
 <path d='M110,195.0 L175,195.0' fill='none' stroke='#000' stroke-width='1.4' marker-end='url(#a)'/>
-<text x='114' y='187.0' font-size='13' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>HTTPS</text>
+<text x='114' y='187.0' text-anchor='start' font-size='13' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>HTTPS</text>
 <rect x='175' y='120' width='130' height='150' fill='white' stroke='#000' stroke-width='1.4'/>
 <text x='240.0' y='174.5' text-anchor='middle' font-size='14' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>Общие</text>
 <text x='240.0' y='191.5' text-anchor='middle' font-size='14' font-weight='normal' font-family='Arial, Liberation Sans, Helvetica, sans-serif'>проверки:</text>

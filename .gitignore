@@ -4,3 +4,4 @@ backups/
 coverage/
 *.log
 docs/kursovaya/zapiska-obedinennaya.*
+__pycache__/

@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 """Рисунки раздела 2 в оформлении образца записки.
 
-Блок-схемы по ГОСТ 19.701-90: терминатор, процесс, предопределённый процесс, данные, решение,
-граница цикла (начало: срезаны верхние углы, конец: нижние), соединитель для переноса на соседнюю
-колонку. Основное направление потока сверху вниз и слева направо, у решения подписаны выходы
-«Да» и «Нет», ветви сходятся линиями слияния.
+Блок-схемы по ГОСТ 19.701-90 строятся по описанию алгоритма:
+- все блоки (процесс, предопределённый процесс, ввод-вывод, граница цикла) одного размера, решения одного размера;
+- у решения две ветви: «Да» влево, «Нет» вправо; каждая ветвь отходит от вершины ромба горизонтальным
+  отрезком и затем идёт вниз;
+- если обе ветви продолжают алгоритм, они закрываются линией слияния под решением, поток идёт дальше от её середины;
+- ветвь ошибки содержит свой блок «Вывести ошибку: …» и уходит в соединитель; основной поток продолжается
+  по своей ветви, разные ошибки в один блок не сводятся;
+- все соединители сходятся только перед блоком «Конец».
 SVG пишутся в docs/kursovaya/src, PNG: node svg2png.cjs вход.svg выход.png 2.
 Использование: python3 fig_2.py
 """
@@ -14,10 +18,13 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 SRC = os.path.join(ROOT, 'docs', 'kursovaya', 'src')
 FONT = "font-family='Arial, Liberation Sans, Helvetica, sans-serif'"
 LW = 1.4
-BW, BH = 150, 62        # блок 5:2, как в образце
-DW, DH = 176, 90        # решение
-TW, TH = 128, 44        # терминатор
+BW, BH = 142, 64        # все блоки одного размера
+DW, DH = 166, 92        # все решения одного размера
+TW, TH = 142, 42        # терминатор той же ширины, что блоки
 CR = 18                 # радиус соединителя
+G = 26                  # расстояние между блоками
+TAIL = 30               # горизонтальный отрезок ветви за вершиной ромба
+OFF = DW / 2 + TAIL     # минимальный вынос оси ветви от оси решения
 
 
 def esc(t):
@@ -43,8 +50,8 @@ class Svg:
         for i, line in enumerate(lines):
             self.add(f"<text x='{cx}' y='{y0 + i * lh + size * 0.36:.1f}' text-anchor='{anchor}' font-size='{size}' font-weight='{w}' {FONT}>{esc(line)}</text>")
 
-    def label(self, x, y, t):
-        self.add(f"<text x='{x}' y='{y}' font-size='{self.size - 1}' {FONT}>{t}</text>")
+    def label(self, x, y, t, anchor='start'):
+        self.add(f"<text x='{x}' y='{y}' text-anchor='{anchor}' font-size='{self.size - 1}' {FONT}>{t}</text>")
 
     def line(self, pts, arrow=False):
         d = 'M' + ' L'.join(f'{x},{y}' for x, y in pts)
@@ -52,53 +59,50 @@ class Svg:
         self.add(f"<path d='{d}' fill='none' stroke='#000' stroke-width='{LW}'{m}/>")
 
     # символы ГОСТ 19.701-90 (cx, верх)
-    def process(self, cx, y, lines, w=BW, h=BH):
-        self.add(f"<rect x='{cx - w / 2}' y='{y}' width='{w}' height='{h}' fill='white' stroke='#000' stroke-width='{LW}'/>")
-        self.text(cx, y + h / 2, lines)
-        return y + h
+    def process(self, cx, y, lines):
+        self.add(f"<rect x='{cx - BW / 2}' y='{y}' width='{BW}' height='{BH}' fill='white' stroke='#000' stroke-width='{LW}'/>")
+        self.text(cx, y + BH / 2, lines)
+        return y + BH
 
-    def predefined(self, cx, y, lines, w=BW, h=BH):
-        self.process(cx, y, lines, w, h)
-        for dx in (-w / 2 + 9, w / 2 - 9):
-            self.line([(cx + dx, y), (cx + dx, y + h)])
-        return y + h
+    def predefined(self, cx, y, lines):
+        self.process(cx, y, lines)
+        for dx in (-BW / 2 + 9, BW / 2 - 9):
+            self.line([(cx + dx, y), (cx + dx, y + BH)])
+        return y + BH
 
-    def data(self, cx, y, lines, w=BW + 34, h=BH):
+    def data(self, cx, y, lines):
         s = 14
-        x = cx - w / 2
-        self.add(f"<polygon points='{x + s},{y} {x + w},{y} {x + w - s},{y + h} {x},{y + h}' fill='white' stroke='#000' stroke-width='{LW}'/>")
-        self.text(cx, y + h / 2, lines)
-        return y + h
+        x = cx - BW / 2
+        self.add(f"<polygon points='{x + s},{y} {x + BW},{y} {x + BW - s},{y + BH} {x},{y + BH}' fill='white' stroke='#000' stroke-width='{LW}'/>")
+        self.text(cx, y + BH / 2, lines)
+        return y + BH
 
     def terminator(self, cx, y, lines):
         self.add(f"<rect x='{cx - TW / 2}' y='{y}' width='{TW}' height='{TH}' rx='{TH / 2}' ry='{TH / 2}' fill='white' stroke='#000' stroke-width='{LW}'/>")
         self.text(cx, y + TH / 2, lines)
         return y + TH
 
-    def decision(self, cx, y, lines, w=DW, h=DH):
-        cy = y + h / 2
-        self.add(f"<polygon points='{cx},{y} {cx + w / 2},{cy} {cx},{y + h} {cx - w / 2},{cy}' fill='white' stroke='#000' stroke-width='{LW}'/>")
+    def decision(self, cx, y, lines):
+        cy = y + DH / 2
+        self.add(f"<polygon points='{cx},{y} {cx + DW / 2},{cy} {cx},{y + DH} {cx - DW / 2},{cy}' fill='white' stroke='#000' stroke-width='{LW}'/>")
         self.text(cx, cy, lines)
         return cy
 
-    def loop(self, cx, y, lines, end=False, w=BW + 10, h=BH):
+    def loop(self, cx, y, lines, end=False):
         c = 14
-        x = cx - w / 2
+        x = cx - BW / 2
         if end:
-            pts = f'{x},{y} {x + w},{y} {x + w},{y + h - c} {x + w - c},{y + h} {x + c},{y + h} {x},{y + h - c}'
+            pts = f'{x},{y} {x + BW},{y} {x + BW},{y + BH - c} {x + BW - c},{y + BH} {x + c},{y + BH} {x},{y + BH - c}'
         else:
-            pts = f'{x + c},{y} {x + w - c},{y} {x + w},{y + c} {x + w},{y + h} {x},{y + h} {x},{y + c}'
+            pts = f'{x + c},{y} {x + BW - c},{y} {x + BW},{y + c} {x + BW},{y + BH} {x},{y + BH} {x},{y + c}'
         self.add(f"<polygon points='{pts}' fill='white' stroke='#000' stroke-width='{LW}'/>")
-        self.text(cx, y + h / 2, lines)
-        return y + h
+        self.text(cx, y + BH / 2, lines)
+        return y + BH
 
-    def connector(self, cx, cy, n):
-        self.add(f"<circle cx='{cx}' cy='{cy}' r='{CR}' fill='white' stroke='#000' stroke-width='{LW}'/>")
-        self.text(cx, cy, [str(n)])
-
-    def down(self, cx, y1, y2):
-        self.line([(cx, y1), (cx, y2)], arrow=True)
-        return y2
+    def connector(self, cx, y, n):
+        self.add(f"<circle cx='{cx}' cy='{y + CR}' r='{CR}' fill='white' stroke='#000' stroke-width='{LW}'/>")
+        self.text(cx, y + CR, [str(n)])
+        return y + 2 * CR
 
     def save(self, name):
         self.parts.append('</svg>')
@@ -108,217 +112,213 @@ class Svg:
         print(path)
 
 
-# ---------------- раскладка блок-схем ----------------
-# Узлы: ('term', строки) ('proc', строки) ('pred', строки) ('data', строки) ('loop', строки) ('loopend', строки)
-# ('in', n) – входной соединитель; ('exit', n) – выходной соединитель (поток в этой ветви заканчивается);
-# ('if', условие, ветвь_да, ветвь_нет) – решение: «Да» влево, «Нет» вправо, обе ветви уходят вниз
-# и закрываются горизонтальной линией слияния, от её середины поток продолжается вниз по оси;
-# ('par', [ветви]) – несколько входящих потоков рядом, сходятся в одну линию.
-G = 26          # промежуток между блоками
-DROP = 24       # спуск ветви от уровня вершины решения до первого блока
-SIDE = 22       # минимальный вынос оси ветви за вершину ромба
+# ---------------- описание алгоритма и раскладка ----------------
+# ('term', строки) ('proc', строки) ('pred', строки) ('io', строки) ('loop', строки) ('loopend', строки)
+# ('in', n) – входной соединитель; ('exit', n) – выходной соединитель, поток в этой ветви заканчивается;
+# ('if', условие, ветвь_да, ветвь_нет); ('merge', [ветви]) – входящие соединители сходятся перед «Концом».
 
-
-def node_h(n):
+def size(n):
+    """(полуширина, высота) простого узла."""
     k = n[0]
     if k == 'term':
-        return TH
+        return TW / 2, TH
     if k in ('in', 'exit'):
-        return 2 * CR
-    if k in ('proc', 'pred', 'data', 'loop', 'loopend'):
-        return BH if len(n[1]) <= 2 else BH + 14
-    raise ValueError(k)
-
-
-def node_half(n):
-    k = n[0]
-    if k == 'term':
-        return TW / 2
-    if k in ('in', 'exit'):
-        return CR
-    if k == 'data':
-        return (BW + 34) / 2
-    if k in ('loop', 'loopend'):
-        return (BW + 10) / 2
-    return BW / 2
+        return CR, 2 * CR
+    return BW / 2, BH
 
 
 def measure(seq):
-    """(левый вынос, правый вынос, высота, поток закончился)."""
-    L = R = 0
-    H = 0
+    """Габариты относительно начальной оси: L, R, высота, поток закончился, сдвиг оси к концу."""
+    L = R = 0.0
+    H = 0.0
+    x = 0.0
     ended = False
     for i, n in enumerate(seq):
         if i:
             H += G
         if n[0] == 'if':
             m = measure_if(n)
-            L, R = max(L, m['L']), max(R, m['R'])
+            L, R = max(L, m['L'] - x), max(R, x + m['R'])
             H += m['H']
+            x += m['shift']
             ended = m['ended']
-        elif n[0] == 'par':
-            m = measure_par(n)
-            L, R = max(L, m['L']), max(R, m['R'])
+        elif n[0] == 'merge':
+            m = measure_merge(n)
+            L, R = max(L, m['L'] - x), max(R, x + m['R'])
             H += m['H']
         else:
-            h = node_half(n)
-            L, R = max(L, h), max(R, h)
-            H += node_h(n)
-            if n[0] == 'exit' or (n[0] == 'term' and i == len(seq) - 1 and i > 0):
-                ended = True
-    return L, R, H, ended
+            hw, h = size(n)
+            L, R = max(L, hw - x), max(R, x + hw)
+            H += h
+            ended = n[0] == 'exit' or (n[0] == 'term' and i > 0)
+    return dict(L=L, R=R, H=H, ended=ended, shift=x)
 
 
 def measure_if(n):
     _, cond, yes, no = n
-    dw = DW + (14 if len(cond) > 2 else 0)
-    dh = DH + (12 if len(cond) > 2 else 0)
-    yl, yr, yh, ye = measure(yes) if yes else (0, 0, 0, False)
-    nl, nr, nh, ne = measure(no) if no else (0, 0, 0, False)
-    # оси ветвей: не ближе вершин ромба, блоки двух ветвей не пересекаются
-    offL = max(dw / 2, yr + 16)
-    offR = max(dw / 2, nl + 16)
-    body = max(yh, nh)
-    ended = ye and ne
-    # ромб, спуск от его нижней вершины до первых блоков ветвей, ветви, линия слияния
-    H = dh + G + body + (0 if ended else 26)
-    return dict(dw=dw, dh=dh, offL=offL, offR=offR, L=max(dw / 2, offL + yl), R=max(dw / 2, offR + nr),
-                H=H, body=body, ended=ended, yh=yh, nh=nh, ye=ye, ne=ne)
+    e = dict(L=0, R=0, H=0, ended=False, shift=0)
+    y = measure(yes) if yes else e
+    no_ = measure(no) if no else e
+    offL = max(OFF, y['R'] + 24)
+    offR = max(OFF, no_['L'] + 24)
+    body = max(y['H'], no_['H'])
+    both = not y['ended'] and not no_['ended']
+    H = DH + G + body + (30 if both else 0)
+    if both:
+        shift = 0
+    elif not y['ended']:
+        shift = -offL + y['shift']
+    elif not no_['ended']:
+        shift = offR + no_['shift']
+    else:
+        shift = 0
+    return dict(offL=offL, offR=offR, body=body, both=both, H=H, shift=shift,
+                ended=y['ended'] and no_['ended'], ye=y, ne=no_,
+                L=max(DW / 2, offL + y['L']), R=max(DW / 2, offR + no_['R']))
 
 
-def measure_par(n):
+def measure_merge(n):
     lanes = [measure(x) for x in n[1]]
-    gap = 30
-    widths = [l + r for l, r, h, e in lanes]
-    total = sum(widths) + gap * (len(lanes) - 1)
-    body = max(h for l, r, h, e in lanes)
-    return dict(lanes=lanes, total=total, L=total / 2, R=total / 2, H=body + 26, body=body)
+    gap = 22
+    total = sum(m['L'] + m['R'] for m in lanes) + gap * (len(lanes) - 1)
+    body = max(m['H'] for m in lanes)
+    return dict(lanes=lanes, gap=gap, total=total, L=total / 2, R=total / 2, H=body + 30, body=body)
 
 
 def draw_node(s, n, cx, y):
     k = n[0]
-    h = node_h(n)
     if k == 'term':
-        s.terminator(cx, y, n[1])
-    elif k == 'proc':
-        s.process(cx, y, n[1], h=h)
-    elif k == 'pred':
-        s.predefined(cx, y, n[1], h=h)
-    elif k == 'data':
-        s.data(cx, y, n[1], h=h)
-    elif k == 'loop':
-        s.loop(cx, y, n[1], h=h)
-    elif k == 'loopend':
-        s.loop(cx, y, n[1], end=True, h=h)
-    elif k in ('in', 'exit'):
-        s.connector(cx, y + CR, n[1])
-    return y + h
+        return s.terminator(cx, y, n[1])
+    if k == 'proc':
+        return s.process(cx, y, n[1])
+    if k == 'pred':
+        return s.predefined(cx, y, n[1])
+    if k == 'io':
+        return s.data(cx, y, n[1])
+    if k == 'loop':
+        return s.loop(cx, y, n[1])
+    if k == 'loopend':
+        return s.loop(cx, y, n[1], end=True)
+    if k in ('in', 'exit'):
+        return s.connector(cx, y, n[1])
+    raise ValueError(k)
 
 
-def draw(s, seq, cx, y, enter=False):
-    """Рисует последовательность от y вниз. enter: к первому узлу ведёт входящая линия сверху (уже нарисована до y).
-    Возвращает y конца потока (нижняя точка, откуда идёт линия дальше)."""
+def draw(s, seq, cx, y):
+    """Рисует последовательность сверху вниз от y. Возвращает (y конца, x оси в конце)."""
     for i, n in enumerate(seq):
-        if i or enter:
-            s.line([(cx, y), (cx, y + G)], arrow=n[0] not in ('if',) or True)
+        if i:
+            s.line([(cx, y), (cx, y + G)], arrow=True)
             y += G
         if n[0] == 'if':
-            y = draw_if(s, n, cx, y)
-        elif n[0] == 'par':
-            y = draw_par(s, n, cx, y)
+            y, cx = draw_if(s, n, cx, y)
+        elif n[0] == 'merge':
+            y = draw_merge(s, n, cx, y)
         else:
             y = draw_node(s, n, cx, y)
-    return y
-
-
-def draw_branch(s, seq, bx, cy, ystart, merge):
-    """Ветвь решения: от уровня вершины ромба вниз. Пустая ветвь – линия до уровня слияния."""
-    if not seq:
-        if merge is not None:
-            s.line([(bx, cy), (bx, merge)])
-        return
-    s.line([(bx, cy), (bx, ystart)], arrow=True)
-    yend = draw(s, seq, bx, ystart)
-    _, _, _, ended = measure(seq)
-    if not ended and merge is not None:
-        s.line([(bx, yend), (bx, merge)])
+    return y, cx
 
 
 def draw_if(s, n, cx, y):
     m = measure_if(n)
     _, cond, yes, no = n
-    cy = s.decision(cx, y, cond, w=m['dw'], h=m['dh'])
+    cy = s.decision(cx, y, cond)
     lx, rx = cx - m['offL'], cx + m['offR']
-    s.line([(cx - m['dw'] / 2, cy), (lx, cy)])
-    s.label(cx - m['dw'] / 2 - 24, cy - 7, 'Да')
-    s.line([(cx + m['dw'] / 2, cy), (rx, cy)])
-    s.label(cx + m['dw'] / 2 + 4, cy - 7, 'Нет')
-    ystart = y + m['dh'] + G
-    merge = None if m['ended'] else ystart + m['body'] + 26
-    draw_branch(s, yes, lx, cy, ystart, merge)
-    draw_branch(s, no, rx, cy, ystart, merge)
-    if m['ended']:
-        return ystart + m['body']
-    # линия слияния закрывает обе ветви; ветвь, ушедшая в соединитель, в слиянии не участвует
-    xs = [x for x, e in ((lx, m['ye']), (rx, m['ne'])) if not e] + [cx]
-    s.line([(min(xs), merge), (max(xs), merge)])
-    return merge
-
-
-def draw_par(s, n, cx, y):
-    m = measure_par(n)
-    x = cx - m['total'] / 2
-    merge = y + m['body'] + 26
+    ystart = y + DH + G
+    bottom = ystart + m['body']
+    # горизонтальные отрезки от вершин ромба и подписи выходов
+    s.line([(cx - DW / 2, cy), (lx, cy)])
+    s.line([(cx + DW / 2, cy), (rx, cy)])
+    s.label(cx - DW / 2 - 6, cy - 7, 'Да', anchor='end')
+    s.label(cx + DW / 2 + 6, cy - 7, 'Нет')
     ends = []
-    for seq, (l, r, h, e) in zip(n[1], m['lanes']):
-        ax = x + l
-        yend = draw(s, seq, ax, y)
-        s.line([(ax, yend), (ax, merge)])
-        ends.append(ax)
-        x += l + r + 30
-    s.line([(min(ends + [cx]), merge), (max(ends + [cx]), merge)])
+    for seq, bx, mm in ((yes, lx, m['ye']), (no, rx, m['ne'])):
+        if not seq:
+            ends.append((bx, cy))
+            continue
+        s.line([(bx, cy), (bx, ystart)], arrow=True)
+        yend, xend = draw(s, seq, bx, ystart)
+        if not mm['ended']:
+            ends.append((xend, yend))
+    if m['both']:
+        merge = bottom + 30
+        for x, ye in ends:
+            s.line([(x, ye), (x, merge)])
+        xs = [x for x, _ in ends] + [cx]
+        s.line([(min(xs), merge), (max(xs), merge)])
+        return merge, cx
+    if ends:
+        # одна ветвь продолжает алгоритм: поток идёт дальше по её оси
+        x, ye = ends[0]
+        if ye < bottom:
+            s.line([(x, ye), (x, bottom)])
+        return bottom, x
+    return bottom, cx
+
+
+def draw_merge(s, n, cx, y):
+    m = measure_merge(n)
+    x = cx - m['total'] / 2
+    merge = y + m['body'] + 30
+    xs = []
+    for seq, mm in zip(n[1], m['lanes']):
+        ax = x + mm['L']
+        yend, xend = draw(s, seq, ax, y)
+        s.line([(xend, yend), (xend, merge)])
+        xs.append(xend)
+        x += mm['L'] + mm['R'] + m['gap']
+    s.line([(min(xs + [cx]), merge), (max(xs + [cx]), merge)])
     return merge
 
 
-def chart(name, columns, colgap=60, margin=20):
-    """columns: список последовательностей, каждая колонка рисуется сверху вниз."""
+def chart(name, columns, colgap=60, margin=24):
     ms = [measure(c) for c in columns]
-    W = margin * 2 + 30 + sum(l + r for l, r, h, e in ms) + colgap * (len(ms) - 1)
-    H = margin * 2 + max(h for l, r, h, e in ms)
+    W = margin * 2 + sum(m['L'] + m['R'] for m in ms) + colgap * (len(ms) - 1)
+    H = margin * 2 + max(m['H'] for m in ms)
     s = Svg(int(W), int(H))
     x = margin
-    for c, (l, r, h, e) in zip(columns, ms):
-        draw(s, c, x + l, margin)
-        x += l + r + colgap
+    for c, m in zip(columns, ms):
+        draw(s, c, x + m['L'], margin)
+        x += m['L'] + m['R'] + colgap
     s.save(name)
 
 
+def err(*lines):
+    return ('io', ['Вывести ошибку:', *lines])
+
+
 def flow_transfer():
-    """Перевод клиенту банка: createTransfer, confirmTransfer, executeIntentIn."""
+    """Перевод клиенту банка: createTransfer, confirmTransfer, executeIntentIn.
+    Условия сформулированы так, чтобы продолжение алгоритма поочерёдно шло влево и вправо."""
     col1 = [
         ('term', ['Начало']),
-        ('data', ['Получить данные формы:', 'счета, сумма']),
-        ('if', ['Данные', 'корректны?'], [('proc', ['Пересчитать сумму', 'в BYN по курсу НБ'])], [('exit', 1)]),
-        ('if', ['Суточный лимит', 'превышен?'], [('exit', 1)], [('proc', ['Вычислить баллы', 'риска антифрода'])]),
-        ('if', ['Баллы не ниже', 'порога', 'проверки?'],
-         [('proc', ['Зарезервировать', 'сумму, открыть', 'случай антифрода']), ('data', ['Сообщить: перевод', 'на проверке']), ('exit', 2)],
-         [('exit', 3)]),
+        ('io', ['Получить данные', 'формы: счета,', 'сумма']),
+        ('if', ['Счета и сумма', 'корректны?'],
+         [('proc', ['Пересчитать', 'сумму в BYN', 'по курсу НБ'])],
+         [err('неверные данные', 'перевода'), ('exit', 1)]),
+        ('if', ['Суточный лимит', 'превышен?'],
+         [err('превышен', 'суточный лимит'), ('exit', 2)],
+         [('proc', ['Вычислить', 'баллы риска', 'антифрода'])]),
+        ('if', ['Баллы ниже', 'порога', 'проверки?'],
+         [('exit', 'А')],
+         [('proc', ['Зарезервировать', 'сумму, открыть', 'случай антифрода']), ('io', ['Вывести:', 'перевод', 'на проверке']), ('exit', 3)]),
     ]
     col2 = [
-        ('in', 3),
+        ('in', 'А'),
         ('if', ['Нужен код', 'подтверждения?'],
-         [('proc', ['Отправить', 'одноразовый код']), ('data', ['Получить код', 'от клиента']),
-          ('if', ['Код', 'верен?'], [], [('exit', 1)])],
+         [('proc', ['Отправить', 'одноразовый', 'код']), ('io', ['Получить код', 'от клиента']),
+          ('if', ['Код', 'верен?'], [], [err('неверный код'), ('exit', 4)])],
          []),
-        ('pred', ['Провести перевод', 'в транзакции']),
-        ('if', ['Проводка', 'выполнена?'], [('proc', ['Отметить перевод', 'проведённым,', 'уведомить стороны'])], [('exit', 1)]),
-        ('exit', 4),
+        ('pred', ['Провести', 'перевод', 'в транзакции']),
+        ('if', ['Проводка', 'выполнена?'],
+         [('proc', ['Отметить', 'перевод', 'проведённым']), ('io', ['Вывести:', 'перевод', 'выполнен']), ('exit', 5)],
+         [err('недостаточно', 'средств'), ('exit', 6)]),
     ]
     col3 = [
-        ('par', [[('in', 1), ('data', ['Отобразить', 'сообщение', 'об ошибке'])], [('in', 2)], [('in', 4)]]),
+        ('merge', [[('in', k)] for k in (1, 2, 3, 4, 5, 6)]),
         ('term', ['Конец']),
     ]
-    chart('flow-transfer.svg', [col1, col2, col3])
+    chart('flow-transfer.svg', [col1, col2, col3], colgap=40)
 
 
 def flow_loans():
@@ -326,24 +326,24 @@ def flow_loans():
     col1 = [
         ('term', ['Начало']),
         ('pred', ['Выбрать активные', 'кредиты', 'с блокировкой']),
-        ('loop', ['Обработка кредитов', 'Пока есть кредиты']),
+        ('loop', ['Обработка', 'кредитов']),
         ('proc', ['Выбрать платежи', 'со сроком до', 'банковской даты']),
-        ('loop', ['Обработка платежей', 'Пока есть платежи']),
+        ('loop', ['Обработка', 'платежей']),
         ('if', ['Платёж уже', 'просрочен?'], [('proc', ['Начислить пеню', 'за дни просрочки'])], []),
-        ('if', ['Ранний платёж', 'не оплачен или', 'не хватает денег?'],
+        ('if', ['Ранний платёж', 'не оплачен', 'или мало денег?'],
          [('proc', ['Отметить платёж', 'просроченным'])],
          [('pred', ['Списать долг,', 'проценты и пеню']), ('proc', ['Отметить платёж', 'оплаченным'])]),
-        ('exit', 1),
+        ('exit', 'А'),
     ]
     col2 = [
-        ('in', 1),
-        ('loopend', ['Обработка платежей']),
+        ('in', 'А'),
+        ('loopend', ['Обработка', 'платежей']),
         ('if', ['Все платежи', 'погашены?'], [('proc', ['Закрыть кредит', 'и ссудный счёт'])], []),
         ('proc', ['Сохранить остаток', 'долга и дату', 'оплаты']),
-        ('loopend', ['Обработка кредитов']),
+        ('loopend', ['Обработка', 'кредитов']),
         ('term', ['Конец']),
     ]
-    chart('flow-loans.svg', [col1, col2], colgap=90)
+    chart('flow-loans.svg', [col1, col2], colgap=80)
 
 
 def flow_deposits():
@@ -351,26 +351,28 @@ def flow_deposits():
     col1 = [
         ('term', ['Начало']),
         ('pred', ['Выбрать вклады', 'с наступившей', 'датой выплаты']),
-        ('loop', ['Обработка вкладов', 'Пока есть вклады']),
+        ('loop', ['Обработка', 'вкладов']),
         ('proc', ['Создать точку', 'сохранения']),
-        ('loop', ['Обработка периодов', 'Пока дата выплаты', 'не позже даты дня']),
-        ('proc', ['Рассчитать проценты', 'за период по дням']),
+        ('loop', ['Обработка периодов', 'до даты дня']),
+        ('proc', ['Рассчитать', 'проценты за', 'период по дням']),
         ('if', ['Проценты', 'больше нуля?'],
-         [('if', ['Капитализация?'], [('proc', ['Зачислить', 'проценты', 'на вклад'])], [('proc', ['Выплатить', 'проценты на', 'текущий счёт'])])],
+         [('if', ['Капитали-', 'зация?'], [('proc', ['Зачислить', 'проценты', 'на вклад'])], [('proc', ['Выплатить', 'проценты на', 'текущий счёт'])])],
          []),
-        ('exit', 1),
+        ('exit', 'А'),
     ]
     col2 = [
-        ('in', 1),
+        ('in', 'А'),
         ('if', ['Наступил срок', 'вклада?'],
          [('pred', ['Вернуть вклад', 'на текущий счёт']), ('proc', ['Закрыть вклад', 'и его счёт'])],
-         [('proc', ['Сохранить дату', 'и число периодов'])]),
-        ('loopend', ['Обработка периодов']),
-        ('if', ['Произошла', 'ошибка?'], [('proc', ['Откатить', 'к точке', 'сохранения'])], [('proc', ['Освободить', 'точку', 'сохранения'])]),
-        ('loopend', ['Обработка вкладов']),
+         [('proc', ['Сохранить дату', 'и число', 'периодов'])]),
+        ('loopend', ['Обработка', 'периодов']),
+        ('if', ['Произошла', 'ошибка?'],
+         [('proc', ['Откатить', 'к точке', 'сохранения'])],
+         [('proc', ['Освободить', 'точку', 'сохранения'])]),
+        ('loopend', ['Обработка', 'вкладов']),
         ('term', ['Конец']),
     ]
-    chart('flow-deposits.svg', [col1, col2], colgap=90)
+    chart('flow-deposits.svg', [col1, col2], colgap=40)
 
 
 def arch():
