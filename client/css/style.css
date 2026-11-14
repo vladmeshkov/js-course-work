@@ -741,7 +741,7 @@ textarea{padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;bac
 .search-item__txt small{display:block;font-size:14px;color:var(--muted2)}
 .search-item__hint{font-size:14px;color:var(--muted2);white-space:nowrap}
 .search-empty{padding:24px 0;color:var(--muted2)}
-.site-header{position:relative}
+.site-header{position:relative;z-index:40}
 
 /* Пользователи: подтверждение, роли */
 .user-item{border-top:1px solid var(--line);padding:6px 0}
