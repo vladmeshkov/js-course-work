@@ -15,3 +15,5 @@
 - `tune_layout.py черновик.docx` – подбор порядка блоков 1.5 (результат `docs/kursovaya/src/layout-1.5.json`, читает `build_15.py`).
 
 Нужны `python-docx`, `Pillow`, `soffice` (LibreOffice) и `pdftotext` (poppler).
+
+- `build_4.py выход.docx` – раздел 4 «Руководство по установке и использованию»: 4.1 установка (рисунок `fig-guide-install.png`), 4.2 руководство пользователя по ролям (скриншоты `fig-guide-*.png`, список `GUIDE`).

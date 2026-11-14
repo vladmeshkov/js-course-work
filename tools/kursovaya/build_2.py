@@ -116,7 +116,7 @@ class Doc:
         im = Image.open(path)
         w = TEXT_W
         # скриншоты сценариев: один масштаб для всех (ширина окна браузера = ширина текста), узкие карточки не растягиваются
-        if getattr(self, 'px_full', None) and os.path.basename(name).startswith('fig-test-') and name != 'fig-test-run.png':
+        if getattr(self, 'px_full', None) and os.path.basename(name).startswith(('fig-test-', 'fig-guide-')) and name not in ('fig-test-run.png', 'fig-guide-install.png'):
             w = min(TEXT_W, TEXT_W * im.width / self.px_full)
         h = w * im.height / im.width
         max_h *= scale
