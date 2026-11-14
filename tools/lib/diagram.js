@@ -1,13 +1,14 @@
 // Универсальные UML-диаграммы: одно описание, два вывода (SVG для записки и файл draw.io).
-// Оформление: белые фигуры, чёрные линии, шрифт Times New Roman, как в диаграммах классов.
+// Оформление как в учебных диаграммах StarUML/draw.io: белые фигуры, чёрные линии, шрифт Arial,
+// полужирные имена в фигурах, сплошные рамки.
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-export const FONT = 'Times New Roman';
+export const FONT = 'Arial';
 export const FS = 16;                 // основной размер шрифта
 const LH = 19;                        // высота строки
 
 const lines = (t) => String(t).split('\n');
-export const textWidth = (t, size = FS) => Math.max(...lines(t).map((l) => l.length)) * size * 0.52;
+export const textWidth = (t, size = FS) => Math.max(...lines(t).map((l) => l.length)) * size * 0.57;
 
 export class Diagram {
   constructor(name) {
@@ -19,15 +20,15 @@ export class Diagram {
   add(item) { this.items.push(item); return item; }
 
   /** Прямоугольник (round: радиус скругления). Текст по центру, многострочный через \n. */
-  rect(o) { return this.add({ t: 'rect', fill: '#fff', stroke: '#000', size: FS, round: 0, ...o }); }
-  ellipse(o) { return this.add({ t: 'ellipse', fill: '#fff', stroke: '#000', size: FS, ...o }); }
+  rect(o) { return this.add({ t: 'rect', fill: '#fff', stroke: '#000', size: FS, round: 0, bold: true, ...o }); }
+  ellipse(o) { return this.add({ t: 'ellipse', fill: '#fff', stroke: '#000', size: FS, bold: true, ...o }); }
   diamond(o) { return this.add({ t: 'diamond', fill: '#fff', stroke: '#000', size: FS, ...o }); }
   /** Начальное (kind 'start') и конечное ('end') состояние. */
   mark(o) { return this.add({ t: 'mark', r: 10, ...o }); }
   actor(o) { return this.add({ t: 'actor', ...o }); }
   text(o) { return this.add({ t: 'text', size: FS, anchor: 'start', ...o }); }
   /** Рамка: граница системы, дорожка, пакет. title рисуется сверху слева (или по центру: center). */
-  frame(o) { return this.add({ t: 'frame', fill: 'none', stroke: '#666', dashed: true, size: FS, ...o }); }
+  frame(o) { return this.add({ t: 'frame', fill: 'none', stroke: '#000', dashed: false, size: FS, ...o }); }
   /** Узел развёртывания (параллелепипед). */
   node(o) { return this.add({ t: 'node', fill: '#fff', stroke: '#000', size: FS, ...o }); }
   /** Компонент UML. */
@@ -65,7 +66,7 @@ export class Diagram {
   svg() {
     const { w, h } = this.bounds();
     const o = [];
-    o.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" font-family="${FONT}, serif">`);
+    o.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" font-family="${FONT}, 'Liberation Sans', sans-serif">`);
     o.push('<rect width="100%" height="100%" fill="#ffffff"/>');
     const order = ['frame', 'node', 'component', 'rect', 'ellipse', 'diamond', 'mark', 'actor'];
     for (const kind of ['frame']) for (const i of this.items) if (i.t === kind) o.push(this.itemSvg(i));
@@ -86,8 +87,8 @@ export class Diagram {
     const dash = i.dashed ? ' stroke-dasharray="6 4"' : '';
     switch (i.t) {
       case 'rect': return `<rect x="${i.x}" y="${i.y}" width="${i.w}" height="${i.h}" rx="${i.round}" fill="${i.fill}" stroke="${i.stroke}"${dash}/>${i.text ? this.multi(i.text, i.x + i.w / 2, i.y + i.h / 2, i.size, `${i.bold ? ' font-weight="bold"' : ''}${i.underline ? ' text-decoration="underline"' : ''}`) : ''}`;
-      case 'ellipse': return `<ellipse cx="${i.cx}" cy="${i.cy}" rx="${i.rx}" ry="${i.ry}" fill="${i.fill}" stroke="${i.stroke}"${dash}/>${i.text ? this.multi(i.text, i.cx, i.cy, i.size) : ''}`;
-      case 'diamond': return `<polygon points="${i.cx},${i.cy - i.h / 2} ${i.cx + i.w / 2},${i.cy} ${i.cx},${i.cy + i.h / 2} ${i.cx - i.w / 2},${i.cy}" fill="${i.fill}" stroke="${i.stroke}"/>${i.text ? this.multi(i.text, i.cx, i.cy, i.size) : ''}`;
+      case 'ellipse': return `<ellipse cx="${i.cx}" cy="${i.cy}" rx="${i.rx}" ry="${i.ry}" fill="${i.fill}" stroke="${i.stroke}"${dash}/>${i.text ? this.multi(i.text, i.cx, i.cy, i.size, i.bold ? ' font-weight="bold"' : '') : ''}`;
+      case 'diamond': return `<polygon points="${i.cx},${i.cy - i.h / 2} ${i.cx + i.w / 2},${i.cy} ${i.cx},${i.cy + i.h / 2} ${i.cx - i.w / 2},${i.cy}" fill="${i.fill}" stroke="${i.stroke}"/>${i.text ? this.multi(i.text, i.cx, i.cy, i.size, i.bold ? ' font-weight="bold"' : '') : ''}`;
       case 'mark': return i.kind === 'start'
         ? `<circle cx="${i.cx}" cy="${i.cy}" r="${i.r}" fill="#000"/>`
         : `<circle cx="${i.cx}" cy="${i.cy}" r="${i.r}" fill="#fff" stroke="#000"/><circle cx="${i.cx}" cy="${i.cy}" r="${i.r - 4}" fill="#000"/>`;
@@ -141,7 +142,7 @@ export class Diagram {
     for (const i of items) {
       switch (i.t) {
         case 'rect': add(html(i.text ?? ''), base(i.size, `rounded=${i.round ? 1 : 0};arcSize=${Math.min(50, Math.round(i.round * 100 / Math.min(i.w, i.h)))};fillColor=${i.fill};strokeColor=${i.stroke};${i.dashed ? 'dashed=1;' : ''}${(i.bold ? 1 : 0) + (i.underline ? 4 : 0) ? `fontStyle=${(i.bold ? 1 : 0) + (i.underline ? 4 : 0)};` : ''}`), i.x, i.y, i.w, i.h); break;
-        case 'ellipse': add(html(i.text ?? ''), base(i.size, `ellipse;fillColor=${i.fill};strokeColor=${i.stroke};`), i.cx - i.rx, i.cy - i.ry, i.rx * 2, i.ry * 2); break;
+        case 'ellipse': add(html(i.text ?? ''), base(i.size, `ellipse;fillColor=${i.fill};strokeColor=${i.stroke};${i.bold ? 'fontStyle=1;' : ''}`), i.cx - i.rx, i.cy - i.ry, i.rx * 2, i.ry * 2); break;
         case 'diamond': add(html(i.text ?? ''), base(i.size, `rhombus;fillColor=${i.fill};strokeColor=${i.stroke};`), i.cx - i.w / 2, i.cy - i.h / 2, i.w, i.h); break;
         case 'mark': add('', i.kind === 'start' ? 'ellipse;fillColor=#000000;strokeColor=#000000;html=1;' : 'ellipse;shape=endState;fillColor=#000000;strokeColor=#000000;html=1;', i.cx - i.r, i.cy - i.r, i.r * 2, i.r * 2); break;
         case 'actor': add(`<b>${html(i.name)}</b>`, base(FS, 'shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;labelBackgroundColor=none;'), i.cx - 14, i.y, 28, 74); break;

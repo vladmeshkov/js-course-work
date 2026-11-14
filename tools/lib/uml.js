@@ -1,10 +1,10 @@
 // Диаграмма классов UML: одно описание, два вывода: файл draw.io и SVG (для вставки в записку).
-// Оформление по образцу учебных диаграмм: белые прямоугольники, три отсека, тонкие чёрные линии, шрифт Times New Roman.
+// Оформление по образцу учебных диаграмм: белые прямоугольники, три отсека, тонкие чёрные линии, шрифт Arial, полужирные имена классов.
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-const FONT = 'Times New Roman';
+const FONT = 'Arial';
 const ROW = 23;
-const CHAR = 8.4;
+const CHAR = 9.0;
 const F_NAME = 19, F_MEMBER = 16, F_STEREO = 15, F_MARK = 16, F_PKG = 17;
 
 export class ClassDiagram {
@@ -37,7 +37,7 @@ export class ClassDiagram {
   /* ---------- SVG ---------- */
   svg() {
     const out = [];
-    out.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${this.width}" height="${this.height}" viewBox="0 0 ${this.width} ${this.height}" font-family="${FONT}, serif">`);
+    out.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${this.width}" height="${this.height}" viewBox="0 0 ${this.width} ${this.height}" font-family="${FONT}, 'Liberation Sans', sans-serif">`);
     out.push('<rect width="100%" height="100%" fill="#ffffff"/>');
     for (const p of this.packages) {
       const tw = Math.max(140, p.title.length * 9 + 24), tx = p.x + (p.w - tw) / 2;

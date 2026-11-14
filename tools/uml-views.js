@@ -23,11 +23,11 @@ const Rt = (o, t = 0.5) => [o.x + o.w, o.y + o.h * t];
 // Столбцы: A — основные действия клиента, B — включаемые и расширяющие, C — действия сотрудников.
 function useCases() {
   const d = new Diagram('Варианты использования');
-  const rx = 88, ry = 24, P = 68, y0 = 90;
-  const cxA = 225, cxB = 515, cxC = 805, axL = 40, axR = 1040;
+  const rx = 118, ry = 27, P = 60, y0 = 92;
+  const cxA = 265, cxB = 625, cxC = 1000, axL = 40, axR = 1290;
   const Y = (r) => y0 + r * P;
-  const mk = (cx, r, text) => ({ cx, cy: Y(r), rx, ry, text });
-  d.frame({ x: 105, y: 30, w: 850, h: Y(19.05) - 30, title: 'Система ТалерБанк', center: true });
+  const mk = (cx, r, text) => ({ cx, cy: Y(r), rx, ry, text, size: 15 });
+  d.frame({ x: 115, y: 30, w: 1060, h: Y(19.1) - 30, title: 'Система дистанционного банковского обслуживания', center: true });
 
   const a = {
     rates: mk(cxA, 0, 'Просмотреть\nкурсы валют'), reg: mk(cxA, 1, 'Зарегистрироваться'), acc: mk(cxA, 2, 'Открыть счёт'),
@@ -86,7 +86,7 @@ function useCases() {
   const assoc = (ax, ay, e, side, ends) => {
     const start = [ax + side * 22, ay];
     const q = [e.cx - side * e.rx, e.cy];
-    d.line({ pts: [start, q], arrow: null });
+    d.line({ pts: [start, q], arrow: 'open' });
     return { start, q, ends };
   };
   const g = [assoc(axL, gy, a.rates, 1), assoc(axL, gy, a.reg, 1)];
@@ -96,7 +96,7 @@ function useCases() {
   const staff = (name, rMid, cases) => {
     const sy = actor(axR, rMid, name);
     for (const e of cases) {
-      const start = [axR - 22, sy]; d.line({ pts: [start, [e.cx + e.rx, e.cy]], arrow: null });
+      const start = [axR - 22, sy]; d.line({ pts: [start, [e.cx + e.rx, e.cy]], arrow: 'open' });
     }
   };
   staff('Операционист', 2, [c.check, c.lock, c.cash]);

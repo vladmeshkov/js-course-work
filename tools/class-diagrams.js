@@ -95,7 +95,7 @@ function services() {
   const d = new ClassDiagram('Слой бизнес-логики', { width: 1300, height: 1300 });
   const W = 240;
   const defs = {
-    EodService: ['eodService', ['closeDay', 'advanceDays', 'currentBankDate']],
+    EodService: ['eodService', ['closeDay', 'advanceDays']],
     DepositService: ['depositService', ['openDeposit', 'closeEarly', 'processDeposits']],
     PaymentService: ['paymentService', ['pay', 'createAutopayment', 'processAutopayments']],
     LoanService: ['loanService', ['apply', 'decide', 'sign', 'repayFull', 'processLoans']],
