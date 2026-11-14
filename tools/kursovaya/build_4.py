@@ -13,11 +13,6 @@ from build_2 import Doc, KURS
 
 LAY_PATH = os.path.join(KURS, 'src', 'layout-4.json')
 LAYOUT = json.load(open(LAY_PATH, encoding='utf-8')) if os.path.exists(LAY_PATH) else {}
-# снимки окна браузера (1280x800) ставятся на 0,75 ширины текста (12,4 см): рисунок в пределах полей,
-# и на странице помещаются два блока «абзац – рисунок – абзац»
-for _f in os.listdir(KURS):
-    if _f.startswith('fig-guide-') and _f != 'fig-guide-install.png':
-        LAYOUT.setdefault(_f[len('fig-guide-'):-4], {'mode': 'after', 'scale': 0.75})
 
 # (ключ, абзац до рисунка, ссылка, абзац после рисунка, подпись); ('lead', текст) – вводный абзац группы
 GUIDE = [
