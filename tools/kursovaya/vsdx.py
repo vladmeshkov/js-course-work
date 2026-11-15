@@ -72,7 +72,7 @@ class Writer:
                f'{_cell("C", f"{R:.5f}")}{_cell("D", f"{2 * R:.5f}")}</Row></Section>')
         self.shapes.append(f'<Shape ID="{self._nid()}" Type="Shape" LineStyle="0" FillStyle="0" TextStyle="0">{"".join(cells)}{geo}</Shape>')
 
-    def text(self, x, y, t, size, anchor='start', bold=False, italic=False, rotate=None, lh=1.2, bg=None):
+    def text(self, x, y, t, size, anchor='start', bold=False, italic=False, rotate=None, lh=1.2, bg=None, font='Arial'):
         """Надпись: точка (x, y) – как в SVG (по горизонтали start/middle/end, по вертикали середина строки
         или середина блока для middle-v)."""
         lines = t.split('\n')
@@ -83,9 +83,9 @@ class Writer:
         if anchor in ('middle', 'middle-v'):
             cx, align = x, 1
         elif anchor == 'end':
-            cx, align = x - wmm / 2 + 1, 2
+            cx, align = x - wmm / 2, 2
         else:
-            cx, align = x + wmm / 2 - 1, 0
+            cx, align = x + wmm / 2, 0
         px, py = self._xy(cx, cy)
         w, h = wmm / IN, hmm / IN
         cells = [_cell('PinX', f'{px:.5f}', 'MM'), _cell('PinY', f'{py:.5f}', 'MM'), _cell('Width', f'{w:.5f}', 'MM'),
@@ -96,7 +96,7 @@ class Writer:
         if rotate:
             cells.append(_cell('Angle', f'{-math.radians(rotate):.6f}'))
         style = (1 if bold else 0) + (2 if italic else 0)
-        char = (f'<Section N="Character"><Row IX="0">{_cell("Font", "Arial")}{_cell("Size", f"{size * 1.0 / IN:.5f}", "MM")}'
+        char = (f'<Section N="Character"><Row IX="0">{_cell("Font", font)}{_cell("Size", f"{size * 1.0 / IN:.5f}", "MM")}'
                 f'{_cell("Style", style)}{_cell("Color", "#000000")}</Row></Section>')
         para = f'<Section N="Paragraph"><Row IX="0">{_cell("HorzAlign", align)}{_cell("SpLine", f"-{lh:.2f}")}</Row></Section>'
         body = escape('\n'.join(lines))
@@ -142,7 +142,9 @@ class Writer:
         doc = (f'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><VisioDocument xmlns="{NS}" xmlns:r="{RNS}" xml:space="preserve">'
                '<DocumentSettings TopPage="0" DefaultTextStyle="0" DefaultLineStyle="0" DefaultFillStyle="0" DefaultGuideStyle="0"/>'
                '<Colors><ColorEntry IX="0" RGB="#000000"/><ColorEntry IX="1" RGB="#FFFFFF"/></Colors>'
-               '<FaceNames><FaceName NameU="Arial" UnicodeRanges="-1610611969 1073750139 0 0" CharSets="1073742335 -65536" Panose="2 11 6 4 2 2 2 2 2 4" Flags="325"/></FaceNames>'
+               '<FaceNames><FaceName NameU="Arial" UnicodeRanges="-1610611969 1073750139 0 0" CharSets="1073742335 -65536" Panose="2 11 6 4 2 2 2 2 2 4" Flags="325"/>'
+               '<FaceName NameU="Times New Roman" UnicodeRanges="-536859905 -1073711037 9 0" CharSets="1073742335 -65536" Panose="2 2 6 3 5 4 5 2 3 4" Flags="325"/>'
+               '<FaceName NameU="Calibri" UnicodeRanges="-469750017 -1073732485 9 0" CharSets="536871327 0" Panose="2 15 5 2 2 2 4 3 2 4" Flags="325"/></FaceNames>'
                '<StyleSheets><StyleSheet ID="0" NameU="No Style" IsCustomNameU="1" Name="No Style" IsCustomName="1">'
                + ''.join(_cell(n, v) for n, v in [('EnableLineProps', 1), ('EnableFillProps', 1), ('EnableTextProps', 1), ('HideForApply', 0),
                                                   ('LineWeight', 0.01041666666666667), ('LineColor', 0), ('LinePattern', 1), ('Rounding', 0),
