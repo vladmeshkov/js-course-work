@@ -182,3 +182,34 @@ def optimize(passes=12):
 
 if __name__ == '__main__':
     optimize(int(sys.argv[sys.argv.index('--passes') + 1]) if '--passes' in sys.argv else 12)
+
+
+def finalize(path):
+    """Чистка перед выдачей: без свойств «не отрывать от следующего», «не разрывать абзац» и «с новой
+    страницы» (в Word они видны чёрными квадратиками) и без неразрывных пробелов. Где абзац начинал новую
+    страницу (глава, «Продолжение таблицы»), в его начало ставится обычный разрыв страницы."""
+    d = docx.Document(path)
+    W = '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'
+    body = d.element.body
+    for p in body.iter(qn('w:p')):
+        ppr = p.find(qn('w:pPr'))
+        if ppr is None:
+            continue
+        pb = ppr.find(qn('w:pageBreakBefore'))
+        for tag in ('w:keepNext', 'w:keepLines', 'w:pageBreakBefore'):
+            for el in ppr.findall(qn(tag)):
+                ppr.remove(el)
+        if pb is not None and p.getprevious() is not None:
+            r = docx.oxml.OxmlElement('w:r'); br = docx.oxml.OxmlElement('w:br'); br.set(qn('w:type'), 'page'); r.append(br)
+            ppr.addnext(r)
+    # те же свойства в стилях (у заголовков «не отрывать от следующего» задано стилем)
+    for st in d.styles.element.iter(qn('w:style')):
+        ppr = st.find(qn('w:pPr'))
+        if ppr is not None:
+            for tag in ('w:keepNext', 'w:keepLines', 'w:pageBreakBefore'):
+                for el in ppr.findall(qn(tag)):
+                    ppr.remove(el)
+    for t in body.iter(qn('w:t')):
+        if t.text and any(c in t.text for c in '\xa0   '):
+            t.text = re.sub('[\xa0   ]', ' ', t.text)
+    d.save(path)

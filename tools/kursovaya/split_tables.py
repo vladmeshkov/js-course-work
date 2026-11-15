@@ -44,8 +44,8 @@ def make_continuation(cap_p, number):
                     del ind.attrib[qn(a)]
         for jc in pPr.findall(qn('w:jc')):
             jc.set(qn('w:val'), 'left')
-        if pPr.find(qn('w:keepNext')) is None:
-            pPr.insert(0, OxmlElement('w:keepNext'))
+        for kn in pPr.findall(qn('w:keepNext')):
+            pPr.remove(kn)
         if pPr.find(qn('w:pageBreakBefore')) is None:      # продолжение всегда с новой страницы
             pPr.insert(0, OxmlElement('w:pageBreakBefore'))
     return p
@@ -64,6 +64,7 @@ def set_row_flags(tr, header):
 
 
 def keep_with_next(tr):
+    return      # «не отрывать от следующего» в итоговом файле не используется (в Word видно чёрными квадратиками)
     for p in tr.iter(qn('w:p')):
         pPr = p.find(qn('w:pPr'))
         if pPr is None:

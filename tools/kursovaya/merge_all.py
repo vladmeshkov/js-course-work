@@ -149,6 +149,7 @@ def assemble(out, pages):
     base.save(out)
     import split_tables
     split_tables.main(out, out)       # таблицы режутся по страницам окончательной вёрстки, с «Продолжением таблицы»
+    final_layout.finalize(out)         # без чёрных квадратиков (keepNext и т. п.) и неразрывных пробелов
 
 
 def page_count(path):
