@@ -32,9 +32,9 @@ export const UC = {
     client: { x: 200, y: 55, w: 420, h: 800 },
     mid: { x: 480, y: 55, w: 420, h: 800 },
     admin: { x: 200, y: 900, w: 680, h: 410 },
-    op: { x: 960, y: 50, w: 520, h: 250 },
-    mon: { x: 900, y: 270, w: 580, h: 260 },
-    cr: { x: 900, y: 520, w: 580, h: 270 },
+    op: { x: 880, y: 50, w: 360, h: 250 },
+    mon: { x: 880, y: 300, w: 360, h: 250 },
+    cr: { x: 880, y: 550, w: 360, h: 240 },
     user: { x: 930, y: 860, w: 500, h: 420 }
   },
   actors: [
@@ -55,7 +55,7 @@ export const UC = {
     c('prepay', 'mid', 'Погасить кредит досрочно'), c('block', 'mid', 'Заблокировать карту'),
     c('pdf', 'mid', 'Сформировать выписку в PDF'),
     c('trf', 'admin', 'Задать курсы и тарифы'), c('users', 'admin', 'Управлять пользователями'),
-    c('audit', 'admin', 'Просмотреть журнал аудита'), c('reports', 'admin', 'Сформировать отчёты'),
+    c('audit', 'admin', 'Проанализировать журнал аудита'), c('reports', 'admin', 'Сформировать отчёты'),
     c('backup', 'admin', 'Создать резервную копию'), c('eod', 'admin', 'Закрыть операционный день'),
     c('accrue', 'admin', 'Начислить проценты по вкладам'), c('charge', 'admin', 'Списать платежи по кредитам'),
     c('kyc', 'op', 'Проверить анкету клиента'), c('cash', 'op', 'Принять и выдать наличные'), c('lock', 'op', 'Заблокировать счёт клиента'),
@@ -69,8 +69,8 @@ export const UC = {
   // у каждого базового варианта не больше одного уточнения; уточнения стоят дальше от актёра, чем базовый вариант
   links: [
     ['fx', 'xfer', 'extend'], ['xfer', 'code', 'include'], ['auto', 'pay', 'extend'], ['dep', 'calc', 'include'], ['early', 'dep', 'extend'],
-    ['loan', 'score', 'include'], ['issue', 'review', 'extend'], ['prepay', 'repay', 'extend'], ['block', 'card', 'extend'],
-    ['stmt', 'pdf', 'include'], ['special', 'fraud', 'extend'], ['eod', 'accrue', 'include'], ['eod', 'charge', 'include'],
+    ['loan', 'score', 'include'], ['prepay', 'repay', 'extend'], ['block', 'card', 'extend'],
+    ['stmt', 'pdf', 'include'], ['eod', 'accrue', 'include'], ['eod', 'charge', 'include'],
     ['reg', 'form', 'include'], ['tfa', 'auth', 'extend'], ['conv', 'rates', 'extend']
   ]
 };
