@@ -29,13 +29,13 @@ class Sheet:
     def add(self, s):
         self.o.append(s)
 
-    def line(self, pts, w=0.35, arrow=False, dash=False):
+    def line(self, pts, w=0.6, arrow=False, dash=False):
         d = ' '.join(f'{"M" if i == 0 else "L"}{x:.2f},{y:.2f}' for i, (x, y) in enumerate(pts))
         self.add(f'<path d="{d}" fill="none" stroke="#000" stroke-width="{w}"{" stroke-dasharray=\"3 2\"" if dash else ""}/>')
         if arrow:
             (x1, y1), (x2, y2) = pts[-2], pts[-1]
             import math
-            a = math.atan2(y2 - y1, x2 - x1); L, Wd = 3.2, 1.2
+            a = math.atan2(y2 - y1, x2 - x1); L, Wd = 4.2, 1.5
             p1 = (x2 - L * math.cos(a) + Wd * math.sin(a), y2 - L * math.sin(a) - Wd * math.cos(a))
             p2 = (x2 - L * math.cos(a) - Wd * math.sin(a), y2 - L * math.sin(a) + Wd * math.cos(a))
             self.add(f'<path d="M{x2:.2f},{y2:.2f} L{p1[0]:.2f},{p1[1]:.2f} L{p2[0]:.2f},{p2[1]:.2f} Z" fill="#000"/>')
@@ -51,6 +51,12 @@ class Sheet:
         for i, l in enumerate(lines):
             self.add(f'<text x="{x:.2f}" y="{y0 + i * size * lh:.2f}" font-size="{size}" text-anchor="{anc}" dominant-baseline="middle"'
                      f'{" font-weight=\"bold\"" if bold else ""}{" font-style=\"italic\"" if italic else ""}{tr}>{esc(l)}</text>')
+
+    def cell(self, x, y, code, size=3.2):
+        """Код клетки сетки на верхней границе блока: белая подложка разрывает линию, как в образцах."""
+        w = len(code) * size * 0.62 + 2
+        self.add(f'<rect x="{x + 2:.2f}" y="{y - size / 2 - 0.3:.2f}" width="{w:.2f}" height="{size + 0.6:.2f}" fill="#fff"/>')
+        self.text(x + 3, y, code, size=size, bold=True)
 
     def image(self, path, x, y, w, h):
         data = base64.b64encode(open(path, 'rb').read()).decode()
@@ -106,25 +112,28 @@ def frame(s, code, title):
 
 
 # ------------------------------------------------------------------ чертёж 1: IDEF0, декомпозиция A0
-def ruler(s, gx, gy, cw, rh, ncol, nrow, size=4):
-    """Координатная сетка листа: номера колонок сверху, буквы строк слева (как в образцах)."""
-    s.line([(gx, gy - 6), (gx + ncol * cw, gy - 6)], w=0.6)
+def ruler(s, gx, gy, cw, rh, ncol, nrow, size=4, italic=False):
+    """Координатная сетка листа как в образцах: верхняя линейка с засечками вниз и номерами колонок под ней,
+    левая линейка с засечками вправо и буквами строк."""
+    yl = gy - 12
+    s.line([(gx, yl), (gx + ncol * cw, yl)], w=0.8)
     for c in range(ncol + 1):
-        s.line([(gx + c * cw, gy - 9), (gx + c * cw, gy - 3)], w=0.6)
+        s.line([(gx + c * cw, yl), (gx + c * cw, yl + 4)], w=0.8)
     for c in range(1, ncol + 1):
-        s.text(gx + (c - 0.5) * cw, gy - 12, f'{c:02d}', size=size, anchor='middle', bold=True, italic=True)
-    s.line([(gx - 12, gy), (gx - 12, gy + nrow * rh)], w=0.6)
+        s.text(gx + (c - 0.5) * cw, yl + 5, f'{c:02d}', size=size, anchor='middle', bold=italic, italic=italic)
+    xl = gx - 18
+    s.line([(xl, gy), (xl, gy + nrow * rh)], w=0.8)
     for r in range(nrow + 1):
-        s.line([(gx - 15, gy + r * rh), (gx - 9, gy + r * rh)], w=0.6)
+        s.line([(xl, gy + r * rh), (xl + 4, gy + r * rh)], w=0.8)
     for r in range(1, nrow + 1):
-        s.text(gx - 7, gy + (r - 0.5) * rh, 'ABCDEFGHIJKLMNOPQR'[r - 1], size=size, anchor='middle', bold=True, italic=True)
+        s.text(xl + 5, gy + (r - 0.5) * rh, 'ABCDEFGHIJKLMNOPQR'[r - 1], size=size, bold=italic, italic=italic)
 
 
 def idef0():
     s = Sheet()
     frame(s, CODE + ' ПД', {'suffix': 'ПД', 'name': 'IDEF0-модель процесса\n«Предоставить потребительский\nкредит физическому лицу»'})
     GXI, GYI, CWI, RHI = 50, 50, 58, 39
-    ruler(s, GXI, GYI, CWI, RHI, 13, 12)
+    ruler(s, GXI, GYI, CWI, RHI, 13, 12, size=5.5)
     pad = 2.5
     names = ['Принять\nи проверить\nкредитную заявку', 'Оценить\nкредитоспособность\nзаёмщика', 'Принять решение\nо предоставлении\nкредита',
              'Оформить\nкредитный\nдоговор', 'Выдать кредит']
@@ -134,20 +143,20 @@ def idef0():
         x, y = GXI + (c - 1) * CWI + pad, GYI + (r - 1) * RHI + pad
         w, h = CWI - 2 * pad, RHI - 2 * pad
         B.append((x, y, w, h))
-        s.rect(x, y, w, h, sw=0.6)
-        s.text(x + w / 2, y + h / 2 + 1.5, n, size=3.6, anchor='middle-v')
-        s.text(x + 1, y - 2, f'{"ABCDEFGHIJKL"[r - 1]}{c:02d}', size=3.2, bold=True)
+        s.rect(x, y, w, h, sw=0.8)
+        s.text(x + w / 2, y + h / 2 + 1.5, n, size=4.3, anchor='middle-v')
+        s.cell(x, y, f'{"ABCDEFGHIJKL"[r - 1]}{c:02d}', size=3.4)
     X = lambda i, f: B[i][0] + B[i][2] * f
     Y = lambda i, f: B[i][1] + B[i][3] * f
     top = lambda i: B[i][1]
     bot = lambda i: B[i][1] + B[i][3]
     lft = lambda i: B[i][0]
     rgt = lambda i: B[i][0] + B[i][2]
-    lab = lambda x, y, t, a='start': s.text(x, y, t, size=3.6, anchor=a)
+    lab = lambda x, y, t, a='start': s.text(x, y, t, size=4.2, anchor=a)
 
     def squiggle(lx, ly, px, py):
         mx, my = (lx + px) / 2, (ly + py) / 2
-        s.line([(lx, ly), (mx + 1.5, my - 1.5), (mx - 1.5, my + 1.5), (px, py)], w=0.3)
+        s.line([(lx, ly), (mx + 2, my - 2), (mx - 2, my + 2), (px, py)], w=0.6)
 
     T = GYI
     # управление
@@ -161,8 +170,8 @@ def idef0():
     s.line([(X(3, .65), T + 32), (X(4, .5), T + 32), (X(4, .5), top(4))], arrow=True)
     # входы
     for y, t in [(Y(0, .3), 'Кредитная заявка'), (Y(0, .72), 'Анкетные данные\nзаёмщика')]:
-        s.line([(GXI, y), (lft(0), y)], arrow=True); lab(GXI + 1, y - (3 if '\n' not in t else 7), t)
-    s.line([(GXI, Y(1, .55)), (lft(1), Y(1, .55))], arrow=True); lab(GXI + 1, Y(1, .55) - 7, 'Сведения о счетах\nи обязательствах клиента')
+        s.line([(GXI, y), (lft(0), y)], arrow=True); lab(GXI + 1, y - (3.5 if '\n' not in t else 8.5), t)
+    s.line([(GXI, Y(1, .55)), (lft(1), Y(1, .55))], arrow=True); lab(GXI + 1, Y(1, .55) - 8.5, 'Сведения о счетах\nи обязательствах клиента')
     # стрелки между блоками с подписями-«молниями»
     links = ['Проверенная\nзаявка', 'Результат оценки\nкредитоспособности', 'Одобренные\nусловия кредита', 'Открытый\nссудный счёт']
     for i, t in enumerate(links):
@@ -207,18 +216,7 @@ SIZE = {'term': (30, 11), 'proc': (38, 20), 'pred': (38, 20), 'io': (40, 20), 'd
 def algorithm():
     s = Sheet()
     frame(s, CODE + ' СА', {'suffix': 'СА', 'name': 'Дистанционное банковское\nобслуживание и программная\nподдержка действий пользователя\nпо управлению счетами.\nАлгоритм перевода клиенту банка'})
-    # координатная сетка: номера колонок сверху, буквы строк слева
-    s.line([(GX, GY - 6), (GX + 17 * CW, GY - 6)], w=0.5)
-    for c in range(18):
-        s.line([(GX + c * CW, GY - 8), (GX + c * CW, GY - 4)], w=0.5)
-    for c in range(1, 18):
-        s.text(cx(c), GY - 11, f'{c:02d}', size=3.2, anchor='middle', bold=True, italic=True)
-    letters = 'ABCDEFGHIJKLMNOPQR'
-    s.line([(GX - 6, GY), (GX - 6, GY + 18 * RH)], w=0.5)
-    for r in range(19):
-        s.line([(GX - 8, GY + r * RH), (GX - 4, GY + r * RH)], w=0.5)
-    for r in range(1, 19):
-        s.text(GX - 11, cy(r), letters[r - 1], size=3.2, anchor='middle', bold=True, italic=True)
+    ruler(s, GX, GY, CW, RH, 17, 18, size=3.4, italic=True)
 
     N = {}
 
@@ -227,23 +225,23 @@ def algorithm():
         x, y = cx(c), cy(r)
         N[key] = (x, y, w, h, kind)
         if kind == 'term':
-            s.rect(x - w / 2, y - h / 2, w, h, rx=h / 2, sw=0.45)
+            s.rect(x - w / 2, y - h / 2, w, h, rx=h / 2, sw=0.7)
         elif kind == 'proc':
-            s.rect(x - w / 2, y - h / 2, w, h, sw=0.45)
+            s.rect(x - w / 2, y - h / 2, w, h, sw=0.7)
         elif kind == 'pred':
-            s.rect(x - w / 2, y - h / 2, w, h, sw=0.45)
-            s.line([(x - w / 2 + 3, y - h / 2), (x - w / 2 + 3, y + h / 2)], w=0.45)
-            s.line([(x + w / 2 - 3, y - h / 2), (x + w / 2 - 3, y + h / 2)], w=0.45)
+            s.rect(x - w / 2, y - h / 2, w, h, sw=0.7)
+            s.line([(x - w / 2 + 3, y - h / 2), (x - w / 2 + 3, y + h / 2)], w=0.7)
+            s.line([(x + w / 2 - 3, y - h / 2), (x + w / 2 - 3, y + h / 2)], w=0.7)
         elif kind == 'io':
             k = 4
-            s.add(f'<path d="M{x - w / 2 + k},{y - h / 2} L{x + w / 2},{y - h / 2} L{x + w / 2 - k},{y + h / 2} L{x - w / 2},{y + h / 2} Z" fill="#fff" stroke="#000" stroke-width="0.45"/>')
+            s.add(f'<path d="M{x - w / 2 + k},{y - h / 2} L{x + w / 2},{y - h / 2} L{x + w / 2 - k},{y + h / 2} L{x - w / 2},{y + h / 2} Z" fill="#fff" stroke="#000" stroke-width="0.7"/>')
         elif kind == 'dec':
-            s.add(f'<path d="M{x},{y - h / 2} L{x + w / 2},{y} L{x},{y + h / 2} L{x - w / 2},{y} Z" fill="#fff" stroke="#000" stroke-width="0.45"/>')
+            s.add(f'<path d="M{x},{y - h / 2} L{x + w / 2},{y} L{x},{y + h / 2} L{x - w / 2},{y} Z" fill="#fff" stroke="#000" stroke-width="0.7"/>')
         elif kind == 'con':
-            s.add(f'<circle cx="{x}" cy="{y}" r="{w / 2}" fill="#fff" stroke="#000" stroke-width="0.45"/>')
-        s.text(x, y, text, size=3.0 if kind != 'con' else 3.5, anchor='middle-v')
+            s.add(f'<circle cx="{x}" cy="{y}" r="{w / 2}" fill="#fff" stroke="#000" stroke-width="0.7"/>')
+        s.text(x, y, text, size=3.3 if kind != 'con' else 3.8, anchor='middle-v')
         if kind != 'con':
-            s.text(x - w / 2, y - h / 2 - 2, f'{"ABCDEFGHIJKLMNOPQR"[r - 1]}{c:02d}', size=2.8, bold=True)
+            s.cell(x - w / 2, y - h / 2, f'{"ABCDEFGHIJKLMNOPQR"[r - 1]}{c:02d}', size=2.9)
 
     bottom = lambda k: (N[k][0], N[k][1] + N[k][3] / 2)
     topp = lambda k: (N[k][0], N[k][1] - N[k][3] / 2)
