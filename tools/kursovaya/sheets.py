@@ -135,6 +135,13 @@ def template(s, pdf, keep, drop=lambda w: False):
             fam, bold, it = _font(c['fontname'])
             s.text((x0 + x1) / 2, (t + b) / 2, c['text'], size=round(c['size'] * PT, 2), anchor='middle', bold=bold, italic=it, rotate=180, font=fam)
     words = page.extract_words(x_tolerance=0.8, extra_attrs=['fontname', 'size', 'upright'])
+    # номера колонок линейки в образце стоят на чуть разной высоте («12» выше остальных): выравниваются по самой частой
+    nums = [w for w in words if w['text'].isdigit() and len(w['text']) == 2 and 20 < w['top'] * PT and w['bottom'] * PT <= 52]
+    if nums:
+        from collections import Counter
+        top0 = Counter(round(w['top'], 0) for w in nums).most_common(1)[0][0]
+        for w in nums:
+            h = w['bottom'] - w['top']; w['top'], w['bottom'] = top0, top0 + h
     for w in words:
         x0, t, x1, b = w['x0'] * PT, w['top'] * PT, w['x1'] * PT, w['bottom'] * PT
         if not keep(x0, t, x1, b) or t < 20 or drop(dict(w, x0=x0, top=t)) or ('Times' in w['fontname'] and t > 500):
@@ -363,245 +370,67 @@ def algorithm():
 # ------------------------------------------------------------------ плакаты 5.3 (по образцам пользователя)
 # Размеры и шрифты сняты с плакатов прошлого года (экспорт Visio): заголовок Calibri полужирный 21,87 мм
 # по центру x = 429,8, бордовая линия на y = 34, рамка с тенью, подписи Arial, синие рамки рисунков.
-DARK_RED, FRAME_RED, BLUE = '#770000', '#923932', '#3465A4'
+FRAME_RED, BLUE = '#923932', '#3465A4'
 
 
 def poster_base(s, title, frame_right):
-    s.add(f'<line x1="0" y1="34" x2="834.6" y2="34" stroke="{DARK_RED}" stroke-width="0.3"/>')
-    s.v.poly([(0, 34), (834.6, 34)], sw=0.3, stroke=DARK_RED)
     s.rect(15.5, 44.5, frame_right - 15, 525.8, sw=0, fill='#000')            # тень рамки
     s.rect(15, 44, frame_right - 15, 525.8, sw=0.3, fill='#fff', stroke=FRAME_RED)
     stamp_text(s, 429.8, 15.4, title, 21.87, font='Calibri', bold=True, anchor='middle')
 
 
-def framed_image(s, path, box, crop=None):
-    """Рисунок в синей рамке образца: картинка вписывается с сохранением пропорций (crop – доля по высоте/ширине)."""
-    x0, y0, x1, y1 = box
-    im = Image.open(path).convert('RGB')
-    if crop:  # снимок экрана обрезается сверху до crop пикселей (до конца последнего целого блока)
-        im = im.crop((0, 0, im.size[0], min(crop, im.size[1])))
-        import tempfile; path = os.path.join(tempfile.gettempdir(), 'crop-' + os.path.basename(path)); im.save(path)
-    iw, ih = im.size
-    k = min((x1 - x0 - 1) / iw, (y1 - y0 - 1) / ih)
-    w, h = iw * k, ih * k
-    x, y = x0 + (x1 - x0 - w) / 2, y0 + (y1 - y0 - h) / 2
-    s.image(path, x, y, w, h)
-    s.rect(x, y, w, h, sw=0.3, fill='none', stroke=BLUE)          # рамка по краю рисунка, как в образце
-
-
-def poster4(name, title, items, start):
-    """Плакат с четырьмя рисунками: позиции рамок, подзаголовков и подписей – как в образце."""
-    s = Sheet(841, 594)
-    poster_base(s, title, 837.2)
-    for i, (sub, path, box, sub_xy, cap_xy, *crop) in enumerate(items):
-        framed_image(s, path, box, crop[0] if crop else None)
-        stamp_text(s, sub_xy[0], sub_xy[1], sub, 14.11, anchor='middle')
-        stamp_text(s, cap_xy[0], cap_xy[1], f'Рисунок {start + i}', 14.11, anchor='middle')
-    s.save(name)
+def poster_rows(s, rows, centers, max_w, size, start, y0=44, y1=569.8):
+    """Ряды рисунков внутри рамки: в ряду подзаголовки на одной линии, рисунки одной высоты с выровненным верхом,
+    подписи «Рисунок N» на одной линии с одинаковым отступом от рисунков; свободное место делится поровну
+    между рядами и краями рамки. rows: [[(подзаголовок, файл, обрезка по высоте в пикселях или None)]]."""
+    import tempfile
+    g = size * 0.55                                   # отступ подзаголовка и подписи от рисунка
+    prepared = []
+    for row in rows:
+        ims = []
+        for sub, path, crop in row:
+            im = Image.open(path).convert('RGB')
+            if crop:
+                im = im.crop((0, 0, im.size[0], min(crop, im.size[1])))
+                path = os.path.join(tempfile.gettempdir(), 'crop-' + os.path.basename(path)); im.save(path)
+            ims.append((sub, path, im.size))
+        prepared.append(ims)
+    min_free = 14
+    hmax = (y1 - y0 - min_free * (len(rows) + 1)) / len(rows) - 2 * size - 2 * g
+    hs = [min([hmax] + [max_w * ih / iw for _, _, (iw, ih) in ims]) for ims in prepared]
+    free = (y1 - y0 - sum(h + 2 * size + 2 * g for h in hs)) / (len(rows) + 1)
+    y = y0 + free
+    n = start
+    for ims, h in zip(prepared, hs):
+        top = y + size + g
+        for i, (sub, path, (iw, ih)) in enumerate(ims):
+            w = h * iw / ih; x = centers[i] - w / 2
+            s.image(path, x, top, w, h)
+            s.rect(x, top, w, h, sw=0.3, fill='none', stroke=BLUE)
+            s.text(centers[i], y + size / 2, sub, size=size, anchor='middle')
+            s.text(centers[i], top + h + g + size / 2, f'Рисунок {n}', size=size, anchor='middle')
+            n += 1
+        y = top + h + g + size + free
 
 
 def posters():
     k = lambda f: os.path.join(KURS, f)
-    # плакат 1: одна диаграмма классов в оформлении прошлой записки
+    # плакат 1: основная диаграмма классов записки (рисунок 1.11, классы предметной области)
     s = Sheet(841, 594)
     poster_base(s, 'UML диаграмма классов', 829.7)
-    stamp_text(s, 422.2, 89.7, 'Диаграмма классов', 16.93, anchor='middle')
-    class_diagram(s, (30, 114, 810, 535.5))
-    s.rect(30, 114, 780, 421.5, sw=0.3, fill='none', stroke=BLUE)
-    stamp_text(s, 419.95, 540.9, 'Рисунок 1', 16.93, anchor='middle')
+    poster_rows(s, [[('Диаграмма классов', k('class-domain.png'), None)]], [422.3], 780, 16.93, 1)
     s.save('plakat-1-klassy')
-    poster4('plakat-2-modeli', 'Модели представления программного средства', [
-        ('Диаграмма состояний', k('view-st-loan.png'), (40, 74, 380, 244), (207.95, 56.9), (208.45, 251.7)),
-        ('Диаграмма развертывания системы', k('view-deployment.png'), (425, 74, 800, 244), (619.95, 56.7), (615.6, 251.8)),
-        ('Схема базы данных', k('er-diagram.png'), (40, 288.8, 380, 519), (204.95, 271.7), (204.95, 529.3)),
-        ('Диаграмма последовательности', k('view-seq-loan.png'), (430, 294, 800, 519), (629.95, 271.6), (618.45, 529.3))], 2)
-    poster4('plakat-3-skrinshoty', 'Скриншоты рабочих окон программного средства', [
-        ('Главная страница банка', k('fig-guide-g-home.png'), (35.7, 73.2, 384.3, 279.9), (210, 59.3), (209.95, 291.7), 1385),
-        ('Кабинет клиента', k('fig-guide-c-cabinet.png'), (450, 77, 799.5, 276.1), (629.2, 59.3), (640.6, 291.8), 1650),
-        ('Каталог оплаты услуг', k('fig-guide-c-pay-catalog.png'), (72.9, 326, 367.1, 532), (212, 311.7), (209.95, 544.3)),
-        ('Оформление кредита', k('fig-guide-c-loan-new.png'), (480, 326, 787.1, 532), (629.95, 311.8), (630, 546.8), 1717)], 6)
-
-
-# ------------------------------------------------------------------ диаграмма классов (стиль прошлой записки, draw.io)
-from PIL import ImageFont
-_F = ImageFont.truetype('/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf', 160)
-_FB = ImageFont.truetype('/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf', 160)
-FS, ROW, HEAD = 16, 20.3, 33          # кегль, шаг строки и высота заголовка в пикселях образца
-
-
-def _tw(t, bold=False):
-    return (_FB if bold else _F).getlength(t) / 10
-
-
-CLASSES = {
-    'Role': (['-code: string', '-name: string', '-permissions: string[]'], ['+can(permission: string): boolean', '+getName(): string']),
-    'User': (['-id: number', '-login: string', '-passwordHash: string', '-role: Role', '-email: string', '-totpSecret: string',
-              '-failedLogins: number', '-blocked: boolean'],
-             ['+login(password: string): boolean', '+enableTwoFactor(): void', '+block(): void', '+hasPermission(p: string): boolean']),
-    'AuditEntry': (['-id: number', '-user: User', '-action: string', '-details: object', '-createdAt: Date'],
-                   ['+getAction(): string', '+getDetails(): object']),
-    'Client': (['-id: number', '-user: User', '-lastName: string', '-firstName: string', '-birthDate: Date', '-passport: string',
-                '-monthlyIncome: number', '-kycStatus: KycStatus'], ['+verify(): void', '+reject(reason: string): void', '+getFullName(): string']),
-    'LoanApplication': (['-id: number', '-client: Client', '-amount: number', '-termMonths: number', '-pd: number', '-status: string'],
-                        ['+score(): number', '+approve(): void', '+reject(comment: string): void']),
-    'Loan': (['-id: number', '-application: LoanApplication', '-account: Account', '-principalBalance: number', '-ratePercent: number'],
-             ['+buildSchedule(): Installment[]', '+repay(amount: number): void', '+chargePenalty(): number']),
-    'Card': (['-id: number', '-account: Account', '-last4: string', '-dailyLimit: number', '-status: string'],
-             ['+block(): void', '+unblock(): void', '+setLimits(daily: number): void', '+purchase(amount: number): void']),
-    'Account': (['-id: number', '-client: Client', '-iban: string', '-currency: string', '-balance: number', '-status: AccountStatus'],
-                ['+open(currency: string): Account', '+close(): void', '+getBalance(): number']),
-    'Deposit': (['-id: number', '-account: Account', '-amount: number', '-ratePercent: number', '-maturityDate: Date'],
-                ['+accrueInterest(): number', '+closeEarly(): number']),
-    'Payment': (['-id: number', '-account: Account', '-provider: string', '-requisite: string', '-amount: number', '-fee: number'],
-                ['+pay(): void', '+getReceipt(): Receipt']),
-    'TransferIntent': (['-id: string', '-fromAccount: Account', '-toIban: string', '-amount: number', '-fee: number', '-riskScore: number'],
-                       ['+confirm(code: string): void', '+cancel(): void']),
-    'Document': (['-id: number', '-type: string', '-idempotencyKey: string', '-createdAt: Date'], ['+post(): void', '+reverse(): Document']),
-    'Posting': (['-id: number', '-document: Document', '-debitAccount: Account', '-creditAccount: Account', '-amount: number'],
-                ['+getAmount(): number']),
-}
-ENUMS = {'KycStatus': ['PENDING', 'VERIFIED', 'REJECTED'], 'AccountStatus': ['ACTIVE', 'FROZEN', 'CLOSED']}
-POS = {'Role': (20, 20), 'User': (20, 270), 'AuditEntry': (20, 780),
-       'KycStatus': (390, 20), 'Client': (390, 180), 'LoanApplication': (390, 560), 'Loan': (390, 885),
-       'Card': (750, 20), 'Account': (750, 340), 'Deposit': (750, 730), 'AccountStatus': (1040, 120),
-       'Payment': (1200, 20), 'TransferIntent': (1200, 370), 'Posting': (1200, 780), 'Document': (1530, 480)}
-
-
-def class_diagram(s, box):
-    X0, Y0, X1, Y1 = box
-    B = {}
-    for n, (f, m) in CLASSES.items():
-        w = max(_tw(n, True), *[_tw(t) for t in f + m]) + 16
-        h = HEAD + len(f) * ROW + 8 + len(m) * ROW + 8
-        B[n] = (*POS[n], w, h, f, m)
-    for n, items in ENUMS.items():
-        w = max(_tw('«enumeration»'), _tw(n, True), *[_tw(t) for t in items]) + 16
-        B[n] = (*POS[n], w, 42 + len(items) * ROW + 8, None, items)
-    cw = max(b[0] + b[2] for b in B.values()) + 20
-    ch = max(b[1] + b[3] for b in B.values()) + 20
-    k = min((X1 - X0 - 4) / cw, (Y1 - Y0 - 4) / ch)
-    ox, oy = X0 + (X1 - X0 - cw * k) / 2, Y0 + (Y1 - Y0 - ch * k) / 2
-    P = lambda x, y: (ox + x * k, oy + y * k)
-    fs = FS * k
-    lw = 0.35
-
-    def text(x, y, t, bold=False, anchor='start'):
-        s.text(*P(x, y), t, size=round(fs, 2), bold=bold, anchor=anchor)
-
-    # связи (рисуются первыми, под классами)
-    def L(n, side, t=0.5):
-        x, y, w, h = B[n][:4]
-        return {'l': (x, y + h * t), 'r': (x + w, y + h * t), 't': (x + w * t, y), 'b': (x + w * t, y + h)}[side]
-
-    def edge(pts, kind='assoc', role=None, rpos=None, m1=None, m2=None, m1pos=None, m2pos=None):
-        Q = [P(*p) for p in pts]
-        if kind == 'dep':
-            d = ' '.join(f'{"M" if i == 0 else "L"}{x:.2f},{y:.2f}' for i, (x, y) in enumerate(Q))
-            s.add(f'<path d="{d}" fill="none" stroke="#000" stroke-width="{lw}" stroke-dasharray="2.4 1.6"/>')
-            for (ax, ay), (bx, by) in zip(Q, Q[1:]):         # пунктир в Visio – отрезками
-                L_ = math.hypot(bx - ax, by - ay); n_ = max(1, int(L_ / 4))
-                for j in range(n_):
-                    t0, t1 = j / n_, (j + 0.6) / n_
-                    s.v.poly([(ax + (bx - ax) * t0, ay + (by - ay) * t0), (ax + (bx - ax) * t1, ay + (by - ay) * t1)], sw=lw)
-        else:
-            d = ' '.join(f'{"M" if i == 0 else "L"}{x:.2f},{y:.2f}' for i, (x, y) in enumerate(Q))
-            s.add(f'<path d="{d}" fill="none" stroke="#000" stroke-width="{lw}"/>')
-            s.v.poly(Q, sw=lw)
-        if kind == 'comp':                                    # закрашенный ромб у целого (первая точка)
-            (ax, ay), (bx, by) = Q[0], Q[1]
-            a = math.atan2(by - ay, bx - ax); Ld, Wd = 20 * k, 6 * k
-            pts_ = [(ax, ay), (ax + Ld / 2 * math.cos(a) - Wd * math.sin(a), ay + Ld / 2 * math.sin(a) + Wd * math.cos(a)),
-                    (ax + Ld * math.cos(a), ay + Ld * math.sin(a)), (ax + Ld / 2 * math.cos(a) + Wd * math.sin(a), ay + Ld / 2 * math.sin(a) - Wd * math.cos(a))]
-            s.poly(pts_, sw=lw, fill='#000')
-        else:                                                 # открытая стрелка у конца
-            (ax, ay), (bx, by) = Q[-2], Q[-1]
-            a = math.atan2(by - ay, bx - ax); La, Wa = 10 * k, 5 * k
-            l1 = (bx - La * math.cos(a) + Wa * math.sin(a), by - La * math.sin(a) - Wa * math.cos(a))
-            l2 = (bx - La * math.cos(a) - Wa * math.sin(a), by - La * math.sin(a) + Wa * math.cos(a))
-            s.add(f'<path d="M{l1[0]:.2f},{l1[1]:.2f} L{bx:.2f},{by:.2f} L{l2[0]:.2f},{l2[1]:.2f}" fill="none" stroke="#000" stroke-width="{lw}"/>')
-            s.v.poly([l1, (bx, by), l2], sw=lw)
-        if role:
-            text(*rpos, role)
-        if m1:
-            text(*m1pos, m1)
-        if m2:
-            text(*m2pos, m2)
-
-    for e in RELATIONS(L, B):
-        edge(**e)
-    # классы с тенью, как в образце
-    for n, (x, y, w, h, f, m) in B.items():
-        s.rect(*P(x + 4, y + 4), w * k, h * k, sw=0, fill='#C8C8C8')
-        s.rect(*P(x, y), w * k, h * k, sw=lw)
-        if f is None:                                         # перечисление
-            text(x + w / 2, y + 14, '«enumeration»', anchor='middle')
-            text(x + w / 2, y + 32, n, bold=True, anchor='middle')
-            s.line([P(x, y + 42), P(x + w, y + 42)], w=lw)
-            for i, t in enumerate(m):
-                text(x + 7, y + 42 + 14 + i * ROW, t)
-            continue
-        text(x + w / 2, y + HEAD / 2 + 1, n, bold=True, anchor='middle')
-        s.line([P(x, y + HEAD), P(x + w, y + HEAD)], w=lw)
-        for i, t in enumerate(f):
-            text(x + 7, y + HEAD + 14 + i * ROW, t)
-        ym = y + HEAD + len(f) * ROW + 8
-        s.line([P(x, ym), P(x + w, ym)], w=lw)
-        for i, t in enumerate(m):
-            text(x + 7, ym + 14 + i * ROW, t)
-
-
-def RELATIONS(L, B):
-    """Связи диаграммы классов: точки в пикселях холста, подписи ролей «+…» и кратности, как в образце."""
-    r = []
-
-    def add(pts, kind='assoc', role=None, rpos=None, m1=None, m1pos=None, m2=None, m2pos=None):
-        r.append(dict(pts=pts, kind=kind, role=role, rpos=rpos, m1=m1, m1pos=m1pos, m2=m2, m2pos=m2pos))
-
-    def vert(a, b, role, m1=None, m2=None, kind='assoc', dx=0):
-        """Вертикальная связь от a (снизу или сверху) к b по середине общего участка по x."""
-        xa, ya, wa, ha = B[a][:4]; xb, yb, wb, hb = B[b][:4]
-        x = (max(xa, xb) + min(xa + wa, xb + wb)) / 2 + dx
-        p, q = ((x, ya), (x, yb + hb)) if ya > yb else ((x, ya + ha), (x, yb))
-        down = q[1] > p[1]
-        add([p, q], kind, role, (x + 8, (p[1] + q[1]) / 2 + 5), m1, (x + 6, p[1] + (16 if down else -8)), m2, (x + 6, q[1] + (-8 if down else 16)))
-
-    vert('User', 'Role', '+имеет', '*', '1')
-    vert('AuditEntry', 'User', '+выполнил', '*', '1')
-    vert('Client', 'KycStatus', '+имеет статус', kind='dep')
-    vert('LoanApplication', 'Client', '+подаёт', '*', '1')
-    vert('Loan', 'LoanApplication', '+по заявке', '0..1', '1')
-    vert('Card', 'Account', '+привязана к', '*', '1')
-    vert('Deposit', 'Account', '+размещён на', '*', '1')
-
-    def elbow(a, sa, ta, b, sb, tb, xm, role, rpos, m1=None, m2=None, kind='assoc'):
-        p, q = L(a, sa, ta), L(b, sb, tb)
-        sgn = lambda pt, side: (pt[0] + (6 if side == 'r' else -16), pt[1])
-        add([p, (xm, p[1]), (xm, q[1]), q], kind, role, rpos, m1, (sgn(p, sa)[0], p[1] - 6), m2, (sgn(q, sb)[0], q[1] - 6))
-
-    u = L('User', 'r', 0.12); c = L('Client', 'l', 0.3)
-    elbow('Client', 'l', 0.3, 'User', 'r', 0.12, (u[0] + c[0]) / 2, '+связан с', (u[0] + 6, u[1] + 20), '1', '1')
-    c = L('Client', 'r', 0.35); ac = L('Account', 'l', 0.2)
-    elbow('Client', 'r', 0.35, 'Account', 'l', 0.2, (c[0] + ac[0]) / 2 - 12, '+владеет', (c[0] + 8, c[1] + 20), '1', '*')
-    lo = L('Loan', 'r', 0.3); ac = L('Account', 'l', 0.85)
-    elbow('Loan', 'r', 0.3, 'Account', 'l', 0.85, (lo[0] + ac[0]) / 2 + 12, '+погашается с', (lo[0] + 8, lo[1] + 20), '*', '1')
-    py = L('Payment', 'l', 0.55); ac = L('Account', 'r', 0.15)
-    elbow('Payment', 'l', 0.55, 'Account', 'r', 0.15, py[0] - 25, '+списание с', (ac[0] + 22, ac[1] - 8), '*', '1')
-    ti = L('TransferIntent', 'l', 0.25); ac = L('Account', 'r', 0.5)
-    elbow('TransferIntent', 'l', 0.25, 'Account', 'r', 0.5, (ti[0] + ac[0]) / 2, '+со счёта', (ac[0] + 8, ac[1] + 20), '*', '1')
-    ps = L('Posting', 'l', 0.3); ac = L('Account', 'r', 0.85)
-    elbow('Posting', 'l', 0.3, 'Account', 'r', 0.85, ps[0] - 25, '+проводится по', (ac[0] + 8, ac[1] + 20), '*', '2')
-    # Account -> AccountStatus: из верхней грани счёта вправо и вверх к перечислению
-    x = L('Account', 't', 0.9)[0]; st = L('AccountStatus', 'b', 0.5)
-    add([(x, L('Account', 't')[1]), (x, st[1] + 40), (st[0], st[1] + 40), st], 'dep', '+использует', (st[0] + 8, st[1] + 28))
-    # платёж и перевод оформляются документом проводок; документ состоит из проводок
-    dc = L('Document', 't', 0.5); py = L('Payment', 'r', 0.5)
-    add([py, (dc[0], py[1]), dc], 'dep', '+оформляется', (dc[0] + 8, py[1] + 22))
-    ti = L('TransferIntent', 'r', 0.5); d2 = L('Document', 'l', 0.25)
-    xm = (ti[0] + d2[0]) / 2
-    add([ti, (xm, ti[1]), (xm, d2[1]), d2], 'dep', '+оформляется', (ti[0] + 8, ti[1] - 8))
-    db = L('Document', 'b', 0.5); ps = L('Posting', 'r', 0.4)
-    add([db, (db[0], ps[1]), ps], 'comp', '+состоит из', (ps[0] + 20, ps[1] - 8), '1', (db[0] + 10, db[1] + 30), '1..*', (ps[0] + 6, ps[1] + 18))
-    return r
+    for name, title, rows, start in [
+        ('plakat-2-modeli', 'Модели представления программного средства',
+         [[('Диаграмма состояний', k('view-st-loan.png'), None), ('Диаграмма развертывания системы', k('view-deployment.png'), None)],
+          [('Схема базы данных', k('er-diagram.png'), None), ('Диаграмма последовательности', k('view-seq-loan.png'), None)]], 2),
+        ('plakat-3-skrinshoty', 'Скриншоты рабочих окон программного средства',
+         [[('Главная страница банка', k('fig-guide-g-home.png'), 1385), ('Кабинет клиента', k('fig-guide-c-cabinet.png'), 1650)],
+          [('Каталог оплаты услуг', k('fig-guide-c-pay-catalog.png'), None), ('Оформление кредита', k('fig-guide-c-loan-new.png'), 1717)]], 6)]:
+        s = Sheet(841, 594)
+        poster_base(s, title, 837.2)
+        poster_rows(s, rows, [222, 629], 375, 14.11, start)
+        s.save(name)
 
 
 if __name__ == '__main__':
