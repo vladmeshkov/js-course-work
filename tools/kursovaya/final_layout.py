@@ -66,6 +66,71 @@ def move(d, num):
     return True
 
 
+EXTRA = os.path.join(KURS, 'src', 'layout-extra.json')
+
+
+def add_text(d, num, texts):
+    """Дописанные абзацы перед рисунком num (после последнего абзаца текста перед ним) – заполняют пустоту
+    внизу страницы, когда рисунок уходит на следующую. Оформление копируется с предыдущего абзаца."""
+    import copy
+    els = list(d.element.body)
+    if num.startswith('^'):            # в конец главы: после последнего абзаца текста перед заголовком
+        ci = next((i for i, e in enumerate(els) if e.tag == qn('w:p') and re.match(num, text_of(e).strip())), None)
+        if ci is None:
+            return False
+        pic = ci
+    elif num.startswith('T'):            # перед таблицей: после последнего абзаца текста перед её заголовком
+        ci = next((i for i, e in enumerate(els) if e.tag == qn('w:p') and re.match(rf'\s*Таблица\s+{re.escape(num[1:])}\s*[–-]', text_of(e))), None)
+        if ci is None:
+            return False
+        pic = ci
+    else:
+        ci = next((i for i, e in enumerate(els) if e.tag == qn('w:p') and (m := CAP.match(text_of(e))) and m.group(1) == num), None)
+        if ci is None:
+            return False
+        pic = next(j for j in range(ci - 1, max(ci - 4, 0), -1) if els[j].find('.//' + qn('w:drawing')) is not None)
+    lead = pic - 1
+    while els[lead].tag == qn('w:p') and not text_of(els[lead]).strip():
+        lead -= 1
+    anchor = els[lead]
+    for t in texts:
+        p = copy.deepcopy(anchor)
+        for ch in list(p):
+            if ch.tag != qn('w:pPr'):
+                p.remove(ch)
+        for kn in p.iter(qn('w:keepNext')):
+            kn.getparent().remove(kn)
+        r = copy.deepcopy(anchor.find(qn('w:r')))
+        for ch in list(r):
+            if ch.tag != qn('w:rPr'):
+                r.remove(ch)
+        for tag in ('w:b', 'w:i'):
+            for el in r.iter(qn(tag)):
+                el.getparent().remove(el)
+        tt = docx.oxml.OxmlElement('w:t'); tt.text = t
+        tt.set('{http://www.w3.org/XML/1998/namespace}space', 'preserve'); r.append(tt); p.append(r)
+        anchor.addnext(p); anchor = p
+    return True
+
+
+def apply_doc(d):
+    """Переносы описаний и дописанный текст из src/layout-final.json и src/layout-extra.json."""
+    moves = json.load(open(MOVES, encoding='utf-8')) if os.path.exists(MOVES) else []
+    extra = json.load(open(EXTRA, encoding='utf-8')) if os.path.exists(EXTRA) else {}
+    for n in moves:
+        move(d, n)
+    for n, texts in extra.items():
+        add_text(d, n, texts)
+    # «Продолжение таблицы» всегда начинает новую страницу: подпись не остаётся внизу предыдущей
+    for p in d.element.body.iter(qn('w:p')):
+        if text_of(p).strip().startswith('Продолжение таблицы'):
+            ppr = p.find(qn('w:pPr'))
+            if ppr is None:
+                ppr = docx.oxml.OxmlElement('w:pPr'); p.insert(0, ppr)
+            if ppr.find(qn('w:pageBreakBefore')) is None:
+                ppr.insert(0, docx.oxml.OxmlElement('w:pageBreakBefore'))
+
+
 def apply(path, moves):
     d = docx.Document(path)
     done = [n for n in moves if move(d, n)]

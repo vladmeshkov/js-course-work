@@ -31,7 +31,7 @@ def apply_scales(body, scales):
     for i, el in enumerate(els):
         if el.tag != qn('w:p') or el.find('.//' + qn('w:drawing')) is None:
             continue
-        num = next((m.group(1) for e in els[i + 1:i + 4] if (m := re.match(r'\s*Рисунок (\d+\.\d+) –', text_of(e)))), None)
+        num = next((m.group(1) for e in els[i + 1:i + 4] if (m := re.match(r'\s*Рисунок\s+(\d+\.\d+)\s*–', text_of(e)))), None)
         k = scales.get(num)
         if not k:
             continue
@@ -144,7 +144,11 @@ def assemble(out, pages):
     copy_part(base, APPENDIX)
     apply_scales(body, json.load(open(SCALES, encoding='utf-8')) if os.path.exists(SCALES) else {})
     abstract(base, pages)
+    import final_layout
+    final_layout.apply_doc(base)      # переносы описаний и дописанный текст против пустот внизу страниц
     base.save(out)
+    import split_tables
+    split_tables.main(out, out)       # таблицы режутся по страницам окончательной вёрстки, с «Продолжением таблицы»
 
 
 def page_count(path):

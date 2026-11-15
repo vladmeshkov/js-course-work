@@ -46,6 +46,8 @@ def make_continuation(cap_p, number):
             jc.set(qn('w:val'), 'left')
         if pPr.find(qn('w:keepNext')) is None:
             pPr.insert(0, OxmlElement('w:keepNext'))
+        if pPr.find(qn('w:pageBreakBefore')) is None:      # продолжение всегда с новой страницы
+            pPr.insert(0, OxmlElement('w:pageBreakBefore'))
     return p
 
 
@@ -175,41 +177,43 @@ def prepare(src, dst):
 
 
 def main(src, dst, lo_copy=None):
+    """Последовательная разрезка: после каждого просчёта страниц режется только самая верхняя таблица, строка
+    которой перешла на следующую страницу (продолжение начинается с новой страницы), затем страницы
+    пересчитываются. Так разрезы не накапливаются и не оставляют полупустых страниц."""
     tmp = tempfile.mkdtemp(prefix='split_tables_')
     flat = os.path.join(tmp, 'flat.docx')
     prepare(src, flat)
     src = flat
     work = os.path.join(tmp, 'work.docx')
-    ids, _ = apply(src, work, {}, False)
     d = docx.Document(src)
     counts = {}
     for idx, tbl in enumerate([e for e in d.element.body if e.tag == qn('w:tbl')]):
         if caption_of(tbl) is not None:
             counts[idx] = len(tbl.findall(qn('w:tr'))) - 1
-    splits, seen = {}, []
-    for it in range(25):
+    splits = {}
+    for it in range(40):
         apply(src, work, splits, True, for_lo=True)
         pages = render_pages(work, tmp)
-        new = {}
-        for idx, n in counts.items():
-            pg = [pages.get((idx, r)) for r in range(n)]
-            if None in pg:
-                # LibreOffice иногда не выводит строку с запретом разрыва: остаётся разбивка прошлой итерации
-                print(f'не найдена метка строки таблицы {idx}: {pg}, оставляю предыдущую разбивку')
-                new = None
+        cut = None
+        for idx in sorted(counts):
+            starts = splits.get(idx, [0])
+            for ci, st in enumerate(starts):
+                end = starts[ci + 1] if ci + 1 < len(starts) else counts[idx]
+                first = pages.get((idx, st))
+                for r in range(st + 1, end):
+                    pg = pages.get((idx, r))
+                    if pg is not None and first is not None and pg != first:
+                        cut = (idx, r)
+                        break
+                if cut:
+                    break
+            if cut:
                 break
-            new[idx] = [0] + [k for k in range(1, n) if pg[k] != pg[k - 1]]
-        if new is None:
+        if not cut:
             break
-        print('итерация', it, {k: v for k, v in new.items() if len(v) > 1})
-        if new == splits:
-            break
-        if new in seen:
-            print('разбивка зациклилась, беру текущий вариант')
-            splits = new
-            break
-        seen.append(copy.deepcopy(new))
-        splits = new
+        idx, r = cut
+        splits[idx] = sorted(set(splits.get(idx, [0])) | {r})
+        print('разрез', it, 'таблица', idx, 'строка', r, flush=True)
     apply(src, dst, splits, False)
     if lo_copy:
         apply(src, lo_copy, splits, False, for_lo=True)
