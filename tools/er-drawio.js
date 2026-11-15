@@ -136,11 +136,12 @@ function modulePage(title, names) {
 
 /** Общая схема для записки: главные сущности, у каждой ключи и несколько ключевых полей. */
 function corePage() {
+  // те же 14 таблиц и та же раскладка, что на ER-диаграмме записки (рисунок 1.10)
   const grid = [
-    ['roles', 'users', 'currencies', 'payment_providers', 'interbank_transfers'],
-    ['audit_log', 'clients', 'accounts', 'payments', 'documents'],
-    ['deposit_products', 'deposits', 'cards', 'postings', 'transfer_intents'],
-    ['loan_products', 'loan_applications', 'loans', null, 'fraud_cases']
+    ['roles', 'users', 'clients', 'deposit_products'],
+    ['loan_products', 'loan_applications', 'deposits', null],
+    ['loans', 'accounts', 'cards', 'transfer_intents'],
+    ['postings', 'payments', 'documents', null]
   ];
   const chosen = new Set(grid.flat().filter(Boolean));
   const keyOf = (name) => (col) => pkSet.has(`${name}.${col.name}`) || (fkMap.has(`${name}.${col.name}`) && chosen.has(fkMap.get(`${name}.${col.name}`).ref_table) && fkMap.get(`${name}.${col.name}`).ref_table !== 'users');
@@ -156,7 +157,6 @@ function corePage() {
   for (const [from, to] of unique) if (ids.has(from) && ids.has(to) && to !== 'users') link(page, from, to, ids);
   link(page, 'users', 'roles', ids);
   link(page, 'clients', 'users', ids);
-  link(page, 'audit_log', 'users', ids);
   page.shape({ value: 'Связи с таблицей users от остальных таблиц (кто выполнил операцию) не показаны', style: 'text;fontSize=11;fontStyle=2;fontColor=#666666;', x: 40, y: 0, w: 600, h: 24 });
   return page;
 }
