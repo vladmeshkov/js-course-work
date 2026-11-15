@@ -167,11 +167,12 @@ def idef0():
     stamp_text(s, 669.4, 568.1, 'Саблина А.И.', 3.17, font='Calibri', bold=True, italic=True)
 
     GX, GY, CW, RH = 40, 56.7, 60, 40              # сетка образца: блок занимает ровно одну клетку
+    # блоки и стрелки повторяют рисунок 1.5 записки (декомпозиция A0)
     names = ['Принять\nи проверить\nкредитную\nзаявку', 'Оценить\nкредито-\nспособность\nзаёмщика', 'Принять\nрешение\nо предоставлении\nкредита',
              'Оформить\nкредитный\nдоговор', 'Выдать\nкредит']
     B = []
     for i, n in enumerate(names):
-        c, r = 2 + 2 * i, 2 + 2 * i
+        c, r = 2 + 2 * i, 3 + 2 * i                 # клетки C02, E04, G06, I08, K10
         x, y = GX + (c - 1) * CW, GY + (r - 1) * RH
         B.append((x, y))
         s.rect(x, y, CW, RH, sw=1.1)
@@ -186,50 +187,54 @@ def idef0():
         s.line([(x, y), (x + dx * 0.55, y - dy * 0.45), (x + dx * 0.45, y - dy * 0.55), (x + dx, y - dy)], w=0.76)
 
     top = GY + 19                                   # начало стрелок управления под подписями
-    # управление
+    # управление: законодательство -> A1, A2, A4; правила скоринга -> A2; кредитная политика -> A3;
+    # условия кредитных продуктов -> A1, A4, A5
     lab(135, GY + 5, 'Законодательство и нормативные\nакты НБ РБ', 'middle', 6.35)
     s.line([(135, top), (135, T(0))], arrow=True)
-    s.line([(135, top + 10), (247, top + 10), (247, T(1))], arrow=True)
+    s.line([(135, top + 12), (486, top + 12), (486, T(3))], arrow=True)
+    s.line([(247, top + 12), (247, T(1))], arrow=True)
     lab(265, GY + 5, 'Методические\nправила скоринга', 'middle')
     s.line([(265, top), (265, T(1))], arrow=True)
     lab(390, GY + 5, 'Кредитная политика\nбанка', 'middle')
     s.line([(390, top), (390, T(2))], arrow=True)
-    lab(505, GY + 5, 'Условия кредитных\nпродуктов', 'middle')
-    s.line([(505, top), (505, T(3))], arrow=True)
+    lab(508, GY + 5, 'Условия кредитных\nпродуктов', 'middle')
+    s.line([(508, top), (508, T(3))], arrow=True)
+    s.line([(150, top + 28), (610, top + 28), (610, T(4))], arrow=True)
+    s.line([(150, top + 28), (150, T(0))], arrow=True)
     # входы слева
     for y, t in [(T(0) + 10, 'Кредитная заявка'), (T(0) + 30, 'Анкетные данные\nзаёмщика')]:
         s.line([(GX, y), (L(0), y)], arrow=True); lab(GX + 2, y - (4 if '\n' not in t else 11.5), t, size=6.35)
     y = T(1) + 30
     s.line([(GX, y), (L(1), y)], arrow=True); lab(GX + 2, y - 11.5, 'Сведения о счетах\nи обязательствах клиента', size=6.35)
     # стрелки между блоками
-    links = [('Проверенная\nзаявка', 20, 20), ('Результат оценки\nкредитоспособности', 20, 20), ('Одобренные\nусловия кредита', 20, 20), ('Открытый\nссудный счёт', 30, 20)]
+    links = [('Проверенная\nзаявка', 20, 20), ('Результат оценки\nкредитоспособности', 20, 20), ('Одобренные\nусловия\nкредита', 20, 20), ('Открытый\nссудный\nсчёт', 32, 20)]
     for i, (t, a, b) in enumerate(links):
         y1, y2, xm = T(i) + a, T(i + 1) + b, R(i) + 30
         s.line([(R(i), y1), (xm, y1), (xm, y2), (L(i + 1), y2)], arrow=True)
         squiggle(xm + 1.5, y1 + 22, 8, 10)
-        lab(xm + 10, y1 + 7, t)
-    # выход «Подписанный кредитный договор»: наружу и управлением в J10
-    yo = T(3) + 10
-    s.line([(R(3), yo), (820, yo)], arrow=True); lab(818, yo - 4.5, 'Подписанный кредитный договор', 'end')
-    s.line([(610, yo), (610, T(4))], arrow=True)
-    for k, t in enumerate(['Зачисленные кредитные средства', 'График платежей', 'Сведения для кредитного регистра']):
-        yy = T(4) + 10 + k * 10
+        lab(xm + 7, y1 + 7, t)
+    # выходы наружу: из A4 договор и график, из A5 средства и сведения для регистра
+    for k, t in enumerate(['Подписанный кредитный договор', 'График платежей']):
+        yy = T(3) + 8 + k * 13
+        s.line([(R(3), yy), (820, yy)], arrow=True); lab(818, yy - 4.5, t, 'end')
+    for k, t in enumerate(['Зачисленные кредитные средства', 'Сведения для кредитного регистра']):
+        yy = T(4) + 12 + k * 16
         s.line([(R(4), yy), (820, yy)], arrow=True); lab(818, yy - 4.5, t, 'end')
-    # механизмы снизу: подписи под сеткой, шины в строке L
+    # механизмы снизу: программное средство и кредитный специалист – ко всем блокам, кредитный регистр – к A2
     ylab, y1, y2 = 559, 507, 522
-    lab(130, ylab, 'Программное\nсредство ДБО', 'middle')
-    s.line([(130, ylab - 5), (130, D(0))], arrow=True)
-    s.line([(130, y1), (610, y1)])
-    for x in (250, 370, 490):
-        s.line([(x, y1), (x, D([250, 370, 490].index(x) + 1))], arrow=True)
-    s.line([(610, y1), (610, D(4))], arrow=True)
-    lab(410, ylab, 'Кредитный\nспециалист', 'middle')
-    s.line([(410, ylab - 5), (410, y2)])
-    s.line([(385, y2), (625, y2)])
-    for x, i in [(385, 2), (505, 3), (625, 4)]:
-        s.line([(x, y2), (x, D(i))], arrow=True)
-    lab(265, ylab, 'Кредитный регистр\nНБ РБ', 'middle')
-    s.line([(265, ylab - 5), (265, D(1))], arrow=True)
+    xs_ps, xs_sp = [125, 245, 365, 485, 605], [145, 260, 385, 505, 625]
+    lab(125, ylab, 'Программное\nсредство ДБО', 'middle')
+    s.line([(125, ylab - 5), (125, D(0))], arrow=True)
+    s.line([(125, y1), (605, y1)])
+    for i in range(1, 5):
+        s.line([(xs_ps[i], y1), (xs_ps[i], D(i))], arrow=True)
+    lab(560, ylab, 'Кредитный\nспециалист', 'middle')
+    s.line([(560, ylab - 5), (560, y2)])
+    s.line([(145, y2), (625, y2)])
+    for i in range(5):
+        s.line([(xs_sp[i], y2), (xs_sp[i], D(i))], arrow=True)
+    lab(275, ylab, 'Кредитный регистр\nНБ РБ', 'middle')
+    s.line([(275, ylab - 5), (275, D(1))], arrow=True)
     s.save('chertezh-1-idef0')
 
 
@@ -301,93 +306,302 @@ def algorithm():
         s.text(x - w / 2 - 4, y - 2.6, 'Да', size=4.23, anchor='end')
         s.text(x + w / 2 + 4, y - 2.6, 'Нет', size=4.23)
 
+    # блоки, тексты и соединители повторяют рисунок блок-схемы перевода в разделе 2.4 записки
     # часть 1: создание перевода (createTransfer)
-    node('start', 'term', 7, 1, 'Начало')
-    node('in', 'io', 7, 3, 'Получить\nданные формы:\nсчета, сумма')
-    node('d1', 'dec', 7, 5, 'Данные\nкорректны?')
-    node('conv', 'proc', 6, 7, 'Пересчитать\nсумму в BYN\nпо курсу НБ')
-    node('e1', 'io', 8, 7, 'Вывести\nошибку:\nневерные\nданные')
-    node('d2', 'dec', 6, 9, 'Лимит\nсоблюдён?')
-    node('risk', 'proc', 5, 11, 'Вычислить\nбаллы риска\nантифрода')
-    node('e2', 'io', 7, 11, 'Вывести\nошибку:\nпревышен\nлимит')
-    node('d3', 'dec', 5, 13, 'Риск ниже\nпорога?')
-    node('hold', 'proc', 6, 15, 'Зарезервировать\nсумму, открыть\nслучай\nантифрода')
-    node('heldmsg', 'io', 6, 17, 'Вывести:\nперевод\nна проверке')
-    node('A1', 'con', 4, 15, 'А')
-    for k, c in [('x6', 8), ('x5', 7), ('x4', 6)]:
-        node(k, 'con', c, 18, k[1])
+    node('start', 'term', 4, 1, 'Начало')
+    node('in', 'io', 4, 3, 'Получить\nданные\nформы:\nсчета, сумма')
+    node('d1', 'dec', 4, 5, 'Счета, сумма\nкорректны?')
+    node('conv', 'proc', 3, 7, 'Пересчитать\nсумму в BYN\nпо курсу НБ')
+    node('e1', 'io', 5, 7, 'Вывести\nошибку:\nневерные\nданные\nперевода')
+    node('x6', 'con', 5, 9, '6')
+    node('d2', 'dec', 3, 9, 'Лимит\nпревышен?')
+    node('e2', 'io', 2, 11, 'Вывести\nошибку:\nпревышен\nсуточный\nлимит')
+    node('x5', 'con', 2, 13, '5')
+    node('risk', 'proc', 4, 11, 'Вычислить\nбаллы риска\nантифрода')
+    node('d3', 'dec', 4, 13, 'Баллы ниже\nпорога?')
+    node('A1', 'con', 3, 15, 'А')
+    node('hold', 'proc', 5, 15, 'Зарезервировать\nсумму, открыть\nслучай антифрода')
+    node('heldmsg', 'io', 5, 17, 'Вывести:\nперевод\nна проверке')
+    node('x4', 'con', 5, 18, '4')
     down('start', 'in'); down('in', 'd1')
-    branch('d1', 'conv', 'e1'); down('conv', 'd2')
-    branch('d2', 'risk', 'e2'); down('risk', 'd3')
-    branch('d3', 'A1', 'hold'); down('hold', 'heldmsg')
-    down('e1', 'x6'); down('e2', 'x5'); down('heldmsg', 'x4')
+    branch('d1', 'conv', 'e1'); down('conv', 'd2'); down('e1', 'x6')
+    branch('d2', 'e2', 'risk'); down('e2', 'x5'); down('risk', 'd3')
+    branch('d3', 'A1', 'hold'); down('hold', 'heldmsg'); down('heldmsg', 'x4')
 
     # часть 2: подтверждение и проведение (confirmTransfer, executeIntentIn)
-    node('A2', 'con', 11, 1, 'А')
-    node('code', 'pred', 11, 3, 'Запросить\nкод\nподтверждения')
-    node('d4', 'dec', 11, 5, 'Код\nверен?')
-    node('post', 'pred', 10, 7, 'Провести\nперевод\nв транзакции')
-    node('e3', 'io', 12, 7, 'Вывести\nошибку:\nневерный код')
-    node('d5', 'dec', 10, 9, 'Проводка\nвыполнена?')
-    node('done', 'proc', 9, 11, 'Отметить\nперевод\nпроведённым')
-    node('e4', 'io', 11, 11, 'Вывести\nошибку:\nмало средств')
-    node('ok', 'io', 9, 13, 'Вывести:\nперевод\nвыполнен')
-    for k, c in [('x1', 9), ('x2', 11), ('x3', 12)]:
-        node(k, 'con', c, 18, k[1])
+    node('A2', 'con', 9, 1, 'А')
+    node('code', 'pred', 9, 3, 'Запросить\nкод\nподтверждения')
+    node('d4', 'dec', 9, 5, 'Код\nверен?')
+    node('post', 'pred', 8, 7, 'Провести\nперевод\nв транзакции')
+    node('e3', 'io', 10, 7, 'Вывести\nошибку:\nневерный код')
+    node('x3', 'con', 10, 9, '3')
+    node('d5', 'dec', 8, 9, 'Проводка\nвыполнена?')
+    node('done', 'proc', 7, 11, 'Отметить\nперевод\nпроведённым')
+    node('e4', 'io', 9, 11, 'Вывести\nошибку:\nнедостаточно\nсредств')
+    node('x2', 'con', 9, 13, '2')
+    node('ok', 'io', 7, 13, 'Вывести:\nперевод\nвыполнен')
+    node('x1', 'con', 7, 15, '1')
     down('A2', 'code'); down('code', 'd4')
-    branch('d4', 'post', 'e3'); down('post', 'd5')
-    branch('d5', 'done', 'e4'); down('done', 'ok')
-    down('ok', 'x1'); down('e4', 'x2'); down('e3', 'x3')
+    branch('d4', 'post', 'e3'); down('e3', 'x3'); down('post', 'd5')
+    branch('d5', 'done', 'e4'); down('e4', 'x2'); down('done', 'ok'); down('ok', 'x1')
 
-    # часть 3: закрытие ветвей лесенкой в порядке вложенности и конец
-    for k, c, r in [('y1', 14, 1), ('y2', 15, 1), ('y3', 16, 1), ('y4', 17, 1), ('y5', 15, 6), ('y6', 15, 8)]:
-        node(k, 'con', c, r, k[1])
-    node('end', 'term', 14, 11, 'Конец')
-    trunk = cx(14)
-    s.line([bottom('y1'), topp('end')], w=LW)
-    for k, ym in [('y2', cy(2)), ('y3', cy(3) + RH / 2), ('y4', cy(5)), ('y5', cy(7)), ('y6', cy(9))]:
-        s.line([bottom(k), (N[k][0], ym), (trunk, ym)], w=LW, arrow=True)
+    # часть 3: закрытие ветвей лесенкой, как в записке: 1 и 2 сливаются, затем по очереди 3, 4, 5, 6, и конец
+    for i in range(6):
+        node(f'y{i + 1}', 'con', 12 + i, 1, str(i + 1))
+    node('end', 'term', 16, 7, 'Конец')
+    lvl = [cy(2), cy(3), cy(4), cy(5), cy(6)]          # уровни слияния в строках B–F
+    drops = [GX + 11.5 * CW + CW / 2, GX + 13 * CW, GX + 14 * CW, GX + 15 * CW, cx(16)]
+    s.line([bottom('y1'), (N['y1'][0], lvl[0]), (N['y2'][0], lvl[0]), bottom('y2')], w=LW)
+    for k in range(1, 5):
+        yk = N[f'y{k + 2}']
+        s.line([(drops[k - 1], lvl[k - 1]), (drops[k - 1], lvl[k]), (yk[0], lvl[k])], w=LW)
+        s.line([bottom(f'y{k + 2}'), (yk[0], lvl[k])], w=LW)
+    s.line([(drops[4], lvl[4]), topp('end')], w=LW, arrow=True)
     s.save('chertezh-2-algoritm')
 
 
-# ------------------------------------------------------------------ плакаты 5.3
-RED = '#C00000'
+# ------------------------------------------------------------------ плакаты 5.3 (по образцам пользователя)
+# Размеры и шрифты сняты с плакатов прошлого года (экспорт Visio): заголовок Calibri полужирный 21,87 мм
+# по центру x = 429,8, бордовая линия на y = 34, рамка с тенью, подписи Arial, синие рамки рисунков.
+DARK_RED, FRAME_RED, BLUE = '#770000', '#923932', '#3465A4'
 
 
-def poster(name, title, figs, cols, start):
-    """figs: [(подзаголовок, файл)], раскладка по сетке cols колонок; подписи «Рисунок N» с номера start."""
-    s = Sheet()
-    s.text(W / 2, 20, title, size=13, anchor='middle', bold=True)
-    s.line([(20, 30), (W - 20, 30)], w=0.6)
-    s.rect(20, 38, W - 40, H - 48, sw=0.6, fill='none', stroke=RED)
-    rows = (len(figs) + cols - 1) // cols
-    cw, ch = (W - 60) / cols, (H - 70) / rows
-    for i, (sub, path) in enumerate(figs):
-        c, r = i % cols, i // cols
-        x0, y0 = 30 + c * cw, 46 + r * ch
-        s.text(x0 + cw / 2, y0 + 5, sub, size=6, anchor='middle')
-        iw, ih = Image.open(path).size
-        bw, bh = cw - 16, ch - 30
-        k = min(bw / iw, bh / ih)
-        w, h = iw * k, ih * k
-        x, y = x0 + (cw - w) / 2, y0 + 12 + (bh - h) / 2
-        s.image(path, x, y, w, h)
-        s.rect(x, y, w, h, sw=0.4, fill='none', stroke='#2F5597')
-        s.text(x0 + cw / 2, y + h + 9, f'Рисунок {start + i}', size=6, anchor='middle')
+def poster_base(s, title, frame_right):
+    s.add(f'<line x1="0" y1="34" x2="834.6" y2="34" stroke="{DARK_RED}" stroke-width="0.3"/>')
+    s.v.poly([(0, 34), (834.6, 34)], sw=0.3, stroke=DARK_RED)
+    s.rect(15.5, 44.5, frame_right - 15, 525.8, sw=0, fill='#000')            # тень рамки
+    s.rect(15, 44, frame_right - 15, 525.8, sw=0.3, fill='#fff', stroke=FRAME_RED)
+    stamp_text(s, 429.8, 15.4, title, 21.87, font='Calibri', bold=True, anchor='middle')
+
+
+def framed_image(s, path, box, crop=None):
+    """Рисунок в синей рамке образца: картинка вписывается с сохранением пропорций (crop – доля по высоте/ширине)."""
+    x0, y0, x1, y1 = box
+    im = Image.open(path).convert('RGB')
+    if crop:  # снимок экрана обрезается сверху до crop пикселей (до конца последнего целого блока)
+        im = im.crop((0, 0, im.size[0], min(crop, im.size[1])))
+        import tempfile; path = os.path.join(tempfile.gettempdir(), 'crop-' + os.path.basename(path)); im.save(path)
+    iw, ih = im.size
+    k = min((x1 - x0 - 1) / iw, (y1 - y0 - 1) / ih)
+    w, h = iw * k, ih * k
+    x, y = x0 + (x1 - x0 - w) / 2, y0 + (y1 - y0 - h) / 2
+    s.image(path, x, y, w, h)
+    s.rect(x, y, w, h, sw=0.3, fill='none', stroke=BLUE)          # рамка по краю рисунка, как в образце
+
+
+def poster4(name, title, items, start):
+    """Плакат с четырьмя рисунками: позиции рамок, подзаголовков и подписей – как в образце."""
+    s = Sheet(841, 594)
+    poster_base(s, title, 837.2)
+    for i, (sub, path, box, sub_xy, cap_xy, *crop) in enumerate(items):
+        framed_image(s, path, box, crop[0] if crop else None)
+        stamp_text(s, sub_xy[0], sub_xy[1], sub, 14.11, anchor='middle')
+        stamp_text(s, cap_xy[0], cap_xy[1], f'Рисунок {start + i}', 14.11, anchor='middle')
     s.save(name)
-    return start + len(figs)
 
 
 def posters():
     k = lambda f: os.path.join(KURS, f)
-    n = poster('plakat-1-klassy', 'UML диаграмма классов',
-               [('Диаграмма классов предметной области', k('class-domain.png')), ('Диаграмма классов слоя бизнес-логики', k('class-services.png'))], 2, 1)
-    n = poster('plakat-2-modeli', 'Модели представления программного средства',
-               [('Диаграмма состояний', k('view-st-loan.png')), ('Диаграмма развёртывания системы', k('view-deployment.png')),
-                ('Схема базы данных', k('er-diagram.png')), ('Диаграмма последовательности', k('view-seq-loan.png'))], 2, n)
-    poster('plakat-3-skrinshoty', 'Скриншоты рабочих окон программного средства',
-           [('Главная страница кабинета клиента', k('fig-ui-cabinet.png')), ('Перевод между счетами', k('fig-ui-transfer.png')),
-            ('Рабочее место операциониста', k('fig-ui-workplace.png')), ('Рассмотрение заявки на кредит', k('fig-ui-loan-review.png'))], 2, n)
+    # плакат 1: одна диаграмма классов в оформлении прошлой записки
+    s = Sheet(841, 594)
+    poster_base(s, 'UML диаграмма классов', 829.7)
+    stamp_text(s, 422.2, 89.7, 'Диаграмма классов', 16.93, anchor='middle')
+    class_diagram(s, (30, 114, 810, 535.5))
+    s.rect(30, 114, 780, 421.5, sw=0.3, fill='none', stroke=BLUE)
+    stamp_text(s, 419.95, 540.9, 'Рисунок 1', 16.93, anchor='middle')
+    s.save('plakat-1-klassy')
+    poster4('plakat-2-modeli', 'Модели представления программного средства', [
+        ('Диаграмма состояний', k('view-st-loan.png'), (40, 74, 380, 244), (207.95, 56.9), (208.45, 251.7)),
+        ('Диаграмма развертывания системы', k('view-deployment.png'), (425, 74, 800, 244), (619.95, 56.7), (615.6, 251.8)),
+        ('Схема базы данных', k('er-diagram.png'), (40, 288.8, 380, 519), (204.95, 271.7), (204.95, 529.3)),
+        ('Диаграмма последовательности', k('view-seq-loan.png'), (430, 294, 800, 519), (629.95, 271.6), (618.45, 529.3))], 2)
+    poster4('plakat-3-skrinshoty', 'Скриншоты рабочих окон программного средства', [
+        ('Главная страница банка', k('fig-guide-g-home.png'), (35.7, 73.2, 384.3, 279.9), (210, 59.3), (209.95, 291.7), 1385),
+        ('Кабинет клиента', k('fig-guide-c-cabinet.png'), (450, 77, 799.5, 276.1), (629.2, 59.3), (640.6, 291.8), 1650),
+        ('Каталог оплаты услуг', k('fig-guide-c-pay-catalog.png'), (72.9, 326, 367.1, 532), (212, 311.7), (209.95, 544.3)),
+        ('Оформление кредита', k('fig-guide-c-loan-new.png'), (480, 326, 787.1, 532), (629.95, 311.8), (630, 546.8), 1717)], 6)
+
+
+# ------------------------------------------------------------------ диаграмма классов (стиль прошлой записки, draw.io)
+from PIL import ImageFont
+_F = ImageFont.truetype('/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf', 160)
+_FB = ImageFont.truetype('/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf', 160)
+FS, ROW, HEAD = 16, 20.3, 33          # кегль, шаг строки и высота заголовка в пикселях образца
+
+
+def _tw(t, bold=False):
+    return (_FB if bold else _F).getlength(t) / 10
+
+
+CLASSES = {
+    'Role': (['-code: string', '-name: string', '-permissions: string[]'], ['+can(permission: string): boolean', '+getName(): string']),
+    'User': (['-id: number', '-login: string', '-passwordHash: string', '-role: Role', '-email: string', '-totpSecret: string',
+              '-failedLogins: number', '-blocked: boolean'],
+             ['+login(password: string): boolean', '+enableTwoFactor(): void', '+block(): void', '+hasPermission(p: string): boolean']),
+    'AuditEntry': (['-id: number', '-user: User', '-action: string', '-details: object', '-createdAt: Date'],
+                   ['+getAction(): string', '+getDetails(): object']),
+    'Client': (['-id: number', '-user: User', '-lastName: string', '-firstName: string', '-birthDate: Date', '-passport: string',
+                '-monthlyIncome: number', '-kycStatus: KycStatus'], ['+verify(): void', '+reject(reason: string): void', '+getFullName(): string']),
+    'LoanApplication': (['-id: number', '-client: Client', '-amount: number', '-termMonths: number', '-pd: number', '-status: string'],
+                        ['+score(): number', '+approve(): void', '+reject(comment: string): void']),
+    'Loan': (['-id: number', '-application: LoanApplication', '-account: Account', '-principalBalance: number', '-ratePercent: number'],
+             ['+buildSchedule(): Installment[]', '+repay(amount: number): void', '+chargePenalty(): number']),
+    'Card': (['-id: number', '-account: Account', '-last4: string', '-dailyLimit: number', '-status: string'],
+             ['+block(): void', '+unblock(): void', '+setLimits(daily: number): void', '+purchase(amount: number): void']),
+    'Account': (['-id: number', '-client: Client', '-iban: string', '-currency: string', '-balance: number', '-status: AccountStatus'],
+                ['+open(currency: string): Account', '+close(): void', '+getBalance(): number']),
+    'Deposit': (['-id: number', '-account: Account', '-amount: number', '-ratePercent: number', '-maturityDate: Date'],
+                ['+accrueInterest(): number', '+closeEarly(): number']),
+    'Payment': (['-id: number', '-account: Account', '-provider: string', '-requisite: string', '-amount: number', '-fee: number'],
+                ['+pay(): void', '+getReceipt(): Receipt']),
+    'TransferIntent': (['-id: string', '-fromAccount: Account', '-toIban: string', '-amount: number', '-fee: number', '-riskScore: number'],
+                       ['+confirm(code: string): void', '+cancel(): void']),
+    'Document': (['-id: number', '-type: string', '-idempotencyKey: string', '-createdAt: Date'], ['+post(): void', '+reverse(): Document']),
+    'Posting': (['-id: number', '-document: Document', '-debitAccount: Account', '-creditAccount: Account', '-amount: number'],
+                ['+getAmount(): number']),
+}
+ENUMS = {'KycStatus': ['PENDING', 'VERIFIED', 'REJECTED'], 'AccountStatus': ['ACTIVE', 'FROZEN', 'CLOSED']}
+POS = {'Role': (20, 20), 'User': (20, 270), 'AuditEntry': (20, 780),
+       'KycStatus': (390, 20), 'Client': (390, 180), 'LoanApplication': (390, 560), 'Loan': (390, 885),
+       'Card': (750, 20), 'Account': (750, 340), 'Deposit': (750, 730), 'AccountStatus': (1040, 120),
+       'Payment': (1200, 20), 'TransferIntent': (1200, 370), 'Posting': (1200, 780), 'Document': (1530, 480)}
+
+
+def class_diagram(s, box):
+    X0, Y0, X1, Y1 = box
+    B = {}
+    for n, (f, m) in CLASSES.items():
+        w = max(_tw(n, True), *[_tw(t) for t in f + m]) + 16
+        h = HEAD + len(f) * ROW + 8 + len(m) * ROW + 8
+        B[n] = (*POS[n], w, h, f, m)
+    for n, items in ENUMS.items():
+        w = max(_tw('«enumeration»'), _tw(n, True), *[_tw(t) for t in items]) + 16
+        B[n] = (*POS[n], w, 42 + len(items) * ROW + 8, None, items)
+    cw = max(b[0] + b[2] for b in B.values()) + 20
+    ch = max(b[1] + b[3] for b in B.values()) + 20
+    k = min((X1 - X0 - 4) / cw, (Y1 - Y0 - 4) / ch)
+    ox, oy = X0 + (X1 - X0 - cw * k) / 2, Y0 + (Y1 - Y0 - ch * k) / 2
+    P = lambda x, y: (ox + x * k, oy + y * k)
+    fs = FS * k
+    lw = 0.35
+
+    def text(x, y, t, bold=False, anchor='start'):
+        s.text(*P(x, y), t, size=round(fs, 2), bold=bold, anchor=anchor)
+
+    # связи (рисуются первыми, под классами)
+    def L(n, side, t=0.5):
+        x, y, w, h = B[n][:4]
+        return {'l': (x, y + h * t), 'r': (x + w, y + h * t), 't': (x + w * t, y), 'b': (x + w * t, y + h)}[side]
+
+    def edge(pts, kind='assoc', role=None, rpos=None, m1=None, m2=None, m1pos=None, m2pos=None):
+        Q = [P(*p) for p in pts]
+        if kind == 'dep':
+            d = ' '.join(f'{"M" if i == 0 else "L"}{x:.2f},{y:.2f}' for i, (x, y) in enumerate(Q))
+            s.add(f'<path d="{d}" fill="none" stroke="#000" stroke-width="{lw}" stroke-dasharray="2.4 1.6"/>')
+            for (ax, ay), (bx, by) in zip(Q, Q[1:]):         # пунктир в Visio – отрезками
+                L_ = math.hypot(bx - ax, by - ay); n_ = max(1, int(L_ / 4))
+                for j in range(n_):
+                    t0, t1 = j / n_, (j + 0.6) / n_
+                    s.v.poly([(ax + (bx - ax) * t0, ay + (by - ay) * t0), (ax + (bx - ax) * t1, ay + (by - ay) * t1)], sw=lw)
+        else:
+            d = ' '.join(f'{"M" if i == 0 else "L"}{x:.2f},{y:.2f}' for i, (x, y) in enumerate(Q))
+            s.add(f'<path d="{d}" fill="none" stroke="#000" stroke-width="{lw}"/>')
+            s.v.poly(Q, sw=lw)
+        if kind == 'comp':                                    # закрашенный ромб у целого (первая точка)
+            (ax, ay), (bx, by) = Q[0], Q[1]
+            a = math.atan2(by - ay, bx - ax); Ld, Wd = 20 * k, 6 * k
+            pts_ = [(ax, ay), (ax + Ld / 2 * math.cos(a) - Wd * math.sin(a), ay + Ld / 2 * math.sin(a) + Wd * math.cos(a)),
+                    (ax + Ld * math.cos(a), ay + Ld * math.sin(a)), (ax + Ld / 2 * math.cos(a) + Wd * math.sin(a), ay + Ld / 2 * math.sin(a) - Wd * math.cos(a))]
+            s.poly(pts_, sw=lw, fill='#000')
+        else:                                                 # открытая стрелка у конца
+            (ax, ay), (bx, by) = Q[-2], Q[-1]
+            a = math.atan2(by - ay, bx - ax); La, Wa = 10 * k, 5 * k
+            l1 = (bx - La * math.cos(a) + Wa * math.sin(a), by - La * math.sin(a) - Wa * math.cos(a))
+            l2 = (bx - La * math.cos(a) - Wa * math.sin(a), by - La * math.sin(a) + Wa * math.cos(a))
+            s.add(f'<path d="M{l1[0]:.2f},{l1[1]:.2f} L{bx:.2f},{by:.2f} L{l2[0]:.2f},{l2[1]:.2f}" fill="none" stroke="#000" stroke-width="{lw}"/>')
+            s.v.poly([l1, (bx, by), l2], sw=lw)
+        if role:
+            text(*rpos, role)
+        if m1:
+            text(*m1pos, m1)
+        if m2:
+            text(*m2pos, m2)
+
+    for e in RELATIONS(L, B):
+        edge(**e)
+    # классы с тенью, как в образце
+    for n, (x, y, w, h, f, m) in B.items():
+        s.rect(*P(x + 4, y + 4), w * k, h * k, sw=0, fill='#C8C8C8')
+        s.rect(*P(x, y), w * k, h * k, sw=lw)
+        if f is None:                                         # перечисление
+            text(x + w / 2, y + 14, '«enumeration»', anchor='middle')
+            text(x + w / 2, y + 32, n, bold=True, anchor='middle')
+            s.line([P(x, y + 42), P(x + w, y + 42)], w=lw)
+            for i, t in enumerate(m):
+                text(x + 7, y + 42 + 14 + i * ROW, t)
+            continue
+        text(x + w / 2, y + HEAD / 2 + 1, n, bold=True, anchor='middle')
+        s.line([P(x, y + HEAD), P(x + w, y + HEAD)], w=lw)
+        for i, t in enumerate(f):
+            text(x + 7, y + HEAD + 14 + i * ROW, t)
+        ym = y + HEAD + len(f) * ROW + 8
+        s.line([P(x, ym), P(x + w, ym)], w=lw)
+        for i, t in enumerate(m):
+            text(x + 7, ym + 14 + i * ROW, t)
+
+
+def RELATIONS(L, B):
+    """Связи диаграммы классов: точки в пикселях холста, подписи ролей «+…» и кратности, как в образце."""
+    r = []
+
+    def add(pts, kind='assoc', role=None, rpos=None, m1=None, m1pos=None, m2=None, m2pos=None):
+        r.append(dict(pts=pts, kind=kind, role=role, rpos=rpos, m1=m1, m1pos=m1pos, m2=m2, m2pos=m2pos))
+
+    def vert(a, b, role, m1=None, m2=None, kind='assoc', dx=0):
+        """Вертикальная связь от a (снизу или сверху) к b по середине общего участка по x."""
+        xa, ya, wa, ha = B[a][:4]; xb, yb, wb, hb = B[b][:4]
+        x = (max(xa, xb) + min(xa + wa, xb + wb)) / 2 + dx
+        p, q = ((x, ya), (x, yb + hb)) if ya > yb else ((x, ya + ha), (x, yb))
+        down = q[1] > p[1]
+        add([p, q], kind, role, (x + 8, (p[1] + q[1]) / 2 + 5), m1, (x + 6, p[1] + (16 if down else -8)), m2, (x + 6, q[1] + (-8 if down else 16)))
+
+    vert('User', 'Role', '+имеет', '*', '1')
+    vert('AuditEntry', 'User', '+выполнил', '*', '1')
+    vert('Client', 'KycStatus', '+имеет статус', kind='dep')
+    vert('LoanApplication', 'Client', '+подаёт', '*', '1')
+    vert('Loan', 'LoanApplication', '+по заявке', '0..1', '1')
+    vert('Card', 'Account', '+привязана к', '*', '1')
+    vert('Deposit', 'Account', '+размещён на', '*', '1')
+
+    def elbow(a, sa, ta, b, sb, tb, xm, role, rpos, m1=None, m2=None, kind='assoc'):
+        p, q = L(a, sa, ta), L(b, sb, tb)
+        sgn = lambda pt, side: (pt[0] + (6 if side == 'r' else -16), pt[1])
+        add([p, (xm, p[1]), (xm, q[1]), q], kind, role, rpos, m1, (sgn(p, sa)[0], p[1] - 6), m2, (sgn(q, sb)[0], q[1] - 6))
+
+    u = L('User', 'r', 0.12); c = L('Client', 'l', 0.3)
+    elbow('Client', 'l', 0.3, 'User', 'r', 0.12, (u[0] + c[0]) / 2, '+связан с', (u[0] + 6, u[1] + 20), '1', '1')
+    c = L('Client', 'r', 0.35); ac = L('Account', 'l', 0.2)
+    elbow('Client', 'r', 0.35, 'Account', 'l', 0.2, (c[0] + ac[0]) / 2 - 12, '+владеет', (c[0] + 8, c[1] + 20), '1', '*')
+    lo = L('Loan', 'r', 0.3); ac = L('Account', 'l', 0.85)
+    elbow('Loan', 'r', 0.3, 'Account', 'l', 0.85, (lo[0] + ac[0]) / 2 + 12, '+погашается с', (lo[0] + 8, lo[1] + 20), '*', '1')
+    py = L('Payment', 'l', 0.55); ac = L('Account', 'r', 0.15)
+    elbow('Payment', 'l', 0.55, 'Account', 'r', 0.15, py[0] - 25, '+списание с', (ac[0] + 22, ac[1] - 8), '*', '1')
+    ti = L('TransferIntent', 'l', 0.25); ac = L('Account', 'r', 0.5)
+    elbow('TransferIntent', 'l', 0.25, 'Account', 'r', 0.5, (ti[0] + ac[0]) / 2, '+со счёта', (ac[0] + 8, ac[1] + 20), '*', '1')
+    ps = L('Posting', 'l', 0.3); ac = L('Account', 'r', 0.85)
+    elbow('Posting', 'l', 0.3, 'Account', 'r', 0.85, ps[0] - 25, '+проводится по', (ac[0] + 8, ac[1] + 20), '*', '2')
+    # Account -> AccountStatus: из верхней грани счёта вправо и вверх к перечислению
+    x = L('Account', 't', 0.9)[0]; st = L('AccountStatus', 'b', 0.5)
+    add([(x, L('Account', 't')[1]), (x, st[1] + 40), (st[0], st[1] + 40), st], 'dep', '+использует', (st[0] + 8, st[1] + 28))
+    # платёж и перевод оформляются документом проводок; документ состоит из проводок
+    dc = L('Document', 't', 0.5); py = L('Payment', 'r', 0.5)
+    add([py, (dc[0], py[1]), dc], 'dep', '+оформляется', (dc[0] + 8, py[1] + 22))
+    ti = L('TransferIntent', 'r', 0.5); d2 = L('Document', 'l', 0.25)
+    xm = (ti[0] + d2[0]) / 2
+    add([ti, (xm, ti[1]), (xm, d2[1]), d2], 'dep', '+оформляется', (ti[0] + 8, ti[1] - 8))
+    db = L('Document', 'b', 0.5); ps = L('Posting', 'r', 0.4)
+    add([db, (db[0], ps[1]), ps], 'comp', '+состоит из', (ps[0] + 20, ps[1] - 8), '1', (db[0] + 10, db[1] + 30), '1..*', (ps[0] + 6, ps[1] + 18))
+    return r
 
 
 if __name__ == '__main__':

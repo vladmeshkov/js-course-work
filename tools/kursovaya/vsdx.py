@@ -23,6 +23,23 @@ def _cell(n, v, u=None):
     return f'<Cell N="{n}" V="{v}"{f" U={chr(34)}{u}{chr(34)}" if u else ""}/>'
 
 
+_FONTS = {}
+
+
+def _measure(text, size, bold, italic, font):
+    """Ширина строки в мм по метрикам Liberation (совместимы с Arial и Times New Roman), для Calibri – Carlito."""
+    from PIL import ImageFont
+    fam = 'Serif' if 'Times' in font else 'Sans'
+    style = ('Bold' if bold else '') + ('Italic' if italic else '') or 'Regular'
+    path = (f'/usr/share/fonts/truetype/crosextra/Carlito-{style}.ttf' if font == 'Calibri'
+            else f'/usr/share/fonts/truetype/liberation/Liberation{fam}-{style}.ttf')
+    try:
+        f = _FONTS.get(path) or _FONTS.setdefault(path, ImageFont.truetype(path, 100))
+        return f.getlength(text) / 100 * size
+    except OSError:
+        return len(text) * size * 0.62
+
+
 class Writer:
     def __init__(self, width_mm, height_mm):
         self.W, self.H = width_mm / IN, height_mm / IN
@@ -77,7 +94,7 @@ class Writer:
         или середина блока для middle-v)."""
         lines = t.split('\n')
         n = len(lines)
-        wmm = max(len(l) for l in lines) * size * 0.62 + 2
+        wmm = max(_measure(l, size, bold, italic, font) for l in lines) * 1.08 + 2   # запас, чтобы Visio не переносил строку
         hmm = n * size * lh + 0.6
         cy = y if anchor == 'middle-v' else y + (n - 1) * size * lh / 2
         if anchor in ('middle', 'middle-v'):
