@@ -2,7 +2,7 @@
 """Приложения пояснительной записки в оформлении образца:
 А (обязательное) – отчёт о проверке на заимствования (рисунок вставляется после проверки, сейчас жёлтая пометка);
 Б (обязательное) – листинги алгоритмов, для которых в разделе 2.4 приведены схемы (перевод, кредиты, вклады);
-В (обязательное) – операторы CREATE TABLE основных таблиц из ER-диаграммы (из db/schema.sql, `npm run db:schema`).
+В (обязательное) – операторы CREATE TABLE 14 таблиц ER-диаграммы (рисунок 1.10) (из db/schema.sql, `npm run db:schema`).
 Код набран Courier New 10 пт, одинарный интервал; перенесённая часть длинной строки получает отступ.
 Использование: python3 build_app.py [выход.docx]
 """
@@ -21,16 +21,18 @@ LISTINGS = [
     ('Обслуживание кредитов при закрытии операционного дня', 'server/modules/loans/loan.service.js', ['canPay', 'chargeInstallment', 'processLoans']),
     ('Начисление процентов и возврат вкладов', 'server/modules/deposits/deposit.service.js', ['processDeposits']),
 ]
-# таблицы общей ER-диаграммы (рисунок 1.10, tools/er-drawio.js: corePage) – в приложение В идут только они
-ER_TABLES = ['roles', 'users', 'currencies', 'payment_providers', 'interbank_transfers', 'audit_log', 'clients', 'accounts',
-             'payments', 'documents', 'deposit_products', 'deposits', 'cards', 'postings', 'transfer_intents',
-             'loan_products', 'loan_applications', 'loans', 'fraud_cases']
+# таблицы ER-диаграммы (рисунок 1.10) – в приложение В идут только они
+ER_TABLES = ['roles', 'users', 'clients', 'accounts', 'documents', 'postings', 'transfer_intents', 'payments', 'cards',
+             'deposit_products', 'deposits', 'loan_products', 'loan_applications', 'loans']
 
 
 def er_tables_sql():
-    """Операторы CREATE TABLE основных таблиц в порядке скрипта db/schema.sql (с комментарием над таблицей)."""
+    """Операторы CREATE TABLE таблиц ER-диаграммы в порядке скрипта db/schema.sql (с комментарием над таблицей).
+    Внешние ключи на справочники, которых нет на диаграмме (валюты, поставщики услуг), опускаются, чтобы листинг
+    был согласован сам с собой; полный скрипт собирается командой npm run db:schema."""
     lines = open(os.path.join(ROOT, 'db', 'schema.sql'), encoding='utf-8').read().split('\n')
-    out = ['-- Основные таблицы базы данных (MySQL 8)', '']
+    out = ['-- Основные таблицы базы данных (MySQL 8), соответствуют ER-диаграмме на рисунке 1.10.',
+           '-- Справочники и вспомогательные таблицы приведены в полном скрипте db/schema.sql.', '']
     i = 0
     while i < len(lines):
         m = re.match(r'CREATE TABLE (\w+) \(', lines[i])
@@ -41,7 +43,14 @@ def er_tables_sql():
             end = i
             while not lines[end].rstrip().endswith(');'):
                 end += 1
-            out += lines[top:end + 1] + ['']
+            body = [l for l in lines[i + 1:end]
+                    if not ((r := re.search(r'REFERENCES (\w+)', l)) and r.group(1) not in ER_TABLES)]
+            body = [l for l in body if l.strip()]
+            # последняя строка перед «);» без запятой
+            while body and body[-1].lstrip().startswith('--'):
+                body.pop()
+            body[-1] = body[-1].rstrip().rstrip(',')
+            out += lines[top:i + 1] + body + [lines[end]] + ['']
             i = end
         i += 1
     return out[:-1]
