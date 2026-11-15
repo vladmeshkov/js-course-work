@@ -76,6 +76,14 @@ function cost() {
     for (const e of items) if (((mx - e.cx) / (e.rx + 30)) ** 2 + ((my - e.cy) / (e.ry + 14)) ** 2 < 1) c += 400;
   }
   for (const a of actors) for (const id of a.cases) { const e = byId.get(id); c += Math.hypot(e.cx - a.cx, e.cy - a.cy) * 0.15; }
+  // иерархия: включаемый или расширяющий вариант дальше от актёра, чем базовый
+  for (const [from, to, kind] of links) {
+    const base = byId.get(kind === 'include' ? from : to), dep = byId.get(kind === 'include' ? to : from);
+    const act = actors.find((x) => x.cases.includes(base.id));
+    if (!act) continue;
+    const d0 = Math.hypot(base.cx - act.cx, base.cy - act.cy), d1 = Math.hypot(dep.cx - act.cx, dep.cy - act.cy);
+    c += Math.max(0, d0 + 150 - d1) * 4;
+  }
   return c;
 }
 
@@ -95,4 +103,7 @@ for (let k = 0; k < N; k++) {
 items.forEach((c, i) => { [c.cx, c.cy] = bestPos[i]; });
 const out = Object.fromEntries(items.map((c) => [c.id, [Math.round(c.cx), Math.round(c.cy)]]));
 writeFileSync(path.join(root, 'docs/diagrams/uc-layout.json'), JSON.stringify(out, null, 1));
-console.log('штраф', Math.round(best));
+// проверка: пересечения линий и линий с эллипсами
+let cr = 0, hit = 0; const sg = segments();
+for (let i = 0; i < sg.length; i++) { for (const e of items) if (!sg[i].ends.includes(e.id) && segHitsEllipse(sg[i], e, 0)) hit++; for (let j = i + 1; j < sg.length; j++) if (cross(sg[i], sg[j])) cr++; }
+console.log('штраф', Math.round(best), 'пересечений', cr, 'через эллипсы', hit);

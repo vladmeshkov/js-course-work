@@ -29,8 +29,8 @@ export const UC = {
   frame: { x: 170, y: 0, w: 1330, h: 1330 },
   pkg: { x: 905, y: 815, w: 550, h: 485 },
   regions: {
-    client: { x: 200, y: 55, w: 640, h: 790 },
-    mid: { x: 560, y: 90, w: 520, h: 640 },
+    client: { x: 200, y: 55, w: 420, h: 800 },
+    mid: { x: 480, y: 55, w: 420, h: 800 },
     admin: { x: 200, y: 900, w: 680, h: 410 },
     op: { x: 960, y: 50, w: 520, h: 250 },
     mon: { x: 900, y: 270, w: 580, h: 260 },
@@ -49,13 +49,11 @@ export const UC = {
     c('acc', 'client', 'Открыть счёт'), c('xfer', 'client', 'Перевести деньги'), c('pay', 'client', 'Оплатить услугу'),
     c('dep', 'client', 'Оформить вклад'), c('loan', 'client', 'Оформить кредит'), c('repay', 'client', 'Погасить кредит'),
     c('card', 'client', 'Выпустить карту'), c('stmt', 'client', 'Получить выписку по счёту'),
-    c('fx', 'client', 'Конвертировать валюту'), c('code', 'mid', 'Подтвердить операцию кодом'),
-    c('hold', 'mid', 'Передать перевод на проверку'), c('tpl', 'client', 'Сохранить шаблон платежа'),
-    c('auto', 'client', 'Настроить автоплатёж'), c('calc', 'client', 'Рассчитать доход по вкладу'),
-    c('early', 'client', 'Закрыть вклад досрочно'), c('score', 'mid', 'Оценить кредитоспособность'),
-    c('sched', 'client', 'Составить график платежей'), c('prepay', 'client', 'Погасить кредит досрочно'),
-    c('block', 'client', 'Заблокировать карту'), c('limit', 'client', 'Установить лимиты по карте'),
-    c('pdf', 'client', 'Сформировать выписку в PDF'),
+    c('fx', 'mid', 'Конвертировать валюту'), c('code', 'mid', 'Подтвердить операцию кодом'),
+    c('auto', 'mid', 'Настроить автоплатёж'), c('calc', 'mid', 'Рассчитать доход по вкладу'),
+    c('early', 'mid', 'Закрыть вклад досрочно'), c('score', 'mid', 'Оценить кредитоспособность'),
+    c('prepay', 'mid', 'Погасить кредит досрочно'), c('block', 'mid', 'Заблокировать карту'),
+    c('pdf', 'mid', 'Сформировать выписку в PDF'),
     c('trf', 'admin', 'Задать курсы и тарифы'), c('users', 'admin', 'Управлять пользователями'),
     c('audit', 'admin', 'Просмотреть журнал аудита'), c('reports', 'admin', 'Сформировать отчёты'),
     c('backup', 'admin', 'Создать резервную копию'), c('eod', 'admin', 'Закрыть операционный день'),
@@ -68,12 +66,11 @@ export const UC = {
     c('conv', 'user', 'Рассчитать конвертацию валют'), c('sec', 'user', 'Управлять безопасностью'), c('notif', 'user', 'Просмотреть уведомления')
   ],
   // [от, к, вид]: «include» – от базового к включаемому, «extend» – от расширяющего к базовому
+  // у каждого базового варианта не больше одного уточнения; уточнения стоят дальше от актёра, чем базовый вариант
   links: [
-    ['fx', 'xfer', 'extend'], ['xfer', 'code', 'include'], ['pay', 'code', 'include'], ['hold', 'xfer', 'extend'], ['hold', 'fraud', 'include'],
-    ['tpl', 'pay', 'extend'], ['auto', 'pay', 'extend'], ['dep', 'calc', 'include'], ['early', 'dep', 'extend'],
-    ['loan', 'score', 'include'], ['loan', 'sched', 'include'], ['review', 'score', 'include'], ['issue', 'review', 'extend'],
-    ['prepay', 'repay', 'extend'], ['block', 'card', 'extend'], ['limit', 'card', 'extend'], ['stmt', 'pdf', 'include'],
-    ['special', 'fraud', 'extend'], ['eod', 'accrue', 'include'], ['eod', 'charge', 'include'],
+    ['fx', 'xfer', 'extend'], ['xfer', 'code', 'include'], ['auto', 'pay', 'extend'], ['dep', 'calc', 'include'], ['early', 'dep', 'extend'],
+    ['loan', 'score', 'include'], ['issue', 'review', 'extend'], ['prepay', 'repay', 'extend'], ['block', 'card', 'extend'],
+    ['stmt', 'pdf', 'include'], ['special', 'fraud', 'extend'], ['eod', 'accrue', 'include'], ['eod', 'charge', 'include'],
     ['reg', 'form', 'include'], ['tfa', 'auth', 'extend'], ['conv', 'rates', 'extend']
   ]
 };
