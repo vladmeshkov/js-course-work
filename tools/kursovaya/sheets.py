@@ -3,11 +3,13 @@
   chertezh-1-idef0      – декомпозиция A0 IDEF0 «Предоставить потребительский кредит физическому лицу», шифр ПД;
   chertezh-2-algoritm   – схема алгоритма перевода клиенту банка на сетке 01–17 x A–R, шифр СА;
   plakat-1-klassy, plakat-2-modeli, plakat-3-skrinshoty – плакаты 5.3.
-Пишет SVG (размеры в мм) в docs/kursovaya/chertezhi; PDF и PNG делает sheets2pdf.cjs.
+Пишет SVG (размеры в мм) и файл Visio .vsdx (vsdx.py) в docs/kursovaya/chertezhi; PDF и PNG делает sheets2pdf.cjs.
 Использование: python3 sheets.py && node sheets2pdf.cjs
 """
-import base64, os
+import base64, math, os, sys
 from PIL import Image
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from vsdx import Writer
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 KURS = os.path.abspath(os.path.join(HERE, '..', '..', 'docs', 'kursovaya'))
@@ -25,22 +27,36 @@ def esc(t):
 class Sheet:
     def __init__(self):
         self.o = []
+        self.v = Writer(W, H)
 
     def add(self, s):
         self.o.append(s)
 
-    def line(self, pts, w=0.85, arrow=False, dash=False):
+    def line(self, pts, w=1.1, arrow=False, dash=False):
         d = ' '.join(f'{"M" if i == 0 else "L"}{x:.2f},{y:.2f}' for i, (x, y) in enumerate(pts))
         self.add(f'<path d="{d}" fill="none" stroke="#000" stroke-width="{w}"{" stroke-dasharray=\"3 2\"" if dash else ""}/>')
+        if arrow:  # линия доводится до основания стрелки, сама стрелка – залитый треугольник
+            (x1, y1), (x2, y2) = pts[-2], pts[-1]
+            L = math.hypot(x2 - x1, y2 - y1) or 1
+            self.v.poly(pts[:-1] + [(x2 - (x2 - x1) / L * 3.5, y2 - (y2 - y1) / L * 3.5)], sw=w)
+        else:
+            self.v.poly(pts, sw=w)
         if arrow:
             (x1, y1), (x2, y2) = pts[-2], pts[-1]
-            import math
             a = math.atan2(y2 - y1, x2 - x1); L, Wd = 4.0, 1.5
             p1 = (x2 - L * math.cos(a) + Wd * math.sin(a), y2 - L * math.sin(a) - Wd * math.cos(a))
             p2 = (x2 - L * math.cos(a) - Wd * math.sin(a), y2 - L * math.sin(a) + Wd * math.cos(a))
             self.add(f'<path d="M{x2:.2f},{y2:.2f} L{p1[0]:.2f},{p1[1]:.2f} L{p2[0]:.2f},{p2[1]:.2f} Z" fill="#000"/>')
+            self.v.poly([(x2, y2), p1, p2], closed=True, sw=0, fill='#000')
 
     def rect(self, x, y, w, h, sw=0.35, rx=0, fill='#fff', stroke='#000'):
+        if rx:  # скруглённый прямоугольник (терминатор): дуги приближаются ломаной
+            r = min(rx, h / 2, w / 2); pts = []
+            for cx_, cy_, a0 in [(x + w - r, y + r, -90), (x + w - r, y + h - r, 0), (x + r, y + h - r, 90), (x + r, y + r, 180)]:
+                pts += [(cx_ + r * math.cos(math.radians(a0 + t * 9)), cy_ + r * math.sin(math.radians(a0 + t * 9))) for t in range(11)]
+            self.v.poly(pts, closed=True, sw=sw, stroke=stroke, fill=None if fill == 'none' else fill)
+        else:
+            self.v.poly([(x, y), (x + w, y), (x + w, y + h), (x, y + h)], closed=True, sw=sw, stroke=stroke, fill=None if fill == 'none' else fill)
         self.add(f'<rect x="{x:.2f}" y="{y:.2f}" width="{w:.2f}" height="{h:.2f}" rx="{rx}" fill="{fill}" stroke="{stroke}" stroke-width="{sw}"/>')
 
     def text(self, x, y, t, size=3.5, anchor='start', bold=False, italic=False, rotate=None, lh=1.2):
@@ -48,6 +64,7 @@ class Sheet:
         y0 = y - (len(lines) - 1) * size * lh / 2 if anchor == 'middle-v' else y
         anc = 'middle' if anchor in ('middle', 'middle-v') else anchor
         tr = f' transform="rotate({rotate} {x} {y})"' if rotate else ''
+        self.v.text(x, y, t, size, anchor, bold, italic, rotate, lh)
         for i, l in enumerate(lines):
             self.add(f'<text x="{x:.2f}" y="{y0 + i * size * lh:.2f}" font-size="{size}" text-anchor="{anc}" dominant-baseline="middle"'
                      f'{" font-weight=\"bold\"" if bold else ""}{" font-style=\"italic\"" if italic else ""}{tr}>{esc(l)}</text>')
@@ -56,9 +73,20 @@ class Sheet:
         """Код клетки сетки на верхней границе блока: белая подложка разрывает линию, как в образцах."""
         w = len(code) * size * 0.62 + 2
         self.add(f'<rect x="{x + 2:.2f}" y="{y - size / 2 - 0.3:.2f}" width="{w:.2f}" height="{size + 0.6:.2f}" fill="#fff"/>')
+        self.v.poly([(x + 2, y - size / 2 - 0.3), (x + 2 + w, y - size / 2 - 0.3), (x + 2 + w, y + size / 2 + 0.3), (x + 2, y + size / 2 + 0.3)], closed=True, sw=0, fill='#fff')
         self.text(x + 3, y, code, size=size, bold=True)
 
+    def poly(self, pts, sw=0.7, fill='#fff'):
+        d = ' '.join(f'{"M" if i == 0 else "L"}{px:.2f},{py:.2f}' for i, (px, py) in enumerate(pts)) + ' Z'
+        self.add(f'<path d="{d}" fill="{fill}" stroke="#000" stroke-width="{sw}"/>')
+        self.v.poly(pts, closed=True, sw=sw, fill=fill)
+
+    def circle(self, cx, cy, r, sw=0.7):
+        self.add(f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="#fff" stroke="#000" stroke-width="{sw}"/>')
+        self.v.circle(cx, cy, r, sw)
+
     def image(self, path, x, y, w, h):
+        self.v.image(path, x, y, w, h)
         data = base64.b64encode(open(path, 'rb').read()).decode()
         self.add(f'<image x="{x:.2f}" y="{y:.2f}" width="{w:.2f}" height="{h:.2f}" preserveAspectRatio="xMidYMid meet" href="data:image/png;base64,{data}"/>')
 
@@ -67,6 +95,7 @@ class Sheet:
         svg = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}mm" height="{H}mm" viewBox="0 0 {W} {H}" font-family="{FONT}">'
                f'<rect width="{W}" height="{H}" fill="#fff"/>' + ''.join(self.o) + '</svg>')
         open(os.path.join(OUT, name + '.svg'), 'w', encoding='utf-8').write(svg)
+        self.v.save(os.path.join(OUT, name + '.vsdx'), name)
         print(name)
 
 
@@ -157,14 +186,14 @@ def ruler_idef(s, gx, gy, cw, rh, ncol, nrow):
     """Линейка листа IDEF0 по образцу: верхняя линия на 38,3 мм с засечками вниз и номерами колонок
     под ней, левая линия на 31,4 мм с засечками вправо и буквами строк."""
     yl, xl = 38.3, 31.4
-    s.line([(gx, yl), (gx + ncol * cw, yl)], w=1.0)
+    s.line([(gx, yl), (gx + ncol * cw, yl)], w=1.4)
     for c in range(ncol + 1):
-        s.line([(gx + c * cw, yl), (gx + c * cw, yl + 6)], w=1.0)
+        s.line([(gx + c * cw, yl), (gx + c * cw, yl + 9)], w=1.4)
     for c in range(1, ncol + 1):
         s.text(gx + (c - 0.5) * cw, yl + 6.5, f'{c:02d}', size=6, anchor='middle')
-    s.line([(xl, gy), (xl, gy + nrow * rh)], w=1.0)
+    s.line([(xl, gy), (xl, gy + nrow * rh)], w=1.4)
     for r in range(nrow + 1):
-        s.line([(xl, gy + r * rh), (xl + 4.7, gy + r * rh)], w=1.0)
+        s.line([(xl, gy + r * rh), (xl + 6, gy + r * rh)], w=1.4)
     for r in range(1, nrow + 1):
         s.text(xl + 1.5, gy + (r - 0.5) * rh, 'ABCDEFGHIJKL'[r - 1], size=6)
 
@@ -200,7 +229,7 @@ def idef0():
         x, y = GXI + (c - 1) * CWI + pad, GYI + (r - 1) * RHI + pad
         w, h = CWI - 2 * pad, RHI - 2 * pad
         B.append((x, y, w, h))
-        s.rect(x, y, w, h, sw=0.8)
+        s.rect(x, y, w, h, sw=1.1)
         s.text(x + w / 2, y + h / 2 + 1.5, n, size=5.4, anchor='middle-v')
         s.cell(x, y, f'{"ABCDEFGHIJKL"[r - 1]}{c:02d}', size=3.8)
     X = lambda i, f: B[i][0] + B[i][2] * f
@@ -291,11 +320,11 @@ def algorithm():
             s.line([(x + w / 2 - 3, y - h / 2), (x + w / 2 - 3, y + h / 2)], w=0.7)
         elif kind == 'io':
             k = 4
-            s.add(f'<path d="M{x - w / 2 + k},{y - h / 2} L{x + w / 2},{y - h / 2} L{x + w / 2 - k},{y + h / 2} L{x - w / 2},{y + h / 2} Z" fill="#fff" stroke="#000" stroke-width="0.7"/>')
+            s.poly([(x - w / 2 + k, y - h / 2), (x + w / 2, y - h / 2), (x + w / 2 - k, y + h / 2), (x - w / 2, y + h / 2)])
         elif kind == 'dec':
-            s.add(f'<path d="M{x},{y - h / 2} L{x + w / 2},{y} L{x},{y + h / 2} L{x - w / 2},{y} Z" fill="#fff" stroke="#000" stroke-width="0.7"/>')
+            s.poly([(x, y - h / 2), (x + w / 2, y), (x, y + h / 2), (x - w / 2, y)])
         elif kind == 'con':
-            s.add(f'<circle cx="{x}" cy="{y}" r="{w / 2}" fill="#fff" stroke="#000" stroke-width="0.7"/>')
+            s.circle(x, y, w / 2)
         s.text(x, y, text, size=3.9 if kind != 'con' else 4.4, anchor='middle-v')
         if kind != 'con':
             s.cell(x - w / 2, y - h / 2, f'{"ABCDEFGHIJKLMNOPQR"[r - 1]}{c:02d}', size=3.4)
@@ -371,7 +400,7 @@ def poster(name, title, figs, cols, start):
     s = Sheet()
     s.text(W / 2, 20, title, size=13, anchor='middle', bold=True)
     s.line([(20, 30), (W - 20, 30)], w=0.6)
-    s.add(f'<rect x="20" y="38" width="{W - 40}" height="{H - 48}" fill="none" stroke="{RED}" stroke-width="0.6"/>')
+    s.rect(20, 38, W - 40, H - 48, sw=0.6, fill='none', stroke=RED)
     rows = (len(figs) + cols - 1) // cols
     cw, ch = (W - 60) / cols, (H - 70) / rows
     for i, (sub, path) in enumerate(figs):
