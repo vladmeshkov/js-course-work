@@ -148,8 +148,9 @@ def assemble(out, pages):
     final_layout.apply_doc(base)      # переносы описаний и дописанный текст против пустот внизу страниц
     base.save(out)
     import split_tables
-    split_tables.main(out, out)       # таблицы режутся по страницам окончательной вёрстки, с «Продолжением таблицы»
     final_layout.finalize(out)         # без чёрных квадратиков (keepNext и т. п.) и неразрывных пробелов
+    split_tables.main(out, out)       # таблицы режутся по страницам окончательной вёрстки, с «Продолжением таблицы»
+    final_layout.finalize(out)         # разрыв страницы перед «Продолжением таблицы» вместо свойства абзаца
 
 
 def page_count(path):

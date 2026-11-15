@@ -67,6 +67,7 @@ def move(d, num):
 
 
 EXTRA = os.path.join(KURS, 'src', 'layout-extra.json')
+BREAKS = os.path.join(KURS, 'src', 'layout-breaks.json')
 
 
 def add_text(d, num, texts):
@@ -100,6 +101,12 @@ def add_text(d, num, texts):
                 p.remove(ch)
         for kn in p.iter(qn('w:keepNext')):
             kn.getparent().remove(kn)
+        ppr = p.find(qn('w:pPr'))
+        if ppr is not None and ppr.find(qn('w:numPr')) is not None:
+            # после элемента списка дописанный абзац – обычный текст: без маркера и с отступом первой строки 1,25 см
+            for el in ppr.findall(qn('w:numPr')) + ppr.findall(qn('w:ind')) + ppr.findall(qn('w:pStyle')):
+                ppr.remove(el)
+            ind = docx.oxml.OxmlElement('w:ind'); ind.set(qn('w:firstLine'), '709'); ppr.append(ind)
         r = copy.deepcopy(anchor.find(qn('w:r')))
         for ch in list(r):
             if ch.tag != qn('w:rPr'):
@@ -209,6 +216,17 @@ def finalize(path):
             for tag in ('w:keepNext', 'w:keepLines', 'w:pageBreakBefore'):
                 for el in ppr.findall(qn(tag)):
                     ppr.remove(el)
+    # заголовки и подписи таблиц, которые иначе оказались бы внизу страницы, начинаются с разрыва страницы
+    breaks = json.load(open(BREAKS, encoding='utf-8')) if os.path.exists(BREAKS) else []
+    for p in body.iter(qn('w:p')):
+        t = re.sub(r'\s+', '', text_of(p))
+        if t and any(t.startswith(re.sub(r'\s+', '', b)) for b in breaks) and p.find('.//' + qn('w:br')) is None:
+            r = docx.oxml.OxmlElement('w:r'); br = docx.oxml.OxmlElement('w:br'); br.set(qn('w:type'), 'page'); r.append(br)
+            ppr = p.find(qn('w:pPr'))
+            if ppr is not None:
+                ppr.addnext(r)
+            else:
+                p.insert(0, r)
     for t in body.iter(qn('w:t')):
         if t.text and any(c in t.text for c in '\xa0   '):
             t.text = re.sub('[\xa0   ]', ' ', t.text)
