@@ -128,6 +128,7 @@ def apply_doc(d):
         move(d, n)
     for n, texts in extra.items():
         add_text(d, n, texts)
+    fix_refs(d)
     # «Продолжение таблицы» всегда начинает новую страницу: подпись не остаётся внизу предыдущей
     for p in d.element.body.iter(qn('w:p')):
         if text_of(p).strip().startswith('Продолжение таблицы'):
@@ -231,3 +232,75 @@ def finalize(path):
         if t.text and any(c in t.text for c in '\xa0   '):
             t.text = re.sub('[\xa0   ]', ' ', t.text)
     d.save(path)
+
+
+INTRO = {
+    '1.13': ('Функции системы с точки зрения внешних участников описывает диаграмма вариантов использования.', 'Диаграмма вариантов использования приведена на рисунке 1.13.'),
+    '1.14': ('Последовательность подачи заявки на кредит описывает диаграмма последовательности.', 'Диаграмма последовательности приведена на рисунке 1.14.'),
+    '1.15': ('Структуру программного средства описывает диаграмма компонентов.', 'Диаграмма компонентов приведена на рисунке 1.15.'),
+    '1.16': ('Порядок действий и их распределение между участниками описывает диаграмма деятельности.', 'Диаграмма деятельности приведена на рисунке 1.16.'),
+    '1.17': ('Размещение программного средства на оборудовании описывает диаграмма развёртывания.', 'Диаграмма развёртывания приведена на рисунке 1.17.'),
+    '1.18': ('Состояния заявки на кредит описывает диаграмма состояний, названия состояний на ней совпадают со значениями поля статуса в базе данных.', 'Диаграмма состояний приведена на рисунке 1.18.'),
+}
+SENT = re.compile(r'(?<=[.!?])\s+(?=[А-ЯЁA-Z«])')
+
+
+def set_text(p, text):
+    """Новый текст абзаца без рисунков: формат первой руны сохраняется."""
+    runs = p.findall(qn('w:r'))
+    first = runs[0]
+    for r in runs[1:]:
+        p.remove(r)
+    for ch in list(first):
+        if ch.tag != qn('w:rPr'):
+            first.remove(ch)
+    t = docx.oxml.OxmlElement('w:t'); t.text = text
+    t.set('{http://www.w3.org/XML/1998/namespace}space', 'preserve'); first.append(t)
+
+
+def fix_refs(d):
+    """Ссылка на рисунок – в абзаце непосредственно перед рисунком и с подводкой: ссылки в скобках переписываются
+    («… на диаграмме компонентов (рисунок 1.15)» -> «…, приведённой на рисунке 1.15»), а предложение со ссылкой,
+    оказавшееся выше перенесённого описания или дописанного текста, переносится в конец абзаца перед рисунком."""
+    body = d.element.body
+    for p in body.iter(qn('w:p')):
+        t = text_of(p)
+        if re.search(r'\(рисун\w*\s+\d+\.\d+\)', t) and p.find('.//' + qn('w:drawing')) is None:
+            set_text(p, re.sub(r'\s*\(рисун\w*\s+(\d+\.\d+)\)', r', приведённой на рисунке \1', t))
+    els = list(body)
+    for i, e in enumerate(els):
+        m = CAP.match(text_of(e)) if e.tag == qn('w:p') else None
+        if not m:
+            continue
+        num = m.group(1)
+        ref = re.compile(r'рисун\w*\s+(?:[\d.]+\s*(?:,|и)\s*)*' + re.escape(num) + r'(?![\d])')
+        pic = next((j for j in range(i - 1, max(i - 4, 0), -1) if els[j].find('.//' + qn('w:drawing')) is not None), None)
+        if pic is None:
+            continue
+        last = pic - 1
+        while last > 0 and els[last].tag == qn('w:p') and not text_of(els[last]).strip():
+            last -= 1
+        if ref.search(text_of(els[last])):
+            continue
+        # абзац со ссылкой выше в том же блоке (до предыдущей подписи, заголовка или таблицы)
+        k = last - 1
+        while k > 0 and els[k].tag == qn('w:p') and not CAP.match(text_of(els[k])) and els[k].find('.//' + qn('w:drawing')) is None \
+                and not re.match(r'\s*(\d+(\.\d+)?\s*[А-ЯЁ]|Таблица|Продолжение)', text_of(els[k])):
+            if ref.search(text_of(els[k])):
+                break
+            k -= 1
+        src = els[k]
+        if not ref.search(text_of(src)):
+            continue
+        if num in INTRO:                 # вводный абзац остаётся без ссылки, ссылка – в конце абзаца перед рисунком
+            set_text(src, INTRO[num][0])
+            set_text(els[last], text_of(els[last]).rstrip() + ' ' + INTRO[num][1])
+            continue
+        parts = SENT.split(text_of(src).strip())
+        sent = next(s for s in parts if ref.search(s))
+        rest = ' '.join(s for s in parts if s is not sent).strip()
+        if rest:
+            set_text(src, rest)
+        else:
+            src.getparent().remove(src)
+        set_text(els[last], text_of(els[last]).rstrip() + ' ' + sent)
