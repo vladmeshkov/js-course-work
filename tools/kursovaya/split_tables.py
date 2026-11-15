@@ -134,20 +134,12 @@ def apply(src, dst, splits, tagged, for_lo=False):
 def render_pages(path, outdir):
     subprocess.run(['soffice', '--headless', '--convert-to', 'pdf', '--outdir', outdir, path], check=True, capture_output=True)
     pdf = os.path.join(outdir, os.path.basename(path).replace('.docx', '.pdf'))
-    html = pdf.replace('.pdf', '.html')
-    subprocess.run(['pdftotext', '-bbox', pdf, html], check=True)
-    # слова страницы склеиваются: pdftotext иногда режет белую метку на два слова
-    texts, page = {}, 0
-    for line in open(html, encoding='utf-8'):
-        if '<page ' in line:
-            page += 1
-            texts[page] = []
-        m = re.search(r'<word[^>]*>(.*?)</word>', line)
-        if m:
-            texts[page].append(m.group(1))
+    # метки ищутся в обычном текстовом выводе по страницам (разделитель \f): в выводе -bbox слова соседней
+    # колонки таблицы иногда вклиниваются между частями метки
+    text = subprocess.run(['pdftotext', pdf, '-'], check=True, capture_output=True, text=True).stdout
     pages = {}
-    for pg, words in texts.items():
-        for m in re.finditer(r'@@T(\d\d)R(\d\d\d)', ''.join(words)):
+    for pg, chunk in enumerate(text.split('\f'), 1):
+        for m in re.finditer(r'@@T(\d\d)R(\d\d\d)', re.sub(r'\s+', '', chunk)):
             pages[(int(m.group(1)), int(m.group(2)))] = pg
     return pages
 
@@ -202,8 +194,13 @@ def main(src, dst, lo_copy=None):
         for idx, n in counts.items():
             pg = [pages.get((idx, r)) for r in range(n)]
             if None in pg:
-                raise SystemExit(f'не найдена метка строки таблицы {idx}: {pg}')
+                # LibreOffice иногда не выводит строку с запретом разрыва: остаётся разбивка прошлой итерации
+                print(f'не найдена метка строки таблицы {idx}: {pg}, оставляю предыдущую разбивку')
+                new = None
+                break
             new[idx] = [0] + [k for k in range(1, n) if pg[k] != pg[k - 1]]
+        if new is None:
+            break
         print('итерация', it, {k: v for k, v in new.items() if len(v) > 1})
         if new == splits:
             break
